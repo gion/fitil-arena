@@ -6,3 +6,8 @@ apps/client/ios
 apps/client/android
 playwright-report
 test-results
+# documentele de proiect rămân identice cu cele din proiectul claude.ai
+CLAUDE.md
+PLAN.md
+GAME_DESIGN.md
+BUSINESS.md
