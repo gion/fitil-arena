@@ -68,7 +68,8 @@ export function createTutorial(step: TutorialStep, seed = 1): { s: GameState; t:
 export function tutorialDone(s: GameState, t: Tutorial): boolean {
   const p = s.players[0]!;
   if (!p.alive) return false;
-  const has = (type: string) => s.events.some((e) => e.type === type && ('player' in e ? e.player === 0 : true));
+  const has = (type: string) =>
+    s.events.some((e) => e.type === type && ('player' in e ? e.player === 0 : true));
   switch (t.step) {
     case 'move':
       return t.target !== null && tileX(p) === t.target[0] && tileY(p) === t.target[1] && !p.moving;
@@ -184,7 +185,8 @@ export function trackChallenge(c: ChallengeProgress, s: GameState): ChallengePro
     if (s.tick >= FAST_LIMIT && !s.result) c.status = 'failed';
     else if (won) c.count = 1;
   } else if (won) c.count = 1;
-  if (c.status === 'playing' && c.count >= c.need && (c.id === 'minimal' || c.id === 'fast')) c.status = 'done';
+  if (c.status === 'playing' && c.count >= c.need && (c.id === 'minimal' || c.id === 'fast'))
+    c.status = 'done';
   if (c.status === 'playing' && (s.result || !s.players[me]!.alive)) c.status = 'failed';
   return c;
 }

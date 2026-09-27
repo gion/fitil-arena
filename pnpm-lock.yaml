@@ -91,6 +91,9 @@ importers:
 
   packages/content:
     dependencies:
+      '@fitil/sim':
+        specifier: workspace:*
+        version: link:../sim
       zod:
         specifier: ^4.0.0
         version: 4.6.5
