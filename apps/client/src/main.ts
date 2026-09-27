@@ -1,11 +1,23 @@
 import Phaser from 'phaser';
-import { BootScene } from './BootScene.ts';
+import { ArenaScene } from './ArenaScene.ts';
+import { DPR, viewportSize } from './display.ts';
 
-new Phaser.Game({
+const { width, height } = viewportSize();
+
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   backgroundColor: '#141726',
-  scale: { mode: Phaser.Scale.RESIZE, width: '100%', height: '100%' },
+  // Canvas la rezoluție fizică, afișat la dimensiunea CSS (zoom = 1/DPR) → imagine crisp pe ecrane retina.
+  scale: { mode: Phaser.Scale.NONE, width, height, zoom: 1 / DPR },
+  render: { antialias: true },
   input: { activePointers: 3 }, // joystick + bombă + încă un deget
-  scene: [BootScene],
+  scene: [ArenaScene],
 });
+
+const onResize = () => {
+  const s = viewportSize();
+  game.scale.resize(s.width, s.height);
+};
+window.addEventListener('resize', onResize);
+window.visualViewport?.addEventListener('resize', onResize);
