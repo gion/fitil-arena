@@ -11,6 +11,10 @@ export const tileAt = (s: GameState, x: number, y: number): number =>
 export const tileX = (p: Player): number => Math.floor((p.px + U / 2) / U);
 export const tileY = (p: Player): number => Math.floor((p.py + U / 2) / U);
 
+/** Pătrățelul unei entități cu poziție în unități (păianjeni, nori). */
+export const mobX = (m: { px: number }): number => Math.floor((m.px + U / 2) / U);
+export const mobY = (m: { py: number }): number => Math.floor((m.py + U / 2) / U);
+
 /** Bomba „de pe jos” de pe un pătrățel (nu cea ținută în mână sau în zbor). */
 export function bombAt(s: GameState, x: number, y: number): Bomb | undefined {
   for (const b of s.bombs) if (b.x === x && b.y === y && b.held === null && b.fly === null) return b;

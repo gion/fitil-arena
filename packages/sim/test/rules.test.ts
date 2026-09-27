@@ -82,7 +82,7 @@ describe('bombe și flăcări', () => {
       step(s, []);
       death = events(s, 'death')[0];
     }
-    expect(death).toEqual({ type: 'death', player: 1, killerId: 0, cause: 'flame' });
+    expect(death).toEqual({ type: 'death', player: 1, killerId: 0, cause: 'flame', via: 0 });
     expect(b.alive).toBe(false);
     expect(s.result).toMatchObject({ winner: 0 });
   });

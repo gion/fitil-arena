@@ -1,11 +1,25 @@
 import { action, detonate, placeBomb, tryKick } from './actions.ts';
 import { BOT_LEVELS, botCooldown } from './botLevels.ts';
-import { CHAIN_DELAY, FLAME, GRACE, HICCUP_EVERY, PORTAL, SLIDE_SPEED } from './constants.ts';
+import {
+  CARRIER_SPEED_PCT,
+  CHAIN_DELAY,
+  CURSE_DELAY,
+  GRACE,
+  HICCUP_EVERY,
+  MAX_BOMBS,
+  MAX_RANGE,
+  PORTAL,
+  SLIDE_SPEED,
+  SPEED_MAX,
+} from './constants.ts';
+import { addFlame, kill, shieldSave } from './effects.ts';
 import {
   bombAt,
   countSoft,
   idx,
   inBounds,
+  mobX,
+  mobY,
   padIndex,
   playerAt,
   tileAt,
@@ -14,9 +28,12 @@ import {
   walkable,
 } from './grid.ts';
 import { applyItem, rollDrop, rollGold } from './items.ts';
+import { updateMobs } from './mobs.ts';
+import { carriedFlag, updateCtf, updateRespawn, updateRotation, updateShift } from './modes.ts';
 import { nextFloat, nextInt } from './rng.ts';
-import { DIRS, DX, DY, EMPTY, HARD, SOFT, U, opposite } from './types.ts';
-import type { Bomb, DeathCause, Dir, GameState, Input, Player } from './types.ts';
+import { isTeamMode } from './setup.ts';
+import { DIRS, DX, DY, EMPTY, HARD, SOFT, U, VIA_LIGHTNING, opposite } from './types.ts';
+import type { Bomb, Dir, GameState, Input, Player } from './types.ts';
 
 /**
  * Avansează simularea cu un tick (50 ms). Modifică `s` pe loc și îl întoarce.
@@ -30,7 +47,12 @@ export function step(s: GameState, inputs: readonly (Input | undefined)[]): Game
   updateBombs(s);
   explodeBombs(s);
   updateFlames(s);
+  updateMobs(s);
   updatePlayers(s, inputs);
+  updateShift(s);
+  updateRotation(s);
+  updateCtf(s);
+  updateRespawn(s);
   updatePortals(s);
   updateBoxRespawn(s);
   updateHurry(s);
@@ -45,7 +67,7 @@ function handleActions(s: GameState, inputs: readonly (Input | undefined)[]): vo
     if (inp.detonate) detonate(s, p);
     if (!inp.bomb) continue;
     if (p.bot !== null) {
-      if (placeBomb(s, p)) p.botCd = botCooldown(BOT_LEVELS[p.bot], nextFloat(s.rng));
+      if (p.bot !== 'dummy' && placeBomb(s, p)) p.botCd = botCooldown(BOT_LEVELS[p.bot], nextFloat(s.rng));
     } else {
       const before = p.active;
       action(s, p, inp.bomb === 2);
@@ -109,13 +131,6 @@ function updateBombs(s: GameState): void {
   }
 }
 
-function addFlame(s: GameState, x: number, y: number, owner: number): void {
-  const k = idx(s, x, y);
-  s.flame[k] = FLAME;
-  s.flameOwner[k] = owner;
-  s.items[k] = null;
-}
-
 function openPortals(s: GameState): void {
   if (s.pads.length) {
     s.portalT = PORTAL;
@@ -157,7 +172,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
     owner: b.owner,
     chain: b.chain,
   });
-  addFlame(s, b.x, b.y, b.owner);
+  addFlame(s, b.x, b.y, b.owner, b.via);
   for (const d of DIRS) {
     for (let i = 1; i <= b.range; i++) {
       const nx = b.x + DX[d]! * i;
@@ -167,11 +182,14 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
       const k = idx(s, nx, ny);
       if (g === SOFT) {
         s.grid[k] = EMPTY;
-        addFlame(s, nx, ny, b.owner);
+        addFlame(s, nx, ny, b.owner, b.via);
         const gold = s.gold[k] === 1;
+        const cursed = s.cursed[k] === 1;
         s.gold[k] = 0;
-        s.drops[k] = gold ? rollGold(s.rng) : rollDrop(s.rng);
-        s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold });
+        s.cursed[k] = 0;
+        if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
+        else s.drops[k] = gold ? rollGold(s.rng) : rollDrop(s.rng);
+        s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed });
         break;
       }
       for (const o of s.bombs) {
@@ -179,7 +197,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
         o.fuse = Math.min(o.fuse, CHAIN_DELAY);
         if (!o.chain) o.chain = b.chain;
       }
-      addFlame(s, nx, ny, b.owner);
+      addFlame(s, nx, ny, b.owner, b.via);
     }
   }
 }
@@ -205,6 +223,7 @@ function updateFlames(s: GameState): void {
     s.flame[k]!--;
     if (s.flame[k] === 0) {
       s.flameOwner[k] = -1;
+      s.flameVia[k] = 0;
       const d = s.drops[k];
       if (d) {
         s.items[k] = d;
@@ -212,25 +231,6 @@ function updateFlames(s: GameState): void {
       }
     }
   }
-}
-
-export function kill(s: GameState, p: Player, killerId: number | null, cause: DeathCause): void {
-  if (!p.alive) return;
-  p.alive = false;
-  p.deathTick = s.tick;
-  p.killerId = killerId;
-  p.moving = false;
-  if (p.carry !== null) {
-    const b = s.bombs.find((o) => o.id === p.carry);
-    if (b) {
-      b.held = null;
-      b.x = tileX(p);
-      b.y = tileY(p);
-      b.fuse = Math.min(b.fuse, 2);
-    }
-    p.carry = null;
-  }
-  s.events.push({ type: 'death', player: p.id, killerId, cause });
 }
 
 function arrive(s: GameState, p: Player): boolean {
@@ -254,7 +254,7 @@ function arrive(s: GameState, p: Player): boolean {
 
 /** Mișcare pe grilă, pătrățel cu pătrățel (portat din `move()` din prototip). */
 function move(s: GameState, p: Player, want: Dir | null): void {
-  let rem = p.speed;
+  let rem = carriedFlag(s, p) ? Math.floor((p.speed * CARRIER_SPEED_PCT) / 100) : p.speed;
   if (want !== null) p.face = want;
   if (p.moving && want !== null && want === opposite(p.dir)) {
     [p.tx, p.fx] = [p.fx, p.tx];
@@ -310,24 +310,27 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
     if (s.flame[k]! > 0 && p.graceT === 0) {
       const ownerId = s.flameOwner[k]!;
       const owner = ownerId >= 0 ? s.players[ownerId] : undefined;
-      const friendly = s.rules.mode === 'teams' && owner !== undefined && owner.team === p.team;
-      if (!friendly) {
-        if (p.shieldT > 0) {
-          p.shieldT = 0;
-          p.graceT = GRACE;
-          s.events.push({ type: 'shieldSaved', player: p.id });
-        } else {
-          kill(s, p, ownerId >= 0 ? ownerId : null, 'flame');
-          continue;
-        }
+      const friendly =
+        isTeamMode(s.rules) && !s.rules.friendlyFire && owner !== undefined && owner.team === p.team;
+      if (!friendly && !shieldSave(s, p, GRACE)) {
+        const via = s.flameVia[k]!;
+        kill(s, p, ownerId >= 0 ? ownerId : null, via === VIA_LIGHTNING ? 'lightning' : 'flame', via);
+        continue;
       }
     }
     if (p.shieldT > 0) p.shieldT--;
     const it = s.items[k];
     if (it) {
       s.items[k] = null;
+      const pre = { speed: p.speed, bombs: p.bombs, range: p.range };
       applyItem(p, it);
       s.events.push({ type: 'pickup', player: p.id, item: it, x: tileX(p), y: tileY(p) });
+      if (p.speed >= SPEED_MAX && pre.speed < SPEED_MAX)
+        s.events.push({ type: 'maxed', player: p.id, stat: 'speed' });
+      if (p.bombs >= MAX_BOMBS && pre.bombs < MAX_BOMBS)
+        s.events.push({ type: 'maxed', player: p.id, stat: 'bombs' });
+      if (p.range >= MAX_RANGE && pre.range < MAX_RANGE)
+        s.events.push({ type: 'maxed', player: p.id, stat: 'fire' });
     }
     if (p.revT > 0) p.revT--;
     if (p.dizzyT > 0) p.dizzyT--;
@@ -372,9 +375,12 @@ function updateBoxRespawn(s: GameState): void {
       continue;
     if (s.players.some((p) => p.alive && Math.abs(tileX(p) - x) + Math.abs(tileY(p) - y) < 3)) continue;
     s.grid[k] = SOFT;
-    const gold = nextFloat(s.rng) < 0.06;
+    const r = nextFloat(s.rng);
+    const gold = r < 0.06;
+    const cursed = !gold && r < 0.09;
     s.gold[k] = gold ? 1 : 0;
-    s.events.push({ type: 'boxSpawn', x, y, gold });
+    s.cursed[k] = cursed ? 1 : 0;
+    s.events.push({ type: 'boxSpawn', x, y, gold, cursed });
     return;
   }
 }
@@ -394,8 +400,15 @@ function updateHurry(s: GameState): void {
   s.items[k] = null;
   s.drops[k] = null;
   s.gold[k] = 0;
+  s.cursed[k] = 0;
   s.flame[k] = 0;
   s.flameOwner[k] = -1;
+  s.flameVia[k] = 0;
+  s.spiders = s.spiders.filter((c) => {
+    if (mobX(c) !== x || mobY(c) !== y) return true;
+    s.events.push({ type: 'spiderDie', id: c.id, x, y });
+    return false;
+  });
   s.bombs = s.bombs.filter((b) => {
     if (b.x !== x || b.y !== y || b.held !== null || b.fly !== null) return true;
     const owner = s.players[b.owner];
@@ -416,9 +429,15 @@ function updateHurry(s: GameState): void {
 }
 
 function checkResult(s: GameState): void {
-  if (s.result || s.players.length < 2) return;
+  if (s.result || s.players.length < 2 || s.rules.mode === 'ctf') return;
+  if (s.rules.timeLimit && s.tick >= s.rules.timeLimit) {
+    s.result = { winner: null, team: null, tick: s.tick };
+    s.events.push({ type: 'roundEnd', winner: null, team: null });
+    return;
+  }
+  if (s.rules.respawnTicks) return;
   const alive = s.players.filter((p) => p.alive);
-  if (s.rules.mode === 'teams') {
+  if (isTeamMode(s.rules)) {
     const teams = new Set(alive.map((p) => p.team));
     if (teams.size > 1) return;
     const team = teams.size === 1 ? [...teams][0]! : null;

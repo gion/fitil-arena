@@ -1,9 +1,10 @@
-import { SPEED_START, sec } from './constants.ts';
+import { CTF_NEED, CTF_TIME, RESPAWN, RESPAWN_SHIELD, SHIFT_FIRST, SPEED_START, sec } from './constants.ts';
 import { countSoft, idx, inBounds } from './grid.ts';
 import { applyItem } from './items.ts';
 import { createRng, nextFloat, shuffle } from './rng.ts';
+import type { RngState } from './rng.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
-import type { BotLevel, Dir, GameState, ItemType, Player, Rules } from './types.ts';
+import type { BotKind, Dir, Flag, GameState, ItemType, Player, Rules } from './types.ts';
 
 export const DEFAULT_RULES: Rules = {
   width: 15,
@@ -11,14 +12,23 @@ export const DEFAULT_RULES: Rules = {
   mode: 'ffa',
   softDensity: 0.7,
   goldRate: 0.045,
+  curseRate: 0.025,
   boxRespawn: true,
+  friendlyFire: false,
+  respawnTicks: 0,
+  respawnShield: 0,
+  timeLimit: 0,
+  shift: false,
+  rotate: false,
   hurryUpTick: sec(90),
   hurryEvery: 6,
   startItems: [],
 };
 
+export const isTeamMode = (r: Rules): boolean => r.mode !== 'ffa';
+
 export interface PlayerSetup {
-  bot: BotLevel | null;
+  bot: BotKind | null;
   team?: number;
 }
 
@@ -45,12 +55,29 @@ export function duelRules(seed: number): Partial<Rules> {
     width: 11,
     height: 11,
     goldRate: 0.07,
+    curseRate: 0.02,
     startItems: shuffle(createRng(seed ^ 0x5eed), pool).slice(0, 3),
   };
 }
 
+/** Arena rotativă: pătrată 11×11, toți contra toți. */
+export const rotateRules = (): Partial<Rules> => ({ width: 11, height: 11, rotate: true });
+
+/** Rânduri mobile: toți contra toți pe grila adaptată la ecran. */
+export const shiftRules = (aspect: number): Partial<Rules> => ({ ...gridForAspect(aspect), shift: true });
+
+/** Capturează steagul 3v3: fără eliminare (revii după 3s cu 2s de scut), 3 capturi sau 3 minute. */
+export const ctfRules = (aspect: number): Partial<Rules> => ({
+  ...gridForAspect(aspect),
+  mode: 'ctf',
+  respawnTicks: RESPAWN,
+  respawnShield: RESPAWN_SHIELD,
+  timeLimit: CTF_TIME,
+  hurryUpTick: 0,
+});
+
 function spawnPoints(W: number, H: number, setup: PlayerSetup[], mode: Rules['mode']): [number, number][] {
-  if (mode === 'teams') {
+  if (mode !== 'ffa') {
     const my = (H - 1) / 2;
     const mx = (W - 1) / 2;
     const midA = my % 2 ? my : my + 1;
@@ -82,8 +109,8 @@ function spawnPoints(W: number, H: number, setup: PlayerSetup[], mode: Rules['mo
             [colB, H - 2],
           ];
     const counters = [0, 0];
-    return setup.map((ps) => {
-      const t = ps.team === 1 ? 1 : 0;
+    return setup.map((ps, i) => {
+      const t = (ps.team ?? i % 2) === 1 ? 1 : 0;
       const list = t ? B : A;
       const pt = list[counters[t]! % list.length]!;
       counters[t]!++;
@@ -105,11 +132,13 @@ function spawnPoints(W: number, H: number, setup: PlayerSetup[], mode: Rules['mo
   return setup.map((_, i) => corners[i % corners.length]!);
 }
 
-export function makePlayer(id: number, team: number, bot: BotLevel | null, x: number, y: number): Player {
+export function makePlayer(id: number, team: number, bot: BotKind | null, x: number, y: number): Player {
   return {
     id,
     team,
     bot,
+    sx: x,
+    sy: y,
     px: x * U,
     py: y * U,
     fx: x,
@@ -184,6 +213,8 @@ export function createGame(setup: GameSetup): GameState {
     items: new Array<ItemType | null>(N).fill(null),
     drops: new Array<ItemType | null>(N).fill(null),
     gold: new Array<number>(N).fill(0),
+    cursed: new Array<number>(N).fill(0),
+    flameVia: new Array<number>(N).fill(0),
     players: [],
     bombs: [],
     nextBombId: 1,
@@ -195,6 +226,14 @@ export function createGame(setup: GameSetup): GameState {
     chainCount: {},
     hurryIdx: 0,
     hurryOrder: spiralOrder(W, H),
+    curses: [],
+    spiders: [],
+    clouds: [],
+    nextMobId: 1,
+    shift: null,
+    shiftNext: SHIFT_FIRST,
+    rot: rules.rotate ? { a: 0, v: 0 } : null,
+    ctf: null,
     result: null,
     events: [],
   };
@@ -211,14 +250,17 @@ export function createGame(setup: GameSetup): GameState {
       if (x === 0 || y === 0 || x === W - 1 || y === H - 1 || (x % 2 === 0 && y % 2 === 0)) s.grid[k] = HARD;
       else if (!safe.has(k) && nextFloat(rng) < rules.softDensity) {
         s.grid[k] = SOFT;
-        if (nextFloat(rng) < rules.goldRate) s.gold[k] = 1;
+        const r = nextFloat(rng);
+        if (r < rules.goldRate) s.gold[k] = 1;
+        else if (r < rules.goldRate + rules.curseRate) s.cursed[k] = 1;
       }
     }
+  if (rules.mode === 'ctf') setupCtf(s, spawns, setup.players, rng);
   s.softStart = countSoft(s);
 
   s.players = setup.players.map((ps, i) => {
     const [x, y] = spawns[i]!;
-    const team = rules.mode === 'teams' ? (ps.team ?? i % 2) : i;
+    const team = isTeamMode(rules) ? (ps.team ?? i % 2) : i;
     const p = makePlayer(i, team, ps.bot, x, y);
     const open = DIRS.find((d: Dir) => s.grid[idx(s, x + DX[d]!, y + DY[d]!)] === EMPTY);
     if (open !== undefined) p.face = open;
@@ -226,4 +268,45 @@ export function createGame(setup: GameSetup): GameState {
     return p;
   });
   return s;
+}
+
+const clearBox = (s: GameState, k: number): void => {
+  s.grid[k] = EMPTY;
+  s.gold[k] = 0;
+  s.cursed[k] = 0;
+};
+
+/**
+ * Capturează steagul: bazele sunt la mijlocul laturii fiecărei echipe (al treilea punct de start).
+ * Se curăță 5×5 în jurul bazelor, 45% din lăzile obișnuite și 75% din culoarul dintre baze.
+ */
+function setupCtf(s: GameState, spawns: [number, number][], setup: PlayerSetup[], rng: RngState): void {
+  const homeOf = (team: number): [number, number] => {
+    const own = spawns.filter((_, i) => (setup[i]!.team ?? i % 2) === team);
+    return own[2] ?? own[own.length - 1] ?? spawns[team]!;
+  };
+  const homes = [homeOf(0), homeOf(1)] as const;
+  for (const [hx, hy] of homes)
+    for (let y = hy - 2; y <= hy + 2; y++)
+      for (let x = hx - 2; x <= hx + 2; x++)
+        if (inBounds(s, x, y) && s.grid[idx(s, x, y)] === SOFT) clearBox(s, idx(s, x, y));
+  for (let k = 0; k < s.grid.length; k++)
+    if (s.grid[k] === SOFT && !s.gold[k] && !s.cursed[k] && nextFloat(rng) < 0.45) clearBox(s, k);
+  const [[ax, ay], [bx, by]] = homes;
+  if (ay === by) {
+    for (let x = 1; x < s.W - 1; x++) {
+      const k = idx(s, x, ay);
+      if (s.grid[k] === SOFT && nextFloat(rng) < 0.75) clearBox(s, k);
+    }
+  } else if (ax === bx) {
+    for (let y = 1; y < s.H - 1; y++) {
+      const k = idx(s, ax, y);
+      if (s.grid[k] === SOFT && nextFloat(rng) < 0.75) clearBox(s, k);
+    }
+  }
+  const flag = (team: number): Flag => {
+    const [hx, hy] = homes[team]!;
+    return { team, hx, hy, x: hx, y: hy, carrier: null, dropT: 0, atHome: true };
+  };
+  s.ctf = { flags: [flag(0), flag(1)], caps: [0, 0], need: CTF_NEED };
 }

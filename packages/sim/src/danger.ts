@@ -1,14 +1,51 @@
-import { blast, idx, inBounds } from './grid.ts';
+import { FLAME, SHIFT_STEP } from './constants.ts';
+import { blast, idx, inBounds, mobX, mobY } from './grid.ts';
 import { shuffle } from './rng.ts';
 import type { RngState } from './rng.ts';
 import { DIRS, DX, DY } from './types.ts';
 import type { Dir, GameState } from './types.ts';
 
-/** Pătrățelele care vor fi (sau sunt) în flăcări: raza tuturor bombelor de pe jos + flăcările active. */
+/**
+ * Pericolele de mediu: zona de fulger a norilor care se încarcă, rândul mobil anunțat,
+ * păianjenii și vecinii lor. `fn(k, start, end)` — de când și până când e periculos pătrățelul.
+ */
+export function forHazards(s: GameState, fn: (k: number, start: number, end: number) => void): void {
+  for (const c of s.clouds) {
+    if (c.charge < 0) continue;
+    for (const [dx, dy] of CROSS) {
+      const x = c.sx + dx;
+      const y = c.sy + dy;
+      if (inBounds(s, x, y) && s.grid[idx(s, x, y)] !== 1) fn(idx(s, x, y), c.charge, c.charge + FLAME);
+    }
+  }
+  const sh = s.shift;
+  if (sh) {
+    const end = sh.warn + (sh.steps + 1) * SHIFT_STEP;
+    if (sh.axis === 0) for (let x = 1; x < s.W - 1; x++) fn(idx(s, x, sh.idx), sh.warn, end);
+    else for (let y = 1; y < s.H - 1; y++) fn(idx(s, sh.idx, y), sh.warn, end);
+  }
+  for (const c of s.spiders)
+    for (const [dx, dy] of CROSS) {
+      const x = mobX(c) + dx;
+      const y = mobY(c) + dy;
+      if (inBounds(s, x, y)) fn(idx(s, x, y), 0, 30);
+    }
+}
+
+const CROSS: readonly [number, number][] = [
+  [0, 0],
+  [0, -1],
+  [0, 1],
+  [-1, 0],
+  [1, 0],
+];
+
+/** Pătrățelele care vor fi (sau sunt) în flăcări: raza bombelor de pe jos, flăcările active și pericolele de mediu. */
 export function computeDanger(s: GameState): Uint8Array {
   const d = new Uint8Array(s.W * s.H);
   for (const b of s.bombs) if (b.held === null && b.fly === null) blast(s, b.x, b.y, b.range, d);
   for (let i = 0; i < d.length; i++) if (s.flame[i]! > 0) d[i] = 1;
+  forHazards(s, (k) => (d[k] = 1));
   return d;
 }
 
@@ -125,6 +162,10 @@ export function dangerTimes(
       start[k] = 0;
       end[k] = Math.max(end[k]!, s.flame[k]!);
     }
+  forHazards(s, (k, a, b) => {
+    start[k] = Math.min(start[k]!, a);
+    end[k] = Math.max(end[k]!, b);
+  });
   return { start, end };
 }
 

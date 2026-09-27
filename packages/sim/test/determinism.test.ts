@@ -32,17 +32,10 @@ describe('determinism', () => {
     expect([s.W, s.H]).toEqual([11, 11]);
     expect(s.rules.startItems).toHaveLength(3);
     const [a, b] = s.players;
-    expect({ ...a, id: 0, team: 0, px: 0, py: 0, fx: 0, fy: 0, tx: 0, ty: 0, face: 0 }).toEqual({
-      ...b,
-      id: 0,
-      team: 0,
-      px: 0,
-      py: 0,
-      fx: 0,
-      fy: 0,
-      tx: 0,
-      ty: 0,
-      face: 0,
-    });
+    const stats = (p: typeof a) => {
+      const { speed, bombs, range, kick, glove, remote, line, shieldT } = p!;
+      return { speed, bombs, range, kick, glove, remote, line, shieldT };
+    };
+    expect(stats(a)).toEqual(stats(b));
   });
 });

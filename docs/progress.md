@@ -40,3 +40,15 @@
 - Boții nu folosesc mănușa/detonatorul/linia (doar piciorul, implicit).
 - Lăzile blestemate, modurile speciale (CTF, rotativă, rânduri mobile) și „bye bye”/momentele de glorie sunt în Faza 2 (tot în `packages/sim`).
 - `reference/prototype.html` încă lipsește din repo.
+
+## Faza 2 — Client jucabil offline + Practice
+
+**Mini-plan** (milestone-uri, fiecare cu `lint + typecheck + test` verde și commit):
+
+1. **sim — reguli noi**: lăzi blestemate (păianjeni, nori de furtună cu fulger anunțat), cauze de moarte noi (`spider`, `lightning`, `crush`), detecția „fără scăpare” (`isDoomed`, pentru „bye bye”), evenimente de maxim atins (momente de glorie), urmărirea bombelor șutate/aruncate până la moarte (`via`), manechine, respawn generic.
+2. **sim — moduri**: Rânduri mobile, Arena rotativă (unghi determinist în întregi), Capturează steagul 3v3 (furt, scăpare, returnare, revenire după 3s, 3 capturi / 3 min) cu boți pe roluri; boții ocolesc păianjenii, zonele de fulger și rândul anunțat. Bench extins cu toate modurile.
+3. **sim — Practice**: pașii tutorialului și cele 5 provocări evaluate determinist din evenimente.
+4. **content**: cele 10 teme din prototip (6 de bază + 4 de eveniment cu sezon automat), moduri, nume de bonusuri, replici (momente de glorie, țipete), provocări, tutorial — validate cu zod.
+5. **client 2D**: arhitectură `Match` (sim la 20 Hz + interpolare) → renderere separate. Randare Phaser din texturi procedurale generate per temă („theme pack” înlocuibil cu sprite-uri), UI în DOM peste canvas (bara de 30px, meniu-pauză lateral, joystick sub deget, tap = bombă, BUM!), tremurat + haptic după distanță, „bye bye” și momente de glorie (slow-motion + zoom), amețeală cu shader de valuri, arena rotativă cu camera rotită, audio sintetizat + muzică per temă + voice packs, meniu principal (Joacă / Teme / Setări), Practice (boți pe 4 niveluri, tutorial, manechine, provocări).
+6. **client 3D**: renderer Three.js (1P/3P) peste aceeași stare, minimapă 2D, controale relative la cameră cu asistență, mâna cu bomba, umbre, lumini de explozie, setare de calitate.
+7. **acceptare**: Playwright (Practice 30s în 2D/1P/3P cu touch prin CDP, 0 erori), FPS cu CPU throttling 4x, capturi per temă × vedere în `docs/screens/`.
