@@ -1,0 +1,24 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+playwright-report
+test-results
+# Capacitor: fișiere generate la sync
+apps/client/ios/App/App/public
+apps/client/ios/App/App/capacitor.config.json
+apps/client/ios/App/App/config.xml
+apps/client/android/app/src/main/assets/public
+apps/client/android/app/src/main/assets/capacitor.config.json
+apps/client/android/app/src/main/res/xml/config.xml
+apps/client/android/.gradle
+apps/client/android/build
+apps/client/android/app/build
+apps/client/android/local.properties
+apps/client/ios/App/Pods
+apps/client/ios/DerivedData
+xcuserdata

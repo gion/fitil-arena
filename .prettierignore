@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+dist
+coverage
+reference
+apps/client/ios
+apps/client/android
+playwright-report
+test-results
