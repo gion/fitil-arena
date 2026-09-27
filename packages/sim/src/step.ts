@@ -64,6 +64,7 @@ function handleActions(s: GameState, inputs: readonly (Input | undefined)[]): vo
   for (const p of s.players) {
     const inp = inputs[p.id];
     if (!p.alive || !inp) continue;
+    if (inp.face !== undefined && inp.bomb) p.face = inp.face;
     if (inp.detonate) detonate(s, p);
     if (!inp.bomb) continue;
     if (p.bot !== null) {

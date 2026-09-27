@@ -12,3 +12,14 @@
 - **D-010** Hurry up: blocuri în spirală de la 90s, câte unul la 0.3s — garantează că orice meci se termină în < 3.5 min.
 - **D-011** Clientul avansează simularea după `rawDelta` (timp real), nu după delta netezit de Phaser.
 - **D-012** Randare la rezoluția fizică: `Scale.NONE` cu `zoom = 1/DPR`; toate dimensiunile din scene se înmulțesc cu `DPR`.
+- **D-013** UI-ul (bara, meniurile, cardurile, joystick-ul, butoanele) e DOM peste canvas, ca în prototip; Phaser randează doar arena, cu input-ul propriu dezactivat. Motiv: text/accesibilitate/safe-area mult mai simple, iar Playwright interacționează direct cu butoanele.
+- **D-014** Grafica 2D vine din desenele procedurale ale prototipului (Canvas 2D) transformate în texturi Phaser la dimensiunea fizică a pătrățelului (`TexBank`, chei pe nume). Un pachet de sprite-uri reale poate înlocui texturile cu aceleași chei. Podeaua și stâlpii se pre-randează o dată într-un strat static; restul sunt imagini refolosite din pool-uri (fără alocări pe cadru).
+- **D-015** `three` (^0.186) adăugat în client: e în stack pentru vederile 3D. Se încarcă leneș (import dinamic, chunk separat ~580 KB) doar când alegi 1P/3P. Intensitățile luminilor din prototip (r128) × π, pentru că Three r155+ folosește unități fizice; `PCFSoftShadowMap` a fost eliminat în r186 → `PCFShadowMap`.
+- **D-016** `@fitil/content` depinde de `@fitil/sim` doar pentru tipuri (moduri, bonusuri, provocări), ca textele să fie complete la compilare (`Record<ItemType, …>`).
+- **D-017** Slow-motion-ul și zoom-ul cinematic sunt doar în client (scalează timpul simulării offline). În multiplayer (Faza 3) vor fi pur vizuale, fără încetinirea serverului.
+- **D-018** `Input.face` în sim: în 3D bomba/aruncarea/linia merg în direcția camerei (prototipul seta `p.face` direct).
+- **D-019** Rânduri mobile: nu mai pornesc rânduri noi după „hurry up” (altfel blocurile căzute ar aluneca spre centru). Doar lăzile împing/strivesc; bombele alunecă odată cu rândul.
+- **D-020** Lăzi blestemate: 2.5% din lăzi (2% în 1 vs 1), 3% din lăzile care reapar; nu lasă bonus. Păianjenul omoară la distanță Manhattan < 0.6 pătrățele, apoi dispare.
+- **D-021** Tutorialul și provocările sunt definite și verificate în `packages/sim` (determinist, testat); textele sunt în `packages/content`.
+- **D-022** Playwright rulează cu `channel: 'chromium'` (headless-ul nou, cu GPU real) și un singur worker (meciurile sunt pe timp real; în paralel își fură cadre). Capturile din `docs/screens/` sunt JPEG (calitate 70, DPR 1.5) ca repo-ul să rămână mic (~2.7 MB).
+- **D-023** Fonturi de sistem în loc de Google Fonts: aplicația mobilă nu face cereri externe la pornire. Fontul final se alege la checkpoint-ul de direcție artistică.

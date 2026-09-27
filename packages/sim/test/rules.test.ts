@@ -189,6 +189,16 @@ describe('picior, mănușă, portaluri', () => {
     expect(b.fly).toBeNull();
   });
 
+  it('în 3D aruncarea merge în direcția privirii camerei (Input.face)', () => {
+    const s = arena();
+    const p = put(s.players[0]!, 5, 5, 3);
+    p.glove = true;
+    tap(s);
+    tap(s);
+    step(s, [{ dir: null, bomb: 1, face: 1 }]);
+    expect(s.bombs[0]!.fly?.dir).toBe(1);
+  });
+
   it('dublu tap cu mănușă: pune bomba și o ridică imediat', () => {
     const s = arena();
     const p = put(s.players[0]!, 3, 1);

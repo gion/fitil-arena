@@ -30,6 +30,8 @@ export interface Input {
   dir: Dir | null;
   bomb?: 0 | 1 | 2;
   detonate?: boolean;
+  /** Direcția privirii (vederile 3D: bomba, aruncarea și linia merg unde se uită camera). */
+  face?: Dir;
 }
 
 export interface Player {
