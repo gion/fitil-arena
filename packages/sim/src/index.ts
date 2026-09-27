@@ -14,3 +14,4 @@ export * from './effects.ts';
 export * from './mobs.ts';
 export * from './modes.ts';
 export * from './doom.ts';
+export * from './practice.ts';
