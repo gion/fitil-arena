@@ -38,8 +38,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'collect-1',
     kind: 'collect',
-    name: 'Colecționar',
-    desc: 'Găsește 10 cristale ascunse în lăzi. Săgeata arată spre cel mai apropiat.',
+    name: 'Collector',
+    desc: 'Find 10 crystals hidden in crates. The arrow points to the nearest one.',
     count: 10,
     dmin: 5,
     dmax: 20,
@@ -48,8 +48,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'demolish-1',
     kind: 'demolish',
-    name: 'Demolare',
-    desc: 'Distruge 5 turnuri roșii. Cele blindate cer 2 explozii.',
+    name: 'Demolition',
+    desc: 'Destroy 5 red towers. Armored ones take 2 blasts.',
     count: 5,
     armored: 2,
     dmin: 6,
@@ -59,8 +59,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'rescue-1',
     kind: 'rescue',
-    name: 'Salvare',
-    desc: 'Eliberează 3 prieteni din cuști și adu-i acasă, la steagul verde.',
+    name: 'Rescue',
+    desc: 'Free 3 friends from their cages and bring them home to the green flag.',
     count: 3,
     dmin: 8,
     dmax: 16,
@@ -69,8 +69,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'race-1',
     kind: 'race',
-    name: 'Cursă',
-    desc: 'Ajungi la steagul cu carouri în 60 de secunde. Lăzile îți blochează drumul.',
+    name: 'Race',
+    desc: 'Reach the checkered flag in 60 seconds. Crates block your way.',
     count: 1,
     dmin: 19,
     dmax: 22,
@@ -82,8 +82,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'collect-2',
     kind: 'collect',
-    name: 'Colecționar II',
-    desc: '14 cristale, mai departe de casă. Păianjenii sunt mai mulți.',
+    name: 'Collector II',
+    desc: '14 crystals, farther from home. More spiders, too.',
     count: 14,
     dmin: 8,
     dmax: 22,
@@ -93,8 +93,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'demolish-2',
     kind: 'demolish',
-    name: 'Demolare II',
-    desc: '7 turnuri, dintre care 4 blindate.',
+    name: 'Demolition II',
+    desc: '7 towers, 4 of them armored.',
     count: 7,
     armored: 4,
     dmin: 8,
@@ -104,8 +104,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'rescue-2',
     kind: 'rescue',
-    name: 'Salvare II',
-    desc: '4 prieteni în cuști, departe de casă. Nu-i prinde în explozii!',
+    name: 'Rescue II',
+    desc: '4 caged friends, far from home. Don’t catch them in your blasts!',
     count: 4,
     dmin: 10,
     dmax: 19,
@@ -114,8 +114,8 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
   {
     id: 'race-2',
     kind: 'race',
-    name: 'Cursă II',
-    desc: 'Steagul e mai departe. Tot 60 de secunde.',
+    name: 'Race II',
+    desc: 'The flag is farther away. Still 60 seconds.',
     count: 1,
     dmin: 22,
     dmax: 24,
@@ -129,13 +129,13 @@ export const MISSIONS: Mission[] = z.array(MissionSchema).parse([
 export const CHAPTERS: Chapter[] = z.array(ChapterSchema).parse([
   {
     id: 'c1',
-    name: 'Capitolul 1 — Cartierul',
+    name: 'Chapter 1 — The Neighborhood',
     unlockStars: 0,
     missions: ['collect-1', 'demolish-1', 'rescue-1', 'race-1'],
   },
   {
     id: 'c2',
-    name: 'Capitolul 2 — Mai departe',
+    name: 'Chapter 2 — Farther Out',
     unlockStars: 8,
     missions: ['collect-2', 'demolish-2', 'rescue-2', 'race-2'],
   },

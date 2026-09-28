@@ -14,7 +14,7 @@ export interface VoicePack {
 /** Țipete sintetizate + replici prin speechSynthesis (ca în prototip). */
 export class SynthVoice implements VoicePack {
   id = 'synth';
-  name = 'Sintetizat';
+  name = 'Synthesized';
   on = true;
   constructor(private sfx: Sfx) {}
 
@@ -26,7 +26,7 @@ export class SynthVoice implements VoicePack {
     if (!this.on || !('speechSynthesis' in window)) return;
     try {
       const u = new SpeechSynthesisUtterance(line);
-      u.lang = 'ro-RO';
+      u.lang = 'en-US';
       u.pitch = Math.min(2, pitch);
       u.rate = 1.25;
       u.volume = 0.9;

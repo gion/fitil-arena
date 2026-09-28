@@ -75,7 +75,7 @@ const PEN = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
 export const THEMES: Theme[] = z.array(ThemeSchema).parse([
   {
     id: 'clasic',
-    name: 'Clasic',
+    name: 'Classic',
     style: 'classic',
     ink: '#141726',
     accent: '#ff5a36',
@@ -178,7 +178,7 @@ export const THEMES: Theme[] = z.array(ThemeSchema).parse([
   },
   {
     id: 'cuburi',
-    name: 'Cuburi',
+    name: 'Cubes',
     style: 'cube',
     ink: '#1a2118',
     accent: '#6bb043',
@@ -203,7 +203,7 @@ export const THEMES: Theme[] = z.array(ThemeSchema).parse([
   },
   {
     id: 'jungla',
-    name: 'Junglă',
+    name: 'Jungle',
     style: 'jungle',
     ink: '#0f1f14',
     accent: '#ff8a1a',
@@ -257,7 +257,7 @@ export const THEMES: Theme[] = z.array(ThemeSchema).parse([
   },
   {
     id: 'craciun',
-    name: 'Crăciun',
+    name: 'Christmas',
     style: 'xmas',
     ink: '#0e1a2a',
     accent: '#e0302f',
@@ -313,7 +313,7 @@ export const THEMES: Theme[] = z.array(ThemeSchema).parse([
   },
   {
     id: 'scoala',
-    name: 'Școala',
+    name: 'School',
     style: 'school',
     ink: '#15202a',
     accent: '#2f7de0',

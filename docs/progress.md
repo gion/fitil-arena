@@ -96,3 +96,9 @@
 - Nu există boți în lumea infinită (vin cu modul Infinit, Faza 7); nici chunk-uri online.
 - În 3D, săgeata de obiectiv e un overlay 2D la marginea ecranului (ca în prototip), nu un obiect 3D.
 - Misiunile nu au încă provocări de tip puzzle/boss (idei în GAME_DESIGN).
+
+## Jocul trece pe engleză (2026-09-28)
+
+**Făcut:** toate textele vizibile au fost traduse în engleză (moduri, bonusuri, replici, mesaje de moarte, echipe „Blue”/„Red”, personajul „You”, provocări, tutorial, teme, misiuni, capitole, meniuri, HUD, anunțuri, ecrane de final, „Help!” din cuști). `speechSynthesis` folosește `en-US`, iar `<html lang="en">`. Id-urile au rămas la fel (D-028). Testele Playwright au fost actualizate la textele noi; lint, typecheck și toate testele trec.
+
+**Rămas:** vocile înregistrate (ElevenLabs sau actori) după lista de replici în engleză; `GAME_DESIGN.md` încă citează replicile în română.

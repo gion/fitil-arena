@@ -63,7 +63,7 @@ for (const def of MISSIONS)
       mi.count = mi.need;
     });
     await expect(page.locator('.bigstars')).toBeVisible({ timeout: 8000 });
-    await expect(page.locator('.card h2')).toHaveText('Misiune reușită!');
+    await expect(page.locator('.card h2')).toHaveText('Mission complete!');
     const stars = await page.evaluate(
       (id) =>
         (JSON.parse(localStorage.getItem('fitil-settings') ?? '{}') as { stars?: Record<string, number> })
@@ -86,6 +86,6 @@ for (const def of MISSIONS)
       const y = Math.round(p.py / 1000);
       s.flame[(y & (w - 1)) * w + (x & (w - 1))] = 5;
     });
-    await expect(page.locator('.card h2')).toHaveText('Misiune eșuată', { timeout: 8000 });
+    await expect(page.locator('.card h2')).toHaveText('Mission failed', { timeout: 8000 });
     expect(errors).toEqual([]);
   });

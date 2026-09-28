@@ -231,13 +231,13 @@ export class Match {
           : k === null || k === ME
             ? DEATH_MSG.self
             : DEATH_MSG.flame.replace('{k}', this.slots[k]?.name ?? '?');
-      if (this.team && !s.result) msg += ' Echipa ta mai luptă.';
+      if (this.team && !s.result) msg += ' Your team is still fighting.';
       if (!s.result || !this.won()) this.emit({ type: 'ko', msg });
     }
     if (e.type === 'death' && e.player === ME && s.rules.mode === 'ctf') {
       const k = e.killerId;
-      const who = k !== null && k !== ME ? `Prăjit de ${this.slots[k]?.name ?? '?'}! ` : '';
-      this.emit({ type: 'ko', msg: `${who}Revii în 3s…` });
+      const who = k !== null && k !== ME ? `Toasted by ${this.slots[k]?.name ?? '?'}! ` : '';
+      this.emit({ type: 'ko', msg: `${who}Back in 3s…` });
     }
   }
 

@@ -1480,7 +1480,7 @@ export function cage(col: string): void {
 }
 
 export function helpText(): void {
-  text('Ajutor!', 0, 0, T * 0.2, '#ffffff', 800);
+  text('Help!', 0, 0, T * 0.2, '#ffffff', 800);
 }
 
 /** Fața unui prieten (bilă colorată). `faint` = ochi în X. */

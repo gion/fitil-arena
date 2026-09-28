@@ -27,3 +27,4 @@
 - **D-025** `MissionDef` (forma datelor) e definit în sim, lista misiunilor și capitolele în content (content depinde de sim, nu invers). Testele sim folosesc definiții proprii.
 - **D-026** Țintele se plasează cu eșantionare pe pătrat și distanță la pătrat (`dmin² ≤ dx²+dy² ≤ dmax²`), fără trigonometrie (D-007).
 - **D-027** În misiuni păianjenul te rănește (−20%) și continuă; în arenă omoară și dispare, ca în prototip.
+- **D-028** Limba jocului e **engleza** (decizia proprietarului, 2026-09-28): toate textele din `packages/content` și din client, replicile vocale și `speechSynthesis` (`en-US`) sunt în engleză. Fără sistem de traduceri deocamdată (ales explicit „doar engleză”); dacă apare altă limbă, textele din `packages/content` sunt deja centralizate în mare parte. Id-urile (teme, misiuni) rămân neschimbate, ca setările salvate să fie valide. Documentele și comentariile din cod rămân în română.

@@ -53,7 +53,7 @@ import { $, h, show } from './ui/dom.ts';
 
 type Phase = 'menu' | 'play' | 'paused' | 'over';
 const VIEWS: View[] = ['2d', 'fps', 'chase'];
-const VIEW_LBL: Record<View, string> = { '2d': 'Vedere 2D', fps: 'Vedere 1P', chase: 'Vedere 3P' };
+const VIEW_LBL: Record<View, string> = { '2d': '2D view', fps: '1P view', chase: '3P view' };
 const LEVELS: BotLevel[] = ['easy', 'normal', 'hard', 'insane'];
 
 export class App {
@@ -139,13 +139,13 @@ export class App {
     this.stats = h('div', { class: 'stats' });
     this.viewBtn = h(
       'button',
-      { class: 'menu-btn', 'aria-label': 'Schimbă vederea', onclick: () => this.cycleView() },
-      'Vedere 2D',
+      { class: 'menu-btn', 'aria-label': 'Change view', onclick: () => this.cycleView() },
+      '2D view',
     );
     this.menuBtn = h(
       'button',
-      { class: 'menu-btn', 'aria-label': 'Meniu, pune pauză', onclick: () => this.togglePause() },
-      '❚❚ Meniu',
+      { class: 'menu-btn', 'aria-label': 'Menu, pause', onclick: () => this.togglePause() },
+      '❚❚ Menu',
     );
     const bar = h(
       'div',
@@ -161,12 +161,12 @@ export class App {
       { class: 'zone left' },
       h('div', { class: 'joy-base hidden' }, h('div', { class: 'joy-knob' })),
     );
-    const right = h('div', { class: 'zone right', 'aria-label': 'Bombă' });
-    this.det = h('button', { class: 'det hidden', 'aria-label': 'Detonează' }, 'BUM!');
-    this.bomb3 = h('button', { class: 'bomb3 hidden', 'aria-label': 'Pune bomba' }, 'BOMBĂ');
+    const right = h('div', { class: 'zone right', 'aria-label': 'Bomb' });
+    this.det = h('button', { class: 'det hidden', 'aria-label': 'Detonate' }, 'BOOM!');
+    this.bomb3 = h('button', { class: 'bomb3 hidden', 'aria-label': 'Drop bomb' }, 'BOMB');
     this.hints = [
-      h('div', { class: 'hint l' }, 'Stânga: mergi'),
-      h('div', { class: 'hint r' }, h('i'), h('span', {}, 'Dreapta: bombă')),
+      h('div', { class: 'hint l' }, 'Left: move'),
+      h('div', { class: 'hint r' }, h('i'), h('span', {}, 'Right: bomb')),
     ];
     this.overlay = h('div', { class: 'overlay' });
     this.drawer = h('div', { class: 'drawer hidden' });
@@ -227,7 +227,7 @@ export class App {
   }
 
   private back(to: () => HTMLElement = () => this.mainMenu()): HTMLElement {
-    return h('button', { class: 'btn ghost', onclick: () => this.showScreen(to) }, 'Înapoi');
+    return h('button', { class: 'btn ghost', onclick: () => this.showScreen(to) }, 'Back');
   }
 
   /* ---------- ecrane ---------- */
@@ -236,11 +236,11 @@ export class App {
     const season = seasonalTheme(new Date());
     return this.card(
       h('h1', {}, 'FITIL'),
-      h('p', {}, 'Bombe, lanțuri, șuturi și aruncări. Ultimul rămas câștigă.'),
+      h('p', {}, 'Bombs, chains, kicks and throws. Last one standing wins.'),
       h(
         'button',
         { class: 'btn', 'data-test': 'play', onclick: () => this.showScreen(() => this.playMenu()) },
-        'Joacă',
+        'Play',
       ),
       h(
         'div',
@@ -252,7 +252,7 @@ export class App {
             'data-test': 'missions',
             onclick: () => this.showScreen(() => this.missionsMenu()),
           },
-          'Misiuni',
+          'Missions',
         ),
         h(
           'button',
@@ -263,15 +263,15 @@ export class App {
           },
           'Practice',
         ),
-        h('button', { class: 'opt', onclick: () => this.showScreen(() => this.themesMenu()) }, 'Teme'),
-        h('button', { class: 'opt', onclick: () => this.showScreen(() => this.settingsMenu()) }, 'Setări'),
+        h('button', { class: 'opt', onclick: () => this.showScreen(() => this.themesMenu()) }, 'Themes'),
+        h('button', { class: 'opt', onclick: () => this.showScreen(() => this.settingsMenu()) }, 'Settings'),
       ),
-      season && h('p', {}, `Temă de sezon: ${season.name}`),
+      season && h('p', {}, `Seasonal theme: ${season.name}`),
       h(
         'p',
         { class: 'rot' },
         matchMedia('(orientation: portrait) and (pointer: coarse)').matches
-          ? 'Rotește telefonul pentru ecran mai mare.'
+          ? 'Rotate your phone for a bigger screen.'
           : '',
       ),
     );
@@ -281,8 +281,8 @@ export class App {
     const stars = settings.stars;
     const starStr = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n);
     return this.card(
-      h('h2', {}, 'Misiuni'),
-      h('p', {}, 'Singur, cu bară de viață. Stelele depind de timp și de viața rămasă.'),
+      h('h2', {}, 'Missions'),
+      h('p', {}, 'Solo, with a health bar. Stars depend on your time and remaining health.'),
       ...CHAPTERS.flatMap((c, ci) => {
         const open = chapterUnlocked(ci, stars);
         const got = c.missions.reduce((n, id) => n + (stars[id] ?? 0), 0);
@@ -309,7 +309,7 @@ export class App {
                   );
                 }),
               )
-            : h('p', {}, `🔒 Se deblochează cu ${c.unlockStars}★ în capitolul anterior.`),
+            : h('p', {}, `🔒 Unlocks with ${c.unlockStars}★ in the previous chapter.`),
         ];
       }),
       this.back(),
@@ -361,7 +361,7 @@ export class App {
     if (this.kind.type !== 'mode') this.kind = { type: 'mode', mode: settings.mode };
     const mode = this.kind.mode;
     return this.card(
-      h('h2', {}, 'Alege modul'),
+      h('h2', {}, 'Choose a mode'),
       this.modeGrid((m) => {
         this.kind = { type: 'mode', mode: m };
         settings.mode = m;
@@ -369,7 +369,7 @@ export class App {
         this.showScreen(() => this.playMenu());
       }),
       h('p', {}, MODES[mode].desc),
-      h('h3', {}, 'Boți'),
+      h('h3', {}, 'Bots'),
       this.levelGrid(),
       h(
         'button',
@@ -387,15 +387,15 @@ export class App {
     return h(
       'div',
       { class: 'legend' },
-      it('Mănușă', 'dublu tap: pui și ridici bomba, tap: arunci peste ziduri'),
-      it('Picior', 'mergi în bombă și o șutezi'),
-      it('Portal', 'apare 15s după un lanț de 4+ bombe'),
-      it('Chenar roșu cu −', 'bonus negativ, ocolește-l', '#ff6b6b'),
-      it('Ladă aurie', 'bonus maxim garantat', '#ffd23f'),
-      it('Ladă mov, crăpată', 'blestem: păianjeni sau nori care fulgeră', '#c78bff'),
-      it('Scut', '10s; te salvează de o explozie', '#4fd8ff'),
-      it('Detonator', 'bombele explodează când apeși BUM!'),
-      it('Linie', 'dublu tap: toate bombele în linie'),
+      it('Glove', 'double tap: drop and pick up a bomb; tap: throw it over walls'),
+      it('Kick', 'walk into a bomb to kick it'),
+      it('Portal', 'opens for 15s after a chain of 4+ bombs'),
+      it('Red border with −', 'bad power-up, avoid it', '#ff6b6b'),
+      it('Gold crate', 'guaranteed max power-up', '#ffd23f'),
+      it('Cracked purple crate', 'curse: spiders or lightning clouds', '#c78bff'),
+      it('Shield', '10s; saves you from one blast', '#4fd8ff'),
+      it('Detonator', 'your bombs blow up when you press BOOM!'),
+      it('Line', 'double tap: all your bombs in a line'),
     );
   }
 
@@ -403,7 +403,7 @@ export class App {
     const done = new Set(settings.challenges);
     return this.card(
       h('h2', {}, 'Practice'),
-      h('h3', {}, 'Tutorial interactiv'),
+      h('h3', {}, 'Interactive tutorial'),
       h(
         'button',
         {
@@ -411,26 +411,26 @@ export class App {
           'data-test': 'tutorial',
           onclick: () => this.start({ type: 'tutorial', step: 'move' }),
         },
-        settings.tutorialDone ? 'Tutorial ✓ (reia)' : 'Tutorial — 6 pași',
+        settings.tutorialDone ? 'Tutorial ✓ (replay)' : 'Tutorial — 6 steps',
       ),
-      h('h3', {}, 'Antrenament'),
+      h('h3', {}, 'Training'),
       h(
         'div',
         { class: 'grid' },
         h(
           'button',
           { class: 'opt', 'data-test': 'dummies', onclick: () => this.start({ type: 'dummies' }) },
-          'Manechine',
-          h('small', {}, 'țintă fixă'),
+          'Dummies',
+          h('small', {}, 'stationary targets'),
         ),
         h(
           'button',
           { class: 'opt', 'data-test': 'bots', onclick: () => this.showScreen(() => this.playMenu()) },
-          'Contra boților',
+          'Against bots',
           h('small', {}, BOT_NAMES[settings.bots]),
         ),
       ),
-      h('h3', {}, 'Provocări'),
+      h('h3', {}, 'Challenges'),
       h(
         'div',
         { class: 'grid' },
@@ -447,7 +447,7 @@ export class App {
             h(
               'small',
               { class: done.has(c) ? 'now' : '' },
-              done.has(c) ? '✓ terminată' : CHALLENGE_TEXT[c].desc.slice(0, 38) + '…',
+              done.has(c) ? '✓ completed' : CHALLENGE_TEXT[c].desc.slice(0, 38) + '…',
             ),
           ),
         ),
@@ -479,9 +479,9 @@ export class App {
           ),
           t.name,
           t.id === season
-            ? h('small', { class: 'now' }, 'sezon')
+            ? h('small', { class: 'now' }, 'season')
             : t.season
-              ? h('small', {}, 'eveniment')
+              ? h('small', {}, 'event')
               : null,
         ),
       ),
@@ -490,7 +490,7 @@ export class App {
 
   private themesMenu(): HTMLElement {
     return this.card(
-      h('h2', {}, 'Teme'),
+      h('h2', {}, 'Themes'),
       this.themeGrid((id) => {
         this.setTheme(id);
         this.showScreen(() => this.themesMenu());
@@ -511,36 +511,36 @@ export class App {
           this.showScreen(this.screen);
         },
       },
-      `${label}: ${on ? 'da' : 'nu'}`,
+      `${label}: ${on ? 'on' : 'off'}`,
     );
   }
 
   private settingsMenu(): HTMLElement {
     const Q: [Quality, string][] = [
-      ['low', 'Scăzută'],
-      ['medium', 'Medie'],
-      ['high', 'Înaltă'],
+      ['low', 'Low'],
+      ['medium', 'Medium'],
+      ['high', 'High'],
     ];
     return this.card(
-      h('h2', {}, 'Setări'),
+      h('h2', {}, 'Settings'),
       h(
         'div',
         { class: 'row', style: 'justify-content:center' },
-        this.toggle('Sunet', settings.sound, () => {
+        this.toggle('Sound', settings.sound, () => {
           settings.sound = !settings.sound;
           this.applyAudio();
         }),
-        this.toggle('Muzică', settings.music, () => {
+        this.toggle('Music', settings.music, () => {
           settings.music = !settings.music;
           this.applyAudio();
         }),
-        this.toggle('Vibrații', settings.vibration, () => (settings.vibration = !settings.vibration)),
-        this.toggle('Efecte de mișcare', settings.motion, () => {
+        this.toggle('Vibration', settings.vibration, () => (settings.vibration = !settings.vibration)),
+        this.toggle('Motion effects', settings.motion, () => {
           settings.motion = !settings.motion;
           this.scene.motion = settings.motion;
         }),
       ),
-      h('h3', {}, 'Calitate grafică 3D'),
+      h('h3', {}, '3D graphics quality'),
       h(
         'div',
         { class: 'grid three' },
@@ -561,7 +561,7 @@ export class App {
           ),
         ),
       ),
-      h('h3', {}, 'Vedere'),
+      h('h3', {}, 'View'),
       h(
         'div',
         { class: 'grid three' },
@@ -578,32 +578,32 @@ export class App {
                 this.showScreen(this.screen);
               },
             },
-            VIEW_LBL[v].replace('Vedere ', ''),
+            VIEW_LBL[v].replace(' view', ''),
           ),
         ),
       ),
-      h('p', {}, 'Tastatură: săgeți / WASD, Space = bombă, E = BUM!, V = vedere, P = pauză.'),
+      h('p', {}, 'Keyboard: arrows / WASD, Space = bomb, E = BOOM!, V = view, P = pause.'),
       this.back(),
     );
   }
 
   private pauseDrawer(): HTMLElement[] {
     return [
-      h('h2', {}, 'Pauză'),
+      h('h2', {}, 'Paused'),
       h(
         'div',
         { class: 'row' },
-        h('button', { class: 'btn', 'data-test': 'resume', onclick: () => this.resume() }, 'Continuă'),
-        h('button', { class: 'icon-btn', onclick: () => this.restart() }, 'Rundă nouă'),
+        h('button', { class: 'btn', 'data-test': 'resume', onclick: () => this.resume() }, 'Resume'),
+        h('button', { class: 'icon-btn', onclick: () => this.restart() }, 'New round'),
       ),
-      h('h3', {}, 'Mod (reîncepe runda)'),
+      h('h3', {}, 'Mode (restarts the round)'),
       this.modeGrid((m) => {
         settings.mode = m;
         save();
         show(this.drawer, false);
         this.start({ type: 'mode', mode: m });
       }),
-      h('h3', {}, 'Temă'),
+      h('h3', {}, 'Theme'),
       this.themeGrid((id) => {
         this.setTheme(id);
         this.drawer.replaceChildren(...this.pauseDrawer());
@@ -619,10 +619,10 @@ export class App {
               settings.sound = !settings.sound;
               save();
               this.applyAudio();
-              (e.target as HTMLElement).textContent = `Sunet: ${settings.sound ? 'da' : 'nu'}`;
+              (e.target as HTMLElement).textContent = `Sound: ${settings.sound ? 'on' : 'off'}`;
             },
           },
-          `Sunet: ${settings.sound ? 'da' : 'nu'}`,
+          `Sound: ${settings.sound ? 'on' : 'off'}`,
         ),
         h(
           'button',
@@ -632,12 +632,12 @@ export class App {
               settings.music = !settings.music;
               save();
               this.applyAudio();
-              (e.target as HTMLElement).textContent = `Muzică: ${settings.music ? 'da' : 'nu'}`;
+              (e.target as HTMLElement).textContent = `Music: ${settings.music ? 'on' : 'off'}`;
             },
           },
-          `Muzică: ${settings.music ? 'da' : 'nu'}`,
+          `Music: ${settings.music ? 'on' : 'off'}`,
         ),
-        h('button', { class: 'icon-btn', onclick: () => this.toMenu() }, 'Meniu principal'),
+        h('button', { class: 'icon-btn', onclick: () => this.toMenu() }, 'Main menu'),
       ),
     ];
   }
@@ -691,7 +691,7 @@ export class App {
     if (kind.type === 'mode' && kind.mode === 'vs')
       setTimeout(
         () =>
-          this.showBanner('Start cu: ' + m.s.rules.startItems.map((i) => ITEM_NAMES[i]).join(' · '), 2600),
+          this.showBanner('Starting with: ' + m.s.rules.startItems.map((i) => ITEM_NAMES[i]).join(' · '), 2600),
         60,
       );
     if (kind.type === 'tutorial') this.showTut(kind.step);
@@ -702,7 +702,7 @@ export class App {
       setTimeout(() => this.showBanner(`${def.name}: ${def.desc}`, 3200, 'gold'), 80);
     }
     if (kind.type === 'dummies')
-      this.showBanner('Manechinele revin după 2s. Exersează lanțuri și șuturi!', 2600);
+      this.showBanner('Dummies come back after 2s. Practice chains and kicks!', 2600);
     if (!this.hintsHidden) setTimeout(() => this.hideHints(), 6000);
   }
 
@@ -787,7 +787,7 @@ export class App {
     show($('#cv3'), v !== '2d');
     show(this.bomb3, v !== '2d' && this.phase !== 'menu');
     const sp = this.hints[1]!.querySelector('span');
-    if (sp) sp.textContent = v === '2d' ? 'Dreapta: bombă' : 'Dreapta: glisează ca să privești';
+    if (sp) sp.textContent = v === '2d' ? 'Right: bomb' : 'Right: swipe to look around';
   }
 
   /** Direcția pe grilă din joystick/tastatură, după vedere și mod. */
@@ -895,7 +895,7 @@ export class App {
         break;
       case 'portalOpen':
         this.sfx.tp();
-        this.showBanner('Lanț de 4! S-a deschis un portal', 2000, 'gold');
+        this.showBanner('Chain of 4! A portal opened', 2000, 'gold');
         break;
       case 'pickup': {
         if (!mine(e.player)) break;
@@ -933,17 +933,17 @@ export class App {
       case 'shieldSaved':
         this.sfx.shield();
         if (mine(e.player)) {
-          this.showBanner('Scutul te-a salvat!', 1200);
+          this.showBanner('Your shield saved you!', 1200);
           vibrate([40, 30, 40]);
         }
         break;
       case 'curse':
         if (e.kind === 'spiders') {
-          this.showBanner('Ladă blestemată: PĂIANJENI!', 1800, 'bad');
+          this.showBanner('Cursed crate: SPIDERS!', 1800, 'bad');
           this.sfx.bad();
           vibrate([60, 40, 60]);
         } else {
-          this.showBanner('Ladă blestemată: NORI DE FURTUNĂ!', 1800, 'bad');
+          this.showBanner('Cursed crate: STORM CLOUDS!', 1800, 'bad');
           this.sfx.thunder(0.5);
           vibrate([80, 60, 120]);
         }
@@ -964,17 +964,17 @@ export class App {
         if (mine(e.player)) vibrate(15);
         break;
       case 'rotFlip':
-        this.showBanner('Arena își schimbă sensul!', 1300);
+        this.showBanner('The arena changes direction!', 1300);
         break;
       case 'hurryUp':
-        this.showBanner('Grăbește-te! Arena se strânge!', 1800, 'bad');
+        this.showBanner('Hurry up! The arena is shrinking!', 1800, 'bad');
         this.sfx.bad();
         break;
       case 'flagTake': {
         this.sfx.pick();
         const ally = m.s.players[e.player]!.team === me.team;
         this.showBanner(
-          mine(e.player) ? 'Ai furat steagul! Fugi acasă!' : `${TEAMS[1 - e.team]!.name} au furat steagul!`,
+          mine(e.player) ? 'You stole the flag! Run home!' : `${TEAMS[1 - e.team]!.name} team stole the flag!`,
           1500,
           ally ? 'gold' : 'bad',
         );
@@ -982,14 +982,14 @@ export class App {
         break;
       }
       case 'flagDrop':
-        this.showBanner(`Steagul ${TEAMS[e.team]!.name.toLowerCase()} a căzut!`, 1300);
+        this.showBanner(`${TEAMS[e.team]!.name} flag dropped!`, 1300);
         break;
       case 'flagReturn':
         if (e.player === null)
-          this.showBanner(`Steagul ${TEAMS[e.team]!.name.toLowerCase()} s-a întors acasă`, 1200);
+          this.showBanner(`${TEAMS[e.team]!.name} flag is back home`, 1200);
         else
           this.showBanner(
-            `${m.slots[e.player]?.name ?? '?'} a salvat steagul!`,
+            `${m.slots[e.player]?.name ?? '?'} saved the flag!`,
             1200,
             e.team === me.team ? 'gold' : '',
           );
@@ -997,7 +997,7 @@ export class App {
       case 'capture':
         this.sfx.win();
         this.showBanner(
-          `CAPTURĂ! ${TEAMS[0].name} ${e.caps[0]} – ${e.caps[1]} ${TEAMS[1].name}`,
+          `CAPTURE! ${TEAMS[0].name} ${e.caps[0]} – ${e.caps[1]} ${TEAMS[1].name}`,
           1800,
           e.team === me.team ? 'gold' : 'bad',
         );
@@ -1023,7 +1023,7 @@ export class App {
         this.tutorialNext();
         break;
       case 'tutorialFail':
-        this.showBanner('Au! Mai încearcă.', 1200, 'bad');
+        this.showBanner('Ouch! Try again.', 1200, 'bad');
         setTimeout(() => this.match === m && this.restart(), 1300);
         break;
       case 'challenge':
@@ -1037,23 +1037,23 @@ export class App {
         break;
       case 'missionHit':
         if (e.kind === 'tower' && !e.done) this.sfx.kick();
-        if (e.kind === 'cage') this.showBanner('Prieten eliberat! Du-l acasă.', 1500, 'gold');
+        if (e.kind === 'cage') this.showBanner('Friend freed! Take them home.', 1500, 'gold');
         break;
       case 'friendHome': {
         const mi = m.s.mission!;
         const f = mi.friends.find((x) => x.id === e.id);
         const name = FRIEND_NAMES[(f?.target ?? 0) % FRIEND_NAMES.length];
         this.sfx.win();
-        this.showBanner(`${name} e acasă! ${mi.count}/${mi.need}`, 1500, 'gold');
+        this.showBanner(`${name} is home! ${mi.count}/${mi.need}`, 1500, 'gold');
         break;
       }
       case 'missionProgress': {
         const mi = m.s.mission!;
         if (mi.def.kind === 'collect') {
           this.sfx.pick();
-          this.showBanner(`Cristal ${e.count}/${e.need}`, 1000, 'gold');
+          this.showBanner(`Crystal ${e.count}/${e.need}`, 1000, 'gold');
         }
-        if (mi.def.kind === 'demolish') this.showBanner(`Turn distrus! ${e.count}/${e.need}`, 1300, 'gold');
+        if (mi.def.kind === 'demolish') this.showBanner(`Tower destroyed! ${e.count}/${e.need}`, 1300, 'gold');
         break;
       }
     }
@@ -1077,38 +1077,38 @@ export class App {
     const st = def.stars;
     const crit =
       def.kind === 'race'
-        ? `★★: ${st.two}s rămase · ★★★: ${st.three}s rămase`
-        : `★★: sub ${st.two}s · ★★★: sub ${st.three}s cu cel puțin ${st.hp}% viață`;
+        ? `★★: ${st.two}s left · ★★★: ${st.three}s left`
+        : `★★: under ${st.two}s · ★★★: under ${st.three}s with at least ${st.hp}% health`;
     const order = CHAPTERS.flatMap((c) => c.missions);
     const next = order[order.indexOf(def.id) + 1];
     const canNext = won && next !== undefined && missionUnlocked(next, settings.stars);
     this.showScreen(() =>
       this.card(
-        h('h2', {}, won ? 'Misiune reușită!' : 'Misiune eșuată'),
+        h('h2', {}, won ? 'Mission complete!' : 'Mission failed'),
         h('p', {}, won ? def.name : MISSION_END[mi.over?.reason === 'time' ? 'time' : 'dead']),
         h(
           'div',
           { class: 'bigstars', 'data-stars': String(stars) },
           ...[1, 2, 3].map((i) => h('span', { class: i <= stars ? 'on' : '' }, '★')),
         ),
-        h('p', {}, `Timp ${t}s · Viață ${hp}%`),
+        h('p', {}, `Time ${t}s · Health ${hp}%`),
         h('p', { style: 'font-size:12px' }, crit),
         h(
           'button',
           { class: 'btn', 'data-test': 'again', onclick: () => this.restart() },
-          won ? 'Joacă din nou' : 'Reîncearcă',
+          won ? 'Play again' : 'Try again',
         ),
         canNext
           ? h(
               'button',
               { class: 'btn ghost', onclick: () => this.start({ type: 'mission', id: next! }) },
-              'Următoarea misiune',
+              'Next mission',
             )
           : null,
         h(
           'button',
           { class: 'btn ghost', onclick: () => this.showScreen(() => this.missionsMenu()) },
-          'Hartă misiuni',
+          'Mission map',
         ),
       ),
     );
@@ -1135,7 +1135,7 @@ export class App {
     show(this.arrow, true);
     this.arrow.style.transform = `translate(${Math.cos(ang) * R}px,${Math.sin(ang) * R}px)`;
     (this.arrow.firstChild as HTMLElement).style.transform = `rotate(${ang}rad)`;
-    (this.arrow.lastChild as HTMLElement).textContent = `${Math.round(dist)}m${g.home ? ' · acasă' : ''}`;
+    (this.arrow.lastChild as HTMLElement).textContent = `${Math.round(dist)}m${g.home ? ' · home' : ''}`;
   }
 
   private showTut(step: TutorialStep): void {
@@ -1153,7 +1153,7 @@ export class App {
     vibrate([30, 30, 60]);
     const next = TUTORIAL_STEPS[i + 1];
     if (next) {
-      this.showBanner('Bravo!', 1000, 'gold');
+      this.showBanner('Well done!', 1000, 'gold');
       setTimeout(() => this.kind === k && this.start({ type: 'tutorial', step: next }), 1100);
       return;
     }
@@ -1165,14 +1165,14 @@ export class App {
       show(this.tut, false);
       this.showScreen(() =>
         this.card(
-          h('h2', {}, 'Tutorial terminat!'),
-          h('p', {}, 'Știi tot ce trebuie: mers, bombe, bonusuri, șut, mănușă. Acum pe bune!'),
+          h('h2', {}, 'Tutorial complete!'),
+          h('p', {}, 'You know it all: moving, bombs, power-ups, kick, glove. Now for real!'),
           h(
             'button',
             { class: 'btn', onclick: () => this.start({ type: 'mode', mode: 'ffa' }) },
-            'Joacă contra boților',
+            'Play against bots',
           ),
-          h('button', { class: 'btn ghost', onclick: () => this.toMenu() }, 'Meniu'),
+          h('button', { class: 'btn ghost', onclick: () => this.toMenu() }, 'Menu'),
         ),
       );
     }, 900);
@@ -1193,13 +1193,13 @@ export class App {
         this.controls.enabled = false;
         this.showScreen(() =>
           this.card(
-            h('h2', {}, ok ? 'Provocare reușită!' : 'Provocare ratată'),
+            h('h2', {}, ok ? 'Challenge complete!' : 'Challenge failed'),
             h('p', {}, `${CHALLENGE_TEXT[k.id].name}: ${CHALLENGE_TEXT[k.id].desc}`),
-            h('button', { class: 'btn', onclick: () => this.restart() }, ok ? 'Joacă din nou' : 'Reîncearcă'),
+            h('button', { class: 'btn', onclick: () => this.restart() }, ok ? 'Play again' : 'Try again'),
             h(
               'button',
               { class: 'btn ghost', onclick: () => this.showScreen(() => this.practiceMenu()) },
-              'Alte provocări',
+              'More challenges',
             ),
           ),
         );
@@ -1221,28 +1221,28 @@ export class App {
       if (e.team !== null) this.scores[e.team]!++;
       const mine = e.team === m.me.team;
       title =
-        e.team === null ? 'Egalitate' : mine ? 'Echipa ta a câștigat!' : `${TEAMS[e.team]!.name} câștigă`;
+        e.team === null ? 'Draw' : mine ? 'Your team won!' : `${TEAMS[e.team]!.name} team wins`;
       msg = m.s.ctf
-        ? `Capturi: ${TEAMS[0].name} ${m.s.ctf.caps[0]} – ${m.s.ctf.caps[1]} ${TEAMS[1].name}`
+        ? `Captures: ${TEAMS[0].name} ${m.s.ctf.caps[0]} – ${m.s.ctf.caps[1]} ${TEAMS[1].name}`
         : e.team === null
-          ? 'Nimeni n-a rămas în picioare.'
+          ? 'Nobody is left standing.'
           : mine
-            ? 'Lucru de echipă. Mai una?'
-            : 'Data viitoare, mai multă coordonare.';
+            ? 'Teamwork. One more?'
+            : 'Next time, a bit more coordination.';
     } else if (e.winner !== null) {
       this.scores[e.winner]!++;
       const w = m.slots[e.winner]!;
       if (e.winner === 0) {
-        title = 'Ai câștigat!';
-        msg = 'Arena e a ta. Mai una?';
+        title = 'You won!';
+        msg = 'The arena is yours. One more?';
       } else {
-        title = `${w.name} câștigă`;
-        msg = `${w.name} dansează pe ruine.`;
+        title = `${w.name} wins`;
+        msg = `${w.name} dances on the ruins.`;
         this.voice.say(TAUNTS[Math.floor(Math.random() * TAUNTS.length)]!, 1.2 + w.voice * 0.25);
       }
     } else {
-      title = 'Egalitate';
-      msg = 'Toată lumea a zburat în aer. Frumos.';
+      title = 'Draw';
+      msg = 'Everybody blew up. Nice.';
     }
     this.hudKey = '';
     this.showScreen(() =>
@@ -1250,8 +1250,8 @@ export class App {
         h('h2', {}, title),
         h('p', {}, msg),
         this.scoreRow(),
-        h('button', { class: 'btn', 'data-test': 'again', onclick: () => this.restart() }, 'Runda următoare'),
-        h('button', { class: 'btn ghost', onclick: () => this.toMenu() }, 'Meniu'),
+        h('button', { class: 'btn', 'data-test': 'again', onclick: () => this.restart() }, 'Next round'),
+        h('button', { class: 'btn ghost', onclick: () => this.toMenu() }, 'Menu'),
       ),
     );
   }
@@ -1278,7 +1278,7 @@ export class App {
       const t = Math.floor(s.tick / TICK_HZ);
       const obj =
         mi.def.kind === 'race'
-          ? `Timp ${Math.max(0, mi.def.timeLimit - t)}s`
+          ? `Time ${Math.max(0, mi.def.timeLimit - t)}s`
           : `${esc(missionById(mi.def.id)?.name ?? '')} ${mi.count}/${mi.need}`;
       return (
         `<div class="life" data-hp="${hp}"><i style="width:${hp}%;background:${c}"></i><span>${hp}%</span></div>` +
@@ -1292,7 +1292,7 @@ export class App {
       return `<div class="chip">${esc(CHALLENGE_TEXT[c.id].name)} ${c.count}/${c.need}</div><div class="chip">${t}s</div>`;
     }
     if (m.kind.type === 'dummies')
-      return `<div class="chip"><i style="background:${col(m.slots[0]!.color)}"></i>Eliminări ${this.scores[0] ?? 0}</div>`;
+      return `<div class="chip"><i style="background:${col(m.slots[0]!.color)}"></i>Eliminations ${this.scores[0] ?? 0}</div>`;
     if (s.ctf) {
       const left = Math.max(0, Math.ceil((s.rules.timeLimit - s.tick) / TICK_HZ));
       return (
@@ -1331,22 +1331,22 @@ export class App {
     const bombs = !me.alive
       ? ''
       : me.carry !== null
-        ? '<b class="on">Aruncă</b>'
+        ? '<b class="on">Throw</b>'
         : me.glove && onBomb
-          ? '<b class="on">Ridică</b>'
-          : `<span class="lbl">Bombe </span><b>${me.bombs - me.active}/${me.bombs}</b>`;
+          ? '<b class="on">Lift</b>'
+          : `<span class="lbl">Bombs </span><b>${me.bombs - me.active}/${me.bombs}</b>`;
     const lvl = Math.round((me.speed - SPEED_START) / SPEED_STEP) + 1;
     const stats =
-      `<span>${bombs}</span><span><span class="lbl">Rază </span><b>${me.range}${me.range >= MAX_RANGE ? '★' : ''}</b></span><span><span class="lbl">Viteză </span><b>${lvl}${me.speed >= SPEED_MAX ? '★' : ''}</b></span>` +
-      (me.bombs >= MAX_BOMBS ? '<span class="on">8 bombe</span>' : '') +
-      (me.kick ? '<span class="on">Picior</span>' : '') +
-      (me.glove ? '<span class="on">Mănușă</span>' : '') +
+      `<span>${bombs}</span><span><span class="lbl">Range </span><b>${me.range}${me.range >= MAX_RANGE ? '★' : ''}</b></span><span><span class="lbl">Speed </span><b>${lvl}${me.speed >= SPEED_MAX ? '★' : ''}</b></span>` +
+      (me.bombs >= MAX_BOMBS ? '<span class="on">8 bombs</span>' : '') +
+      (me.kick ? '<span class="on">Kick</span>' : '') +
+      (me.glove ? '<span class="on">Glove</span>' : '') +
       (me.remote ? '<span class="on">Detonator</span>' : '') +
-      (me.line ? '<span class="on">Linie</span>' : '') +
-      (me.revT > 0 ? `<span class="bad">Inversat ${sec(me.revT)}s</span>` : '') +
-      (me.dizzyT > 0 ? `<span class="bad">Amețit ${sec(me.dizzyT)}s</span>` : '') +
-      (me.hicT > 0 ? `<span class="bad">Sughiț ${sec(me.hicT)}s</span>` : '') +
-      (me.shieldT > 0 ? `<span class="shield">Scut ${sec(me.shieldT)}s</span>` : '');
+      (me.line ? '<span class="on">Line</span>' : '') +
+      (me.revT > 0 ? `<span class="bad">Reversed ${sec(me.revT)}s</span>` : '') +
+      (me.dizzyT > 0 ? `<span class="bad">Dizzy ${sec(me.dizzyT)}s</span>` : '') +
+      (me.hicT > 0 ? `<span class="bad">Hiccups ${sec(me.hicT)}s</span>` : '') +
+      (me.shieldT > 0 ? `<span class="shield">Shield ${sec(me.shieldT)}s</span>` : '');
     const chips = this.chipsHtml();
     const key = chips + stats;
     if (key === this.hudKey) return;
@@ -1401,7 +1401,7 @@ export class App {
     const btn =
       m && m.s.rules.respawnTicks
         ? null
-        : h('button', { class: 'btn', onclick: () => this.restart() }, 'Rundă nouă');
+        : h('button', { class: 'btn', onclick: () => this.restart() }, 'New round');
     this.toast.replaceChildren(h('span', {}, msg), btn ?? '');
     show(this.toast, true);
     if (!btn) setTimeout(() => show(this.toast, false), 2500);

@@ -10,104 +10,104 @@ const TextSchema = z.object({ name: z.string().min(1), desc: z.string().min(1) }
 export const MODES: Record<ModeId, z.infer<typeof TextSchema>> = z
   .record(z.enum(MODE_IDS), TextSchema)
   .parse({
-    ffa: { name: 'Toți contra toți', desc: 'Tu contra 3 boți. Ultimul rămas câștigă.' },
+    ffa: { name: 'Free for all', desc: 'You against 3 bots. Last one standing wins.' },
     vs: {
       name: '1 vs 1',
-      desc: 'Duel pe o arenă mică. Amândoi pornesc cu aceleași bonusuri alese la întâmplare.',
+      desc: 'A duel on a small arena. Both start with the same random power-ups.',
     },
-    team2: { name: 'Echipe 2v2', desc: 'Tu și un coleg contra a doi boți. Bombele colegilor nu vă rănesc.' },
-    team3: { name: 'Echipe 3v3', desc: '3 contra 3. Bombele colegilor nu vă rănesc.' },
+    team2: { name: 'Teams 2v2', desc: 'You and a teammate against two bots. Friendly bombs can’t hurt you.' },
+    team3: { name: 'Teams 3v3', desc: '3 against 3. Friendly bombs can’t hurt you.' },
     ctf: {
-      name: 'Capturează steagul',
-      desc: '3 contra 3. Fură steagul adversarilor și adu-l la baza ta, cât timp steagul tău e acasă. Revii în joc după 3s. Primii la 3 capturi câștigă.',
+      name: 'Capture the flag',
+      desc: '3 against 3. Steal the enemy flag and bring it to your base while your own flag is home. You respawn after 3s. First to 3 captures wins.',
     },
     rot: {
-      name: 'Arena rotativă',
-      desc: 'Toți contra toți pe o arenă care se rotește tot mai repede și își schimbă sensul. Joystick-ul urmează ecranul, deci trebuie să-ți ajustezi direcția.',
+      name: 'Spinning arena',
+      desc: 'Free for all on an arena that spins faster and faster and changes direction. The joystick follows the screen, so keep adjusting your aim.',
     },
     shift: {
-      name: 'Rânduri mobile',
-      desc: 'Toți contra toți. Rânduri și coloane alunecă periodic, cu tot ce e pe ele. Dacă o ladă te împinge în perete, ești strivit. Săgețile roșii anunță rândul.',
+      name: 'Shifting rows',
+      desc: 'Free for all. Rows and columns slide from time to time, with everything on them. If a crate pushes you into a wall, you get squashed. Red arrows mark the next row.',
     },
   });
 
 export const BOT_NAMES: Record<BotLevel, string> = {
-  easy: 'Ușor',
+  easy: 'Easy',
   normal: 'Normal',
-  hard: 'Greu',
-  insane: 'Nebun',
+  hard: 'Hard',
+  insane: 'Insane',
 };
 
 export const ITEM_NAMES: Record<ItemType, string> = {
-  bomb: '+1 bombă',
-  fire: '+1 rază',
-  speed: '+viteză',
-  kick: 'Picior',
-  glove: 'Mănușă',
+  bomb: '+1 bomb',
+  fire: '+1 range',
+  speed: '+speed',
+  kick: 'Kick',
+  glove: 'Glove',
   remote: 'Detonator',
-  line: 'Linie',
-  shield: 'SCUT 10s',
-  slow: 'Încetinit!',
-  shrink: 'Rază −1!',
-  fewer: 'Bombă −1!',
-  reverse: 'Comenzi inversate!',
-  dizzy: 'Amețit! 10s',
-  hiccup: 'Sughiț de bombe!',
-  maxspeed: 'VITEZĂ MAXIMĂ!',
-  maxfire: 'RAZĂ MAXIMĂ!',
-  maxbomb: 'BOMBE MAXIME!',
-  heart: '+25% viață',
-  crystal: 'Cristal!',
+  line: 'Line',
+  shield: 'SHIELD 10s',
+  slow: 'Slowed!',
+  shrink: 'Range −1!',
+  fewer: 'Bomb −1!',
+  reverse: 'Reversed controls!',
+  dizzy: 'Dizzy! 10s',
+  hiccup: 'Bomb hiccups!',
+  maxspeed: 'MAX SPEED!',
+  maxfire: 'MAX RANGE!',
+  maxbomb: 'MAX BOMBS!',
+  heart: '+25% health',
+  crystal: 'Crystal!',
 };
 
 /** Replicile momentelor de glorie (localizabile; în versiunea finală pot veni din pachete de voce). */
 export const HERO_LINES: Record<MaxStat | 'win' | 'team', string[]> = {
-  speed: ['Sunt fulger!', 'Prindeți-mă dacă puteți!', 'Vâjjj!', 'Frânele sunt opționale.'],
-  bombs: ['Am bombe pentru o lună!', 'Cine vrea artificii?', 'Magazinul de bombe: deschis!'],
-  fire: ['Raza mea acoperă tot!', 'Până la orizont!', 'Căldură maximă!'],
-  win: ['Prea ușor!', 'Sunt legendă!', 'Cine urmează?', 'Aplauze, vă rog!'],
-  team: ['Echipa bate tot!', 'Muncă de echipă!', 'Noi suntem campionii!'],
+  speed: ['I’m lightning!', 'Catch me if you can!', 'Zoooom!', 'Brakes are optional.'],
+  bombs: ['Bombs for days!', 'Who wants fireworks?', 'Bomb shop: open!'],
+  fire: ['My blast covers everything!', 'All the way to the horizon!', 'Maximum heat!'],
+  win: ['Too easy!', 'I’m a legend!', 'Who’s next?', 'Applause, please!'],
+  team: ['Unstoppable team!', 'Teamwork!', 'Champions, baby!'],
 };
 
 /** Ce strigă personajele când mor. */
 export const QUIPS = [
-  'Au!',
-  'Aoleu!',
-  'Mamă, mamă!',
-  'Nu e corect!',
-  'Iar?!',
-  'Mi-a ars mustața!',
-  'Săriți!',
+  'Ouch!',
+  'Oh no!',
+  'Mommy!',
+  'Not fair!',
+  'Again?!',
+  'My mustache!',
+  'Help!',
 ];
-export const TAUNTS = ['Hehe!', 'Prea ușor!', 'Ha ha ha!'];
+export const TAUNTS = ['Hehe!', 'Too easy!', 'Ha ha ha!'];
 export const BYE = 'bye bye…';
 
 /** Mesajul de moarte al jucătorului. `{k}` = numele ucigașului. */
 export const DEATH_MSG: Record<DeathCause | 'self', string> = {
-  flame: 'Prăjit de {k}!',
-  self: 'Te-ai aruncat singur în aer.',
-  hurry: 'Strivit de arena care se strânge!',
-  spider: 'Prăjit de un păianjen!',
-  lightning: 'Prăjit de fulger!',
-  crush: 'Strivit de rândul mobil!',
+  flame: 'Toasted by {k}!',
+  self: 'You blew yourself up.',
+  hurry: 'Squashed by the shrinking arena!',
+  spider: 'Got by a spider!',
+  lightning: 'Zapped by lightning!',
+  crush: 'Squashed by a shifting row!',
 };
 
 export const TEAMS = [
-  { name: 'Albaștrii', color: '#3d8bff', bomb: '#2356c9' },
-  { name: 'Roșii', color: '#ff5a4d', bomb: '#c62d22' },
+  { name: 'Blue', color: '#3d8bff', bomb: '#2356c9' },
+  { name: 'Red', color: '#ff5a4d', bomb: '#c62d22' },
 ] as const;
 
 /** Numele și culorile personajelor din meciurile offline (nume de lucru, originale). */
 export const ROSTER = {
   ffa: [
-    { name: 'Tu', color: '#5ad15a' },
+    { name: 'You', color: '#5ad15a' },
     { name: 'Bubu', color: '#f3f1ea' },
     { name: 'Zuzu', color: '#9a6436' },
     { name: 'Gogu', color: '#2fd3c6' },
   ],
   teams: [
     [
-      { name: 'Tu', color: '#3d8bff' },
+      { name: 'You', color: '#3d8bff' },
       { name: 'Lulu', color: '#8cc0ff' },
       { name: 'Titi', color: '#1d56c4' },
     ],
@@ -117,39 +117,39 @@ export const ROSTER = {
       { name: 'Gogu', color: '#b8231a' },
     ],
   ],
-  dummy: { name: 'Manechin', color: '#d8c7a0' },
+  dummy: { name: 'Dummy', color: '#d8c7a0' },
 } as const;
 
 export const CHALLENGE_TEXT: Record<ChallengeId, { name: string; desc: string }> = {
-  kicker: { name: 'Șutangiul', desc: 'Câștigă un meci în care toate eliminările tale sunt cu bombe șutate.' },
-  chains: { name: 'Artificierul', desc: 'Pornește 5 lanțuri de cel puțin 3 bombe într-un meci.' },
-  minimal: { name: 'Minimalistul', desc: 'Câștigă fără să culegi niciun bonus.' },
-  fast: { name: 'Fulgerul', desc: 'Câștigă în mai puțin de 60 de secunde.' },
-  thrower: { name: 'Aruncătorul', desc: 'Elimină 2 adversari cu bombe aruncate cu mănușa.' },
+  kicker: { name: 'The Kicker', desc: 'Win a match where every one of your eliminations is a kicked bomb.' },
+  chains: { name: 'Pyrotechnician', desc: 'Set off 5 chains of at least 3 bombs in one match.' },
+  minimal: { name: 'Minimalist', desc: 'Win without picking up a single power-up.' },
+  fast: { name: 'Lightning', desc: 'Win in under 60 seconds.' },
+  thrower: { name: 'The Thrower', desc: 'Eliminate 2 opponents with bombs thrown with the glove.' },
 };
 
 export const TUTORIAL_TEXT: Record<TutorialStep, { title: string; hint: string }> = {
-  move: { title: 'Mergi', hint: 'Ține degetul în stânga ecranului și trage spre cercul auriu.' },
+  move: { title: 'Move', hint: 'Hold your finger on the left side of the screen and drag toward the gold circle.' },
   bomb: {
-    title: 'Bombă',
-    hint: 'Mergi lângă ladă, atinge dreapta ecranului ca să pui bomba, apoi fugi din cruce!',
+    title: 'Bomb',
+    hint: 'Walk next to the crate, tap the right side of the screen to drop a bomb, then get out of the cross!',
   },
   pickup: {
-    title: 'Bonusuri',
-    hint: 'Calcă pe un bonus ca să-l iei. Chenarul roșu cu „−” înseamnă bonus rău.',
+    title: 'Power-ups',
+    hint: 'Step on a power-up to grab it. A red border with “−” means a bad one.',
   },
-  kick: { title: 'Picior', hint: 'Ai Picior: pune o bombă, fă un pas înapoi și mergi în ea ca s-o șutezi.' },
+  kick: { title: 'Kick', hint: 'You have Kick: drop a bomb, step back, then walk into it to kick it.' },
   glove: {
-    title: 'Mănușă',
-    hint: 'Ai Mănușă: pune bomba, atinge iar ca s-o ridici, încă o dată ca s-o arunci peste ziduri.',
+    title: 'Glove',
+    hint: 'You have Glove: drop a bomb, tap again to pick it up, and once more to throw it over walls.',
   },
-  dummy: { title: 'Țintă', hint: 'Manechinul stă după ladă. Sparge lada și prinde-l în flacără!' },
+  dummy: { title: 'Target', hint: 'The dummy is behind the crate. Break the crate and catch it in the blast!' },
 };
 
 /** Prietenii din cuști (misiunea Salvare). */
 export const FRIEND_NAMES = ['Mimi', 'Pufi', 'Cuca', 'Lulu'];
 
 export const MISSION_END: Record<'time' | 'dead', string> = {
-  time: 'Timpul a expirat.',
-  dead: 'Ai rămas fără viață.',
+  time: 'Time’s up.',
+  dead: 'You ran out of health.',
 };

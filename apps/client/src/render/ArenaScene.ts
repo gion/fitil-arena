@@ -997,7 +997,7 @@ export class ArenaScene extends Phaser.Scene {
       px,
       py,
     );
-    if (Math.sin(time * 2 + t.x) > 0.3) this.label('Ajutor!', px + T / 2, py - T * 0.08);
+    if (Math.sin(time * 2 + t.x) > 0.3) this.label('Help!', px + T / 2, py - T * 0.08);
   }
 
   private drawMission(m: Match, time: number, dt: number): void {
