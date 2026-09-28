@@ -26,3 +26,4 @@ xcuserdata
 # unelte locale de voce (Python)
 tools/voice/**/.venv
 tools/voice/out
+__pycache__
