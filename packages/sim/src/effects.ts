@@ -1,4 +1,4 @@
-import { FLAME } from './constants.ts';
+import { FLAME, HURT_GRACE } from './constants.ts';
 import { idx, tileX, tileY } from './grid.ts';
 import type { DeathCause, GameState, Player } from './types.ts';
 
@@ -8,7 +8,27 @@ export function addFlame(s: GameState, x: number, y: number, owner: number, via 
   s.flame[k] = FLAME;
   s.flameOwner[k] = owner;
   s.flameVia[k] = via;
-  s.items[k] = null;
+  if (s.items[k] !== 'crystal') s.items[k] = null; // cristalul misiunii nu arde
+}
+
+/**
+ * O lovitură: cu bară de viață (misiuni) scade viața și dă invulnerabilitate; altfel moarte.
+ */
+export function damage(
+  s: GameState,
+  p: Player,
+  amount: number,
+  killerId: number | null,
+  cause: DeathCause,
+  via = 0,
+): void {
+  if (s.rules.health && p.bot === null) {
+    p.hp = Math.max(0, p.hp - amount);
+    p.graceT = HURT_GRACE;
+    s.events.push({ type: 'hurt', player: p.id, amount, hp: p.hp });
+    if (p.hp > 0) return;
+  }
+  kill(s, p, killerId, cause, via);
 }
 
 export function kill(s: GameState, p: Player, killerId: number | null, cause: DeathCause, via = 0): void {

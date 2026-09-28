@@ -83,6 +83,7 @@ export function throwBomb(s: GameState, p: Player): void {
   let ty = sy;
   let steps = 0;
   const wrap = () => {
+    if (s.inf) return; // fără margini: fără wrap
     if (tx < 1) tx = s.W - 2;
     if (tx > s.W - 2) tx = 1;
     if (ty < 1) ty = s.H - 2;

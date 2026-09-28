@@ -56,6 +56,8 @@ export const ITEM_NAMES: Record<ItemType, string> = {
   maxspeed: 'VITEZĂ MAXIMĂ!',
   maxfire: 'RAZĂ MAXIMĂ!',
   maxbomb: 'BOMBE MAXIME!',
+  heart: '+25% viață',
+  crystal: 'Cristal!',
 };
 
 /** Replicile momentelor de glorie (localizabile; în versiunea finală pot veni din pachete de voce). */

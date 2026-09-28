@@ -1,5 +1,6 @@
 import {
   DIZZY,
+  HEART_HP,
   HICCUP,
   HICCUP_FIRST,
   MAX_BOMBS,
@@ -74,12 +75,18 @@ export function applyItem(p: Player, it: ItemType): void {
     case 'maxbomb':
       p.bombs = MAX_BOMBS;
       break;
+    case 'heart':
+      p.hp = Math.min(100, p.hp + HEART_HP);
+      break;
+    case 'crystal':
+      break;
   }
 }
 
 /** Ce cade dintr-o ladă obișnuită (tabelul din prototip): 42% șansă de drop, din care 17% negative. */
-export function rollDrop(rng: RngState): ItemType | null {
+export function rollDrop(rng: RngState, hearts = false): ItemType | null {
   if (nextFloat(rng) >= 0.42) return null;
+  if (hearts && nextFloat(rng) < 0.14) return 'heart';
   if (nextFloat(rng) < 0.17) return NEGATIVE[nextInt(rng, NEGATIVE.length)]!;
   const r = nextFloat(rng);
   if (r < 0.2) return 'bomb';

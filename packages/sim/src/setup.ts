@@ -1,6 +1,7 @@
 import { CTF_NEED, CTF_TIME, RESPAWN, RESPAWN_SHIELD, SHIFT_FIRST, SPEED_START, sec } from './constants.ts';
 import { countSoft, idx, inBounds } from './grid.ts';
 import { applyItem } from './items.ts';
+import { INF_S, ensureWindow } from './world.ts';
 import { createRng, nextFloat, shuffle } from './rng.ts';
 import type { RngState } from './rng.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
@@ -20,6 +21,9 @@ export const DEFAULT_RULES: Rules = {
   timeLimit: 0,
   shift: false,
   rotate: false,
+  infinite: false,
+  health: false,
+  hearts: false,
   hurryUpTick: sec(90),
   hurryEvery: 6,
   startItems: [],
@@ -164,6 +168,7 @@ export function makePlayer(id: number, team: number, bot: BotKind | null, x: num
     dizzyT: 0,
     shieldT: 0,
     graceT: 0,
+    hp: 100,
     alive: true,
     deathTick: -1,
     killerId: null,
@@ -194,9 +199,11 @@ function spiralOrder(W: number, H: number): number[] {
 
 export function createGame(setup: GameSetup): GameState {
   const rules: Rules = { ...DEFAULT_RULES, ...setup.rules };
-  const W = rules.width;
-  const H = rules.height;
-  if (W % 2 === 0 || H % 2 === 0 || W < 7 || H < 7)
+  const inf = rules.infinite;
+  // lumea infinită: stocare circulară INF_S×INF_S (nu o hartă cu margini)
+  const W = inf ? INF_S : rules.width;
+  const H = inf ? INF_S : rules.height;
+  if (!inf && (W % 2 === 0 || H % 2 === 0 || W < 7 || H < 7))
     throw new Error(`dimensiuni invalide ${W}×${H} (impare, ≥ 7)`);
   const rng = createRng(setup.seed);
   const N = W * H;
@@ -225,7 +232,7 @@ export function createGame(setup: GameSetup): GameState {
     chainSeq: 0,
     chainCount: {},
     hurryIdx: 0,
-    hurryOrder: spiralOrder(W, H),
+    hurryOrder: inf ? [] : spiralOrder(W, H),
     curses: [],
     spiders: [],
     clouds: [],
@@ -234,27 +241,42 @@ export function createGame(setup: GameSetup): GameState {
     shiftNext: SHIFT_FIRST,
     rot: rules.rotate ? { a: 0, v: 0 } : null,
     ctf: null,
+    inf: inf
+      ? {
+          S: INF_S,
+          ownX: new Array<number>(N).fill(0x7fffffff),
+          ownY: new Array<number>(N).fill(0x7fffffff),
+          cx: 1,
+          cy: 1,
+        }
+      : null,
+    mission: null,
     result: null,
     events: [],
   };
 
-  const spawns = spawnPoints(W, H, setup.players, rules.mode);
+  const spawns: [number, number][] = inf
+    ? setup.players.map(() => [1, 1])
+    : spawnPoints(W, H, setup.players, rules.mode);
   const safe = new Set<number>();
   for (const [x, y] of spawns) {
     safe.add(idx(s, x, y));
     for (const d of DIRS) if (inBounds(s, x + DX[d]!, y + DY[d]!)) safe.add(idx(s, x + DX[d]!, y + DY[d]!));
   }
-  for (let y = 0; y < H; y++)
-    for (let x = 0; x < W; x++) {
-      const k = idx(s, x, y);
-      if (x === 0 || y === 0 || x === W - 1 || y === H - 1 || (x % 2 === 0 && y % 2 === 0)) s.grid[k] = HARD;
-      else if (!safe.has(k) && nextFloat(rng) < rules.softDensity) {
-        s.grid[k] = SOFT;
-        const r = nextFloat(rng);
-        if (r < rules.goldRate) s.gold[k] = 1;
-        else if (r < rules.goldRate + rules.curseRate) s.cursed[k] = 1;
+  if (inf) ensureWindow(s, 1, 1);
+  else
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const k = idx(s, x, y);
+        if (x === 0 || y === 0 || x === W - 1 || y === H - 1 || (x % 2 === 0 && y % 2 === 0))
+          s.grid[k] = HARD;
+        else if (!safe.has(k) && nextFloat(rng) < rules.softDensity) {
+          s.grid[k] = SOFT;
+          const r = nextFloat(rng);
+          if (r < rules.goldRate) s.gold[k] = 1;
+          else if (r < rules.goldRate + rules.curseRate) s.cursed[k] = 1;
+        }
       }
-    }
   if (rules.mode === 'ctf') setupCtf(s, spawns, setup.players, rng);
   s.softStart = countSoft(s);
 

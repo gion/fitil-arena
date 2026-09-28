@@ -554,6 +554,8 @@ export const ITEM_COLOR: Record<ItemType, string> = {
   maxspeed: '#ffd23f',
   maxfire: '#ffd23f',
   maxbomb: '#ffd23f',
+  heart: '#ff5f93',
+  crystal: '#6ff4ff',
 };
 const NEG = new Set<ItemType>(['slow', 'shrink', 'fewer', 'reverse', 'hiccup', 'dizzy']);
 const GOLDS = new Set<ItemType>(['maxspeed', 'maxfire', 'maxbomb']);
@@ -616,6 +618,33 @@ export function item(it: ItemType, px: number, py: number, round: boolean): void
 
 function itemIcon(it: ItemType, cx: number, cy: number): void {
   switch (it) {
+    case 'heart':
+      ctx.fillStyle = '#ff5f93';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + T * 0.2);
+      ctx.bezierCurveTo(cx - T * 0.3, cy, cx - T * 0.18, cy - T * 0.24, cx, cy - T * 0.08);
+      ctx.bezierCurveTo(cx + T * 0.18, cy - T * 0.24, cx + T * 0.3, cy, cx, cy + T * 0.2);
+      ctx.fill();
+      return;
+    case 'crystal':
+      glow('#6ff4ff', 12);
+      ctx.fillStyle = '#6ff4ff';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - T * 0.26);
+      ctx.lineTo(cx + T * 0.17, cy - T * 0.05);
+      ctx.lineTo(cx, cy + T * 0.24);
+      ctx.lineTo(cx - T * 0.17, cy - T * 0.05);
+      ctx.closePath();
+      ctx.fill();
+      noGlow();
+      ctx.fillStyle = '#e8ffff';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - T * 0.2);
+      ctx.lineTo(cx + T * 0.07, cy - T * 0.05);
+      ctx.lineTo(cx, cy + T * 0.02);
+      ctx.closePath();
+      ctx.fill();
+      return;
     case 'shield':
       ctx.fillStyle = '#4fd8ff';
       ctx.beginPath();

@@ -1,4 +1,5 @@
 import {
+  HURT_SPIDER,
   CLOUD_CHARGE,
   CLOUD_SPEED,
   CLOUD_SPEED_VAR,
@@ -9,7 +10,8 @@ import {
   SPIDER_SPEED_VAR,
 } from './constants.ts';
 import { bfs } from './danger.ts';
-import { addFlame, kill, shieldSave } from './effects.ts';
+import { addFlame, damage, shieldSave } from './effects.ts';
+import { hitTarget } from './missions.ts';
 import { bombAt, idx, inBounds, mobX, mobY, playerAt, tileAt, walkable } from './grid.ts';
 import { nextFloat, nextInt } from './rng.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U, VIA_LIGHTNING, opposite } from './types.ts';
@@ -92,6 +94,7 @@ export function strike(s: GameState, x: number, y: number): void {
     const ny = y + dy;
     if (!inBounds(s, nx, ny) || tileAt(s, nx, ny) === HARD) continue;
     const k = idx(s, nx, ny);
+    if (s.mission && s.grid[k] === SOFT && hitTarget(s, nx, ny, -1, VIA_LIGHTNING)) continue;
     if (s.grid[k] === SOFT) {
       s.grid[k] = EMPTY;
       s.gold[k] = 0;
@@ -130,8 +133,10 @@ function updateSpider(s: GameState, c: Spider): boolean {
   for (const p of s.players) {
     if (!p.alive || p.graceT > 0) continue;
     if (Math.abs(p.px - c.px) + Math.abs(p.py - c.py) >= SPIDER_HIT) continue;
-    if (!shieldSave(s, p, GRACE)) kill(s, p, null, 'spider');
-    return false; // după ce prinde pe cineva, păianjenul dispare
+    if (shieldSave(s, p, GRACE)) return false;
+    damage(s, p, HURT_SPIDER, null, 'spider');
+    // după ce prinde pe cineva, păianjenul dispare (în misiuni doar te rănește și continuă)
+    if (!s.rules.health || !p.alive) return false;
   }
   return true;
 }

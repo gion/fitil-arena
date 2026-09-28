@@ -19,6 +19,11 @@ export const HICCUP = sec(6);
 export const HICCUP_FIRST = sec(0.3);
 export const HICCUP_EVERY = 17; // 0.85s
 export const PORTAL = sec(15);
+/** Misiuni: daune (procente de viață), invulnerabilitate după lovitură, inimă. */
+export const HURT_FLAME = 35;
+export const HURT_SPIDER = 20;
+export const HURT_GRACE = sec(1.2);
+export const HEART_HP = 25;
 
 /** Viteze în unități (1/1000 pătrățel) pe tick. 3.3 pătrățele/s = 165. */
 export const SPEED_START = 165;

@@ -3,6 +3,7 @@ import { BOT_LEVELS, botCooldown } from './botLevels.ts';
 import {
   CARRIER_SPEED_PCT,
   CHAIN_DELAY,
+  HURT_FLAME,
   CURSE_DELAY,
   GRACE,
   HICCUP_EVERY,
@@ -12,7 +13,9 @@ import {
   SLIDE_SPEED,
   SPEED_MAX,
 } from './constants.ts';
-import { addFlame, kill, shieldSave } from './effects.ts';
+import { addFlame, damage, kill, shieldSave } from './effects.ts';
+import { collectCrystal, hitTarget, updateMission } from './missions.ts';
+import { updateWorld } from './world.ts';
 import {
   bombAt,
   countSoft,
@@ -56,6 +59,8 @@ export function step(s: GameState, inputs: readonly (Input | undefined)[]): Game
   updatePortals(s);
   updateBoxRespawn(s);
   updateHurry(s);
+  updateWorld(s);
+  updateMission(s);
   checkResult(s);
   return s;
 }
@@ -143,8 +148,13 @@ function openPortals(s: GameState): void {
     !s.items[idx(s, x, y)] &&
     !playerAt(s, x, y) &&
     s.flame[idx(s, x, y)]! <= 0;
-  const minD = Math.max(5, Math.floor(Math.max(s.W, s.H) / 2));
-  const rnd = (): [number, number] => [1 + nextInt(s.rng, s.W - 2), 1 + nextInt(s.rng, s.H - 2)];
+  const w = s.inf;
+  const minD = w ? 8 : Math.max(5, Math.floor(Math.max(s.W, s.H) / 2));
+  // în lumea infinită portalurile apar în jurul jucătorului
+  const rnd = (): [number, number] =>
+    w
+      ? [w.cx - 10 + nextInt(s.rng, 21), w.cy - 7 + nextInt(s.rng, 15)]
+      : [1 + nextInt(s.rng, s.W - 2), 1 + nextInt(s.rng, s.H - 2)];
   for (let t = 0; t < 300; t++) {
     const a = rnd();
     const b = rnd();
@@ -181,6 +191,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
       const g = tileAt(s, nx, ny);
       if (g === HARD) break;
       const k = idx(s, nx, ny);
+      if (g === SOFT && s.mission && hitTarget(s, nx, ny, b.owner, b.via)) break;
       if (g === SOFT) {
         s.grid[k] = EMPTY;
         addFlame(s, nx, ny, b.owner, b.via);
@@ -189,7 +200,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
         s.gold[k] = 0;
         s.cursed[k] = 0;
         if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
-        else s.drops[k] = gold ? rollGold(s.rng) : rollDrop(s.rng);
+        else s.drops[k] = gold ? rollGold(s.rng) : rollDrop(s.rng, s.rules.hearts);
         s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed });
         break;
       }
@@ -315,8 +326,15 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
         isTeamMode(s.rules) && !s.rules.friendlyFire && owner !== undefined && owner.team === p.team;
       if (!friendly && !shieldSave(s, p, GRACE)) {
         const via = s.flameVia[k]!;
-        kill(s, p, ownerId >= 0 ? ownerId : null, via === VIA_LIGHTNING ? 'lightning' : 'flame', via);
-        continue;
+        damage(
+          s,
+          p,
+          HURT_FLAME,
+          ownerId >= 0 ? ownerId : null,
+          via === VIA_LIGHTNING ? 'lightning' : 'flame',
+          via,
+        );
+        if (!p.alive) continue;
       }
     }
     if (p.shieldT > 0) p.shieldT--;
@@ -325,6 +343,7 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
       s.items[k] = null;
       const pre = { speed: p.speed, bombs: p.bombs, range: p.range };
       applyItem(p, it);
+      if (it === 'crystal') collectCrystal(s, tileX(p), tileY(p));
       s.events.push({ type: 'pickup', player: p.id, item: it, x: tileX(p), y: tileY(p) });
       if (p.speed >= SPEED_MAX && pre.speed < SPEED_MAX)
         s.events.push({ type: 'maxed', player: p.id, stat: 'speed' });

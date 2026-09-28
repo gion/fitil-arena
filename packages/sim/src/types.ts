@@ -19,7 +19,9 @@ export const U = 1000;
 export type PositiveItem = 'bomb' | 'fire' | 'speed' | 'kick' | 'glove' | 'remote' | 'line' | 'shield';
 export type NegativeItem = 'slow' | 'shrink' | 'fewer' | 'reverse' | 'hiccup' | 'dizzy';
 export type GoldItem = 'maxspeed' | 'maxfire' | 'maxbomb';
-export type ItemType = PositiveItem | NegativeItem | GoldItem;
+/** Doar în misiuni: inimă (+25% viață) și cristal (obiectiv; nu îl distrug flăcările). */
+export type MissionItem = 'heart' | 'crystal';
+export type ItemType = PositiveItem | NegativeItem | GoldItem | MissionItem;
 
 export type BotLevel = 'easy' | 'normal' | 'hard' | 'insane';
 /** Ce controlează un jucător fără om: un nivel de bot sau un manechin (stă pe loc, nu pune bombe). */
@@ -68,6 +70,8 @@ export interface Player {
   dizzyT: number;
   shieldT: number;
   graceT: number;
+  /** Viață 0–100 (doar când `rules.health`; altfel o flacără = moarte). */
+  hp: number;
   alive: boolean;
   deathTick: number;
   killerId: number | null;
@@ -202,6 +206,12 @@ export type GameEvent =
   | { type: 'flagReturn'; team: number; player: number | null }
   | { type: 'capture'; team: number; player: number; caps: [number, number] }
   | { type: 'respawn'; player: number }
+  | { type: 'hurt'; player: number; amount: number; hp: number }
+  | { type: 'missionHit'; x: number; y: number; kind: TargetKind; done: boolean }
+  | { type: 'missionProgress'; count: number; need: number }
+  | { type: 'friendFree'; id: number }
+  | { type: 'friendHome'; id: number }
+  | { type: 'missionEnd'; won: boolean; reason: 'done' | 'time' | 'dead' }
   | { type: 'shieldSaved'; player: number }
   | { type: 'kick'; player: number; bomb: number }
   | { type: 'lift'; player: number; bomb: number }
@@ -241,6 +251,12 @@ export interface Rules {
   shift: boolean;
   /** Arena rotativă. */
   rotate: boolean;
+  /** Lume fără margini, generată din coordonate (misiuni, modul Infinit). */
+  infinite: boolean;
+  /** Bară de viață în loc de moarte la prima atingere. */
+  health: boolean;
+  /** Inimi printre drop-uri (misiuni). */
+  hearts: boolean;
   /** Tick-ul la care începe „hurry up” (0 = dezactivat). */
   hurryUpTick: number;
   /** Tick-uri între două blocuri căzute în hurry up. */
@@ -290,6 +306,86 @@ export interface GameState {
   shiftNext: number;
   rot: Rotation | null;
   ctf: Ctf | null;
+  inf: InfWorld | null;
+  mission: MissionState | null;
   result: GameResult | null;
   events: GameEvent[];
+}
+
+/**
+ * Lume infinită: stocare circulară S×S (S putere a lui 2) care se regenerează în jurul camerei.
+ * `ownX/ownY[k]` = coordonata de lume care ocupă acum celula k din stocare.
+ */
+export interface InfWorld {
+  S: number;
+  ownX: number[];
+  ownY: number[];
+  /** Centrul ferestrei generate (pătrățelul jucătorului). */
+  cx: number;
+  cy: number;
+}
+
+export type MissionKind = 'collect' | 'demolish' | 'rescue' | 'race';
+export type TargetKind = 'crystal' | 'tower' | 'cage' | 'flag';
+
+/** Definiția unei misiuni (date; lista vine din packages/content). */
+export interface MissionDef {
+  id: string;
+  kind: MissionKind;
+  /** Câte ținte (cristale, turnuri, cuști; 1 la cursă). */
+  count: number;
+  /** Distanța țintelor față de start (pătrățele). */
+  dmin: number;
+  dmax: number;
+  /** Turnuri blindate (2 explozii). */
+  armored: number;
+  /** Limită de timp în secunde (0 = fără). */
+  timeLimit: number;
+  /** Densitatea lăzilor (0.5; 0.3 la cursă). */
+  softDensity: number;
+  /** Stele: timp (s) sub care primești ★★ / ★★★ (cursă: secunde rămase minim) și viața minimă pentru ★★★. */
+  stars: { two: number; three: number; hp: number };
+  /** Păianjeni rătăcitori: maxim în jur și la câte secunde apare unul. */
+  spiders: { max: number; every: number };
+}
+
+export interface MissionTarget {
+  type: TargetKind;
+  x: number;
+  y: number;
+  done: boolean;
+  /** Cușca spartă / cristalul scos din ladă. */
+  open: boolean;
+  hp: number;
+  maxHp: number;
+}
+
+/** Prieten salvat: te urmează, leșină 3s dacă îl prinde o flacără. */
+export interface Friend {
+  id: number;
+  target: number;
+  px: number;
+  py: number;
+  fx: number;
+  fy: number;
+  tx: number;
+  ty: number;
+  moving: boolean;
+  dir: Dir;
+  speed: number;
+  faint: number;
+  home: boolean;
+}
+
+export interface MissionState {
+  def: MissionDef;
+  count: number;
+  need: number;
+  targets: MissionTarget[];
+  /** "x,y" → indexul țintei. */
+  tmap: Record<string, number>;
+  friends: Friend[];
+  /** Tick-uri până la următorul păianjen rătăcitor. */
+  spT: number;
+  over: { won: boolean; reason: 'done' | 'time' | 'dead'; tick: number } | null;
 }
