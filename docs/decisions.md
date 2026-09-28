@@ -23,3 +23,7 @@
 - **D-021** Tutorialul și provocările sunt definite și verificate în `packages/sim` (determinist, testat); textele sunt în `packages/content`.
 - **D-022** Playwright rulează cu `channel: 'chromium'` (headless-ul nou, cu GPU real) și un singur worker (meciurile sunt pe timp real; în paralel își fură cadre). Capturile din `docs/screens/` sunt JPEG (calitate 70, DPR 1.5) ca repo-ul să rămână mic (~2.7 MB).
 - **D-023** Fonturi de sistem în loc de Google Fonts: aplicația mobilă nu face cereri externe la pornire. Fontul final se alege la checkpoint-ul de direcție artistică.
+- **D-024** Lumea infinită (stocare circulară 64×64, raza 26) e în sim din Faza 2b, nu din Faza 7: misiunile se joacă în ea și acceptarea cere ținte păstrate la regenerare. `idx()` folosește masca stocării, `inBounds()` verifică proprietarul celulei, iar celulele negenerate se comportă ca pereți — restul simulării e neschimbat. Hash-ul lumii folosește `deriveRng(seed, x, y, salt)` (întregi, fără `Math.sin` ca în prototip).
+- **D-025** `MissionDef` (forma datelor) e definit în sim, lista misiunilor și capitolele în content (content depinde de sim, nu invers). Testele sim folosesc definiții proprii.
+- **D-026** Țintele se plasează cu eșantionare pe pătrat și distanță la pătrat (`dmin² ≤ dx²+dy² ≤ dmax²`), fără trigonometrie (D-007).
+- **D-027** În misiuni păianjenul te rănește (−20%) și continuă; în arenă omoară și dispare, ca în prototip.

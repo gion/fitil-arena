@@ -20,6 +20,8 @@ export interface Settings {
   tutorialDone: boolean;
   /** Provocări terminate. */
   challenges: string[];
+  /** Stelele misiunilor (id → 0–3), salvate local; sincronizare cu contul în Faza 6. */
+  stars: Record<string, number>;
 }
 
 const KEY = 'fitil-settings';
@@ -45,6 +47,7 @@ function load(): Settings {
     bots: 'normal',
     tutorialDone: false,
     challenges: [],
+    stars: {},
   };
   try {
     const raw = localStorage.getItem(KEY);

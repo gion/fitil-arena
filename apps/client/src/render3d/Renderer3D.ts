@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { HARD, SOFT, TICK_HZ, U, walkable } from '@fitil/sim';
+import { HARD, HOME, SOFT, TICK_HZ, U, idx, inBounds, targetAt, walkable } from '@fitil/sim';
 import type { Dir, GameState } from '@fitil/sim';
 import { TEAMS } from '@fitil/content';
+import { FRIEND_COL } from '../render/colors.ts';
 import type { Theme } from '@fitil/content';
 import type { Match, MatchEvent } from '../game/match.ts';
 import * as paint from '../render/paint.ts';
@@ -169,6 +170,11 @@ export class Renderer3D {
     if (turn) this.yaw -= turn * 2.6 * (dtMs / 1000);
   }
 
+  /** Unghiul camerei (radiani), pentru săgeata de obiectiv. */
+  get yawAngle(): number {
+    return this.yaw;
+  }
+
   faceDir(): Dir {
     return yawDir(this.yaw);
   }
@@ -331,6 +337,7 @@ export class Renderer3D {
     this.clouds = [];
     this.bolts = [];
     this.flags = [];
+    this.mis = null;
     this.hardCount = -1;
     this.padKey = '';
     if (this.builtTheme !== this.theme.id) {
@@ -465,8 +472,14 @@ export class Renderer3D {
     this.sun.intensity = (dark ? 0.55 : 1.25) * LEGACY;
     this.r.toneMappingExposure = dark ? 1.3 : 1.1;
     const gt = this.tileTex('ground');
-    gt.repeat.set(s.W / 2, s.H / 2);
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(s.W, s.H), std({ map: gt, roughness: 0.95 }));
+    const inf = s.inf !== null;
+    if (inf) gt.repeat.set(40, 40);
+    else gt.repeat.set(s.W / 2, s.H / 2);
+    const ground = new THREE.Mesh(
+      inf ? new THREE.PlaneGeometry(80, 80) : new THREE.PlaneGeometry(s.W, s.H),
+      std({ map: gt, roughness: 0.95 }),
+    );
+    ground.name = 'ground';
     ground.rotation.x = -Math.PI / 2;
     ground.position.set(s.W / 2 - 0.5, 0, s.H / 2 - 0.5);
     ground.receiveShadow = true;
@@ -592,7 +605,9 @@ export class Renderer3D {
     }
     this.buildPlayers(s);
     if (s.ctf) this.buildFlags(s);
-    const R = Math.max(s.W, s.H) * 0.8;
+    if (inf) this.scene.fog = new THREE.Fog(th.c3.sky, 9, 22);
+    if (s.mission) this.buildMission(s);
+    const R = inf ? 20 : Math.max(s.W, s.H) * 0.8;
     this.sun.position.set(s.W / 2 + 5, 15, s.H / 2 + 7);
     this.sun.target.position.set(s.W / 2 - 0.5, 0, s.H / 2 - 0.5);
     const sc = this.sun.shadow.camera;
@@ -791,6 +806,133 @@ export class Renderer3D {
     }
   }
 
+  private mis: {
+    towers: THREE.Group[];
+    cages: THREE.Group[];
+    friends: THREE.Mesh[];
+    home: THREE.Object3D;
+    flag: THREE.Group;
+  } | null = null;
+
+  private buildMission(s: GameState): void {
+    const mi = s.mission!;
+    const tm = std({ color: '#e0402f', roughness: 0.5 });
+    const wm = std({ color: '#f3f1ea', roughness: 0.5 });
+    const towers = mi.targets
+      .filter((t) => t.type === 'tower')
+      .map(() => {
+        const g = new THREE.Group();
+        for (let j = 0; j < 4; j++) {
+          const b = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.4, 0.72), j % 2 ? wm : tm);
+          b.position.y = 0.2 + j * 0.4;
+          b.castShadow = true;
+          g.add(b);
+        }
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.5, 6), std({ color: '#333' }));
+        pole.position.y = 1.85;
+        g.add(pole);
+        const fl = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.3, 0.18),
+          new THREE.MeshBasicMaterial({ color: '#ffd23f', side: THREE.DoubleSide }),
+        );
+        fl.position.set(0.15, 1.98, 0);
+        g.add(fl);
+        this.root.add(g);
+        return g;
+      });
+    const cages = mi.targets
+      .filter((t) => t.type === 'cage')
+      .map((_, i) => {
+        const g = new THREE.Group();
+        const bars = new THREE.Mesh(
+          new THREE.BoxGeometry(0.9, 0.9, 0.9),
+          std({ color: '#b9c0d3', wireframe: true }),
+        );
+        bars.position.y = 0.45;
+        g.add(bars);
+        const f = new THREE.Mesh(
+          new THREE.SphereGeometry(0.25, 16, 12),
+          std({ color: FRIEND_COL[i % FRIEND_COL.length]! }),
+        );
+        f.position.y = 0.3;
+        g.add(f);
+        this.root.add(g);
+        return g;
+      });
+    const friends = mi.targets
+      .filter((t) => t.type === 'cage')
+      .map((_, i) => {
+        const f = new THREE.Mesh(
+          new THREE.SphereGeometry(0.25, 16, 12),
+          std({ color: FRIEND_COL[i % FRIEND_COL.length]!, roughness: 0.5 }),
+        );
+        f.castShadow = true;
+        f.visible = false;
+        this.root.add(f);
+        return f;
+      });
+    const home = new THREE.Mesh(
+      new THREE.TorusGeometry(0.55, 0.05, 8, 32),
+      new THREE.MeshBasicMaterial({ color: '#7dffb0' }),
+    );
+    home.rotation.x = -Math.PI / 2;
+    home.position.set(HOME[0], 0.05, HOME[1]);
+    this.root.add(home);
+    const flag = new THREE.Group();
+    const fp = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.6, 6), std({ color: '#222' }));
+    fp.position.y = 0.8;
+    flag.add(fp);
+    const ff = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.5, 0.32),
+      new THREE.MeshBasicMaterial({
+        map: canvasTex(64, 40, (g2) => {
+          for (let r = 0; r < 4; r++)
+            for (let c = 0; c < 6; c++) {
+              g2.fillStyle = (r + c) % 2 ? '#111' : '#fff';
+              g2.fillRect(c * 11, r * 10, 11, 10);
+            }
+        }),
+        side: THREE.DoubleSide,
+      }),
+    );
+    ff.position.set(0.27, 1.42, 0);
+    flag.add(ff);
+    flag.visible = false;
+    this.root.add(flag);
+    this.mis = { towers, cages, friends, home, flag };
+  }
+
+  private renderMission(m: Match): void {
+    const mi = m.s.mission!;
+    const o = this.mis;
+    if (!o) return;
+    const towers = mi.targets.filter((t) => t.type === 'tower');
+    o.towers.forEach((g, i) => {
+      const t = towers[i];
+      g.visible = !!t && !t.done;
+      if (t && g.visible) g.position.set(t.x, 0, t.y);
+    });
+    const cages = mi.targets.filter((t) => t.type === 'cage');
+    o.cages.forEach((g, i) => {
+      const t = cages[i];
+      g.visible = !!t && !t.open;
+      if (t && g.visible) g.position.set(t.x, 0, t.y);
+    });
+    o.friends.forEach((f, i) => {
+      const fr = mi.friends.find((x) => x.target === mi.targets.indexOf(cages[i]!));
+      f.visible = !!fr && !fr.home;
+      if (fr && f.visible) {
+        const [x, y] = m.lerp(`f${fr.id}`, fr.px, fr.py);
+        f.position.set(x, 0.28 + (fr.moving ? Math.abs(Math.sin(this.time * 14)) * 0.06 : 0), y);
+        f.scale.set(1, fr.faint > 0 ? 0.6 : 1, 1);
+      }
+    });
+    o.home.visible = mi.def.kind === 'rescue';
+    const fl = mi.targets.find((t) => t.type === 'flag');
+    o.flag.visible = !!fl && !fl.done;
+    if (fl) o.flag.position.set(fl.x, 0, fl.y);
+  }
+
   private refreshPads(s: GameState): void {
     const key = JSON.stringify(s.pads);
     if (key === this.padKey) return;
@@ -846,21 +988,39 @@ export class Renderer3D {
     const I = this.inst;
     for (const k of ['soft', 'softCursed', 'softGold', 'fa', 'fb', 'fg', 'item', 'zone', 'shift'])
       I[k]!.n = 0;
-    // pereți (se schimbă doar la hurry up)
+    const inf = s.inf !== null;
+    // fereastra randată: toată arena sau, în lumea infinită, ±17 pătrățele în jurul jucătorului
+    let [rx0, rx1, ry0, ry1] = [0, s.W - 1, 0, s.H - 1];
+    if (inf) {
+      const [px, py] = m.lerp('p0', m.me.px, m.me.py);
+      const cx = Math.round(px);
+      const cy = Math.round(py);
+      [rx0, rx1, ry0, ry1] = [cx - 17, cx + 17, cy - 17, cy + 17];
+      this.root
+        .getObjectByName('ground')
+        ?.position.set(Math.round(px / 2) * 2 - 0.5, 0, Math.round(py / 2) * 2 - 0.5);
+      this.sun.position.set(px + 5, 15, py + 7);
+      this.sun.target.position.set(px, 0, py);
+    }
+    // pereți (în arenă se schimbă doar la hurry up; în lumea infinită, la fiecare cadru)
     let hc = 0;
-    for (const g of s.grid) if (g === HARD) hc++;
-    if (hc !== this.hardCount) {
+    if (!inf) for (const g of s.grid) if (g === HARD) hc++;
+    if (inf || hc !== this.hardCount) {
       this.hardCount = hc;
       I.hard!.n = 0;
-      for (let y = 0; y < s.H; y++)
-        for (let x = 0; x < s.W; x++) if (s.grid[y * s.W + x] === HARD) this.set(I.hard!, x, 0.5, y, 1, 1, 1);
+      for (let y = ry0; y <= ry1; y++)
+        for (let x = rx0; x <= rx1; x++)
+          if (inBounds(s, x, y) && s.grid[idx(s, x, y)] === HARD) this.set(I.hard!, x, 0.5, y, 1, 1, 1);
       I.hard!.mesh.count = I.hard!.n;
       I.hard!.mesh.instanceMatrix.needsUpdate = true;
     }
-    for (let y = 0; y < s.H; y++)
-      for (let x = 0; x < s.W; x++) {
-        const k = y * s.W + x;
+    for (let y = ry0; y <= ry1; y++)
+      for (let x = rx0; x <= rx1; x++) {
+        if (inf && !inBounds(s, x, y)) continue;
+        const k = idx(s, x, y);
         const g = s.grid[k];
+        const tg = s.mission && g === SOFT ? targetAt(s, x, y) : undefined;
+        if (tg && (tg.type === 'tower' || tg.type === 'cage')) continue;
         if (g === SOFT)
           this.set(s.gold[k] ? I.softGold! : s.cursed[k] ? I.softCursed! : I.soft!, x, 0.4, y, 1, 1, 1);
         const f = s.flame[k]!;
@@ -885,7 +1045,7 @@ export class Renderer3D {
         for (const [dx, dy] of CROSS) {
           const x = c.sx + dx;
           const y = c.sy + dy;
-          if (x < 0 || y < 0 || x >= s.W || y >= s.H || s.grid[y * s.W + x] === HARD) continue;
+          if (!inBounds(s, x, y) || s.grid[idx(s, x, y)] === HARD) continue;
           this.set(I.zone!, x, 0.03, y, 1, 1, 1);
         }
     (I.zone!.mesh.material as THREE.MeshBasicMaterial).opacity = 0.25 + 0.3 * Math.abs(Math.sin(time * 16));
@@ -978,6 +1138,7 @@ export class Renderer3D {
       e.l.intensity = e.t < 0.45 ? 4 * LEGACY * 6 * (1 - e.t / 0.45) : 0;
     }
     this.renderPlayers(m, dt);
+    if (s.mission) this.renderMission(m);
     // mâna cu bomba
     if (this.vm) {
       const show = fps && me.alive && (me.carry !== null || me.active < me.bombs);
@@ -1241,8 +1402,14 @@ export class Renderer3D {
     } else {
       this.cineDir = null;
       cam.fov = 55;
-      cam.position.set(s.W / 2 - 0.5 + jx, Math.max(s.W, s.H) * 0.75, s.H / 2 - 0.5 + s.H * 0.75);
-      cam.lookAt(s.W / 2 - 0.5, 0, s.H / 2 - 0.5);
+      if (s.inf) {
+        const [px, py] = m.lerp('p0', me.px, me.py);
+        cam.position.set(px + jx, 12, py + 9);
+        cam.lookAt(px, 0, py);
+      } else {
+        cam.position.set(s.W / 2 - 0.5 + jx, Math.max(s.W, s.H) * 0.75, s.H / 2 - 0.5 + s.H * 0.75);
+        cam.lookAt(s.W / 2 - 0.5, 0, s.H / 2 - 0.5);
+      }
     }
     if (me.alive && me.dizzyT > 0 && motion) {
       const a = Math.min(1, me.dizzyT / 30);

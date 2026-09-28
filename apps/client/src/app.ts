@@ -12,10 +12,18 @@ import {
   U,
   isGold,
   isNegative,
+  missionGoal,
+  missionStars,
 } from '@fitil/sim';
 import type { BotLevel, Dir, TutorialStep } from '@fitil/sim';
 import {
   BOT_NAMES,
+  CHAPTERS,
+  FRIEND_NAMES,
+  MISSION_END,
+  chapterUnlocked,
+  missionById,
+  missionUnlocked,
   CHALLENGE_TEXT,
   ITEM_NAMES,
   MODES,
@@ -81,6 +89,7 @@ export class App {
   private bubble!: HTMLElement;
   private toast!: HTMLElement;
   private tut!: HTMLElement;
+  private arrow!: HTMLElement;
   private det!: HTMLElement;
   private bomb3!: HTMLElement;
   private hints!: HTMLElement[];
@@ -165,6 +174,7 @@ export class App {
     this.bubble = h('div', { class: 'bubble hidden' });
     this.toast = h('div', { class: 'toast hidden' });
     this.tut = h('div', { class: 'tut hidden' });
+    this.arrow = h('div', { class: 'obj-arrow hidden' }, h('b'), h('span'));
     this.ui.append(
       bar,
       left,
@@ -176,6 +186,7 @@ export class App {
       this.bubble,
       this.toast,
       this.tut,
+      this.arrow,
       this.drawer,
       this.overlay,
     );
@@ -233,7 +244,16 @@ export class App {
       ),
       h(
         'div',
-        { class: 'grid three' },
+        { class: 'grid four' },
+        h(
+          'button',
+          {
+            class: 'opt',
+            'data-test': 'missions',
+            onclick: () => this.showScreen(() => this.missionsMenu()),
+          },
+          'Misiuni',
+        ),
         h(
           'button',
           {
@@ -254,6 +274,45 @@ export class App {
           ? 'Rotește telefonul pentru ecran mai mare.'
           : '',
       ),
+    );
+  }
+
+  private missionsMenu(): HTMLElement {
+    const stars = settings.stars;
+    const starStr = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n);
+    return this.card(
+      h('h2', {}, 'Misiuni'),
+      h('p', {}, 'Singur, cu bară de viață. Stelele depind de timp și de viața rămasă.'),
+      ...CHAPTERS.flatMap((c, ci) => {
+        const open = chapterUnlocked(ci, stars);
+        const got = c.missions.reduce((n, id) => n + (stars[id] ?? 0), 0);
+        return [
+          h('h3', {}, `${c.name} · ${got}/${c.missions.length * 3}★`),
+          open
+            ? h(
+                'div',
+                { class: 'grid' },
+                ...c.missions.map((id) => {
+                  const def = missionById(id)!;
+                  const ok = missionUnlocked(id, stars);
+                  return h(
+                    'button',
+                    {
+                      class: 'opt' + (ok ? '' : ' locked'),
+                      'data-mission': id,
+                      disabled: !ok,
+                      title: def.desc,
+                      onclick: () => this.start({ type: 'mission', id }),
+                    },
+                    ok ? def.name : `🔒 ${def.name}`,
+                    h('span', { class: 'stars' }, starStr(stars[id] ?? 0)),
+                  );
+                }),
+              )
+            : h('p', {}, `🔒 Se deblochează cu ${c.unlockStars}★ în capitolul anterior.`),
+        ];
+      }),
+      this.back(),
     );
   }
 
@@ -638,6 +697,10 @@ export class App {
     if (kind.type === 'tutorial') this.showTut(kind.step);
     else show(this.tut, false);
     if (kind.type === 'challenge') this.showBanner(CHALLENGE_TEXT[kind.id].desc, 3000, 'gold');
+    if (kind.type === 'mission') {
+      const def = missionById(kind.id)!;
+      setTimeout(() => this.showBanner(`${def.name}: ${def.desc}`, 3200, 'gold'), 80);
+    }
     if (kind.type === 'dummies')
       this.showBanner('Manechinele revin după 2s. Exersează lanțuri și șuturi!', 2600);
     if (!this.hintsHidden) setTimeout(() => this.hideHints(), 6000);
@@ -787,6 +850,7 @@ export class App {
     this.updateBubble();
     show(this.det, m.hasRemote && this.phase === 'play');
     show(this.bomb3, this.view !== '2d' && this.phase === 'play');
+    this.updateArrow();
     if (this.view !== '2d') this.r3?.render(dt);
   }
 
@@ -966,7 +1030,112 @@ export class App {
         if (e.progress.status !== 'playing') this.challengeOver(e.progress.status === 'done');
         this.hudKey = '';
         break;
+      case 'hurt':
+        this.sfx.bad();
+        vibrate([60, 30, 60]);
+        this.hudKey = '';
+        break;
+      case 'missionHit':
+        if (e.kind === 'tower' && !e.done) this.sfx.kick();
+        if (e.kind === 'cage') this.showBanner('Prieten eliberat! Du-l acasă.', 1500, 'gold');
+        break;
+      case 'friendHome': {
+        const mi = m.s.mission!;
+        const f = mi.friends.find((x) => x.id === e.id);
+        const name = FRIEND_NAMES[(f?.target ?? 0) % FRIEND_NAMES.length];
+        this.sfx.win();
+        this.showBanner(`${name} e acasă! ${mi.count}/${mi.need}`, 1500, 'gold');
+        break;
+      }
+      case 'missionProgress': {
+        const mi = m.s.mission!;
+        if (mi.def.kind === 'collect') {
+          this.sfx.pick();
+          this.showBanner(`Cristal ${e.count}/${e.need}`, 1000, 'gold');
+        }
+        if (mi.def.kind === 'demolish') this.showBanner(`Turn distrus! ${e.count}/${e.need}`, 1300, 'gold');
+        break;
+      }
     }
+  }
+
+  private missionOver(): void {
+    const m = this.match!;
+    const mi = m.s.mission!;
+    const def = missionById(mi.def.id)!;
+    const won = !!mi.over?.won;
+    const stars = missionStars(m.s);
+    if (stars > (settings.stars[def.id] ?? 0)) {
+      settings.stars[def.id] = stars;
+      save();
+    }
+    this.phase = 'over';
+    this.controls.enabled = false;
+    show(this.toast, false);
+    const t = Math.round((mi.over?.tick ?? m.s.tick) / TICK_HZ);
+    const hp = Math.round(m.me.hp);
+    const st = def.stars;
+    const crit =
+      def.kind === 'race'
+        ? `★★: ${st.two}s rămase · ★★★: ${st.three}s rămase`
+        : `★★: sub ${st.two}s · ★★★: sub ${st.three}s cu cel puțin ${st.hp}% viață`;
+    const order = CHAPTERS.flatMap((c) => c.missions);
+    const next = order[order.indexOf(def.id) + 1];
+    const canNext = won && next !== undefined && missionUnlocked(next, settings.stars);
+    this.showScreen(() =>
+      this.card(
+        h('h2', {}, won ? 'Misiune reușită!' : 'Misiune eșuată'),
+        h('p', {}, won ? def.name : MISSION_END[mi.over?.reason === 'time' ? 'time' : 'dead']),
+        h(
+          'div',
+          { class: 'bigstars', 'data-stars': String(stars) },
+          ...[1, 2, 3].map((i) => h('span', { class: i <= stars ? 'on' : '' }, '★')),
+        ),
+        h('p', {}, `Timp ${t}s · Viață ${hp}%`),
+        h('p', { style: 'font-size:12px' }, crit),
+        h(
+          'button',
+          { class: 'btn', 'data-test': 'again', onclick: () => this.restart() },
+          won ? 'Joacă din nou' : 'Reîncearcă',
+        ),
+        canNext
+          ? h(
+              'button',
+              { class: 'btn ghost', onclick: () => this.start({ type: 'mission', id: next! }) },
+              'Următoarea misiune',
+            )
+          : null,
+        h(
+          'button',
+          { class: 'btn ghost', onclick: () => this.showScreen(() => this.missionsMenu()) },
+          'Hartă misiuni',
+        ),
+      ),
+    );
+  }
+
+  /** Săgeata spre obiectiv, la marginea ecranului (2D: direcția pe hartă; 3D: relativ la cameră). */
+  private updateArrow(): void {
+    const m = this.match;
+    const g = m && this.phase === 'play' ? missionGoal(m.s) : null;
+    const me = m?.me;
+    if (!g || !me?.alive) return show(this.arrow, false);
+    const dx = g.x - me.px / U;
+    const dy = g.y - me.py / U;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 2.5) return show(this.arrow, false);
+    let ang = Math.atan2(dy, dx);
+    if (this.view !== '2d' && this.r3) {
+      const yaw = this.r3.yawAngle;
+      const fw = dx * Math.sin(yaw) + dy * Math.cos(yaw);
+      const rt = -dx * Math.cos(yaw) + dy * Math.sin(yaw);
+      ang = Math.atan2(-fw, rt);
+    }
+    const R = Math.min(innerWidth, innerHeight - 30) * 0.38;
+    show(this.arrow, true);
+    this.arrow.style.transform = `translate(${Math.cos(ang) * R}px,${Math.sin(ang) * R}px)`;
+    (this.arrow.firstChild as HTMLElement).style.transform = `rotate(${ang}rad)`;
+    (this.arrow.lastChild as HTMLElement).textContent = `${Math.round(dist)}m${g.home ? ' · acasă' : ''}`;
   }
 
   private showTut(step: TutorialStep): void {
@@ -1042,6 +1211,7 @@ export class App {
   private roundOver(e: Extract<MatchEvent, { type: 'over' }>): void {
     const m = this.match;
     if (!m || m.kind.type === 'challenge' || m.kind.type === 'tutorial') return;
+    if (m.kind.type === 'mission') return this.missionOver();
     this.phase = 'over';
     this.controls.enabled = false;
     show(this.toast, false);
@@ -1101,6 +1271,21 @@ export class App {
     const col = (c: string) => this.theme.tint[c] ?? c;
     if (m.kind.type === 'tutorial')
       return `<div class="chip">Tutorial ${TUTORIAL_STEPS.indexOf(m.kind.step) + 1}/6</div>`;
+    if (s.mission) {
+      const mi = s.mission;
+      const hp = Math.round(m.me.hp);
+      const c = hp > 60 ? '#7dffb0' : hp > 30 ? '#ffd23f' : '#ff5a4d';
+      const t = Math.floor(s.tick / TICK_HZ);
+      const obj =
+        mi.def.kind === 'race'
+          ? `Timp ${Math.max(0, mi.def.timeLimit - t)}s`
+          : `${esc(missionById(mi.def.id)?.name ?? '')} ${mi.count}/${mi.need}`;
+      return (
+        `<div class="life" data-hp="${hp}"><i style="width:${hp}%;background:${c}"></i><span>${hp}%</span></div>` +
+        `<div class="chip">${obj}</div>` +
+        (mi.def.kind !== 'race' ? `<div class="chip">${t}s</div>` : '')
+      );
+    }
     if (m.challenge) {
       const c = m.challenge;
       const t = Math.floor(s.tick / TICK_HZ);

@@ -1,10 +1,24 @@
 import Phaser from 'phaser';
-import { DEG, HARD, SHIFT_STEP, SOFT, TICK_HZ, U, isGold, shiftCells } from '@fitil/sim';
+import {
+  DEG,
+  HARD,
+  HOME,
+  SHIFT_STEP,
+  SOFT,
+  TICK_HZ,
+  U,
+  idx,
+  inBounds,
+  isGold,
+  shiftCells,
+  targetAt,
+} from '@fitil/sim';
 import type { GameState, ItemType, Player } from '@fitil/sim';
 import { TEAMS } from '@fitil/content';
 import type { Theme } from '@fitil/content';
 import { DPR } from '../display.ts';
 import type { Match, MatchEvent } from '../game/match.ts';
+import { FRIEND_COL } from './colors.ts';
 import { DizzyFX } from './dizzy.ts';
 import * as paint from './paint.ts';
 import { TexBank } from './textures.ts';
@@ -60,6 +74,7 @@ interface Particle {
 }
 
 const hexNum = (c: string): number => parseInt(c.slice(1), 16);
+
 const FACE: [number, number][] = [
   [0, -1],
   [0, 1],
@@ -114,6 +129,14 @@ export class ArenaScene extends Phaser.Scene {
   private fpsAcc = 0;
   private fpsN = 0;
   private rotK = 1;
+  /** Camera în lumea infinită (pătrățele), urmărește lin jucătorul. */
+  private camX = 1;
+  private camY = 1;
+  /** Fereastra vizibilă (pătrățele de lume). */
+  private view = { x0: 0, x1: 0, y0: 0, y1: 0 };
+  /** Tremuratul turnurilor lovite ("x,y" → secunde rămase) și flash-ul roșu la rănire. */
+  private hitT = new Map<string, number>();
+  private hurtT = 0;
 
   constructor() {
     super('arena');
@@ -123,6 +146,7 @@ export class ArenaScene extends Phaser.Scene {
     this.tex = new TexBank(this);
     this.g = this.add.graphics().setDepth(DEPTH.top);
     for (const [name, d] of Object.entries({
+      ground: DEPTH.static + 0.5,
       tiles: DEPTH.tiles,
       over: DEPTH.tiles + 0.5,
       items: DEPTH.items,
@@ -158,6 +182,12 @@ export class ArenaScene extends Phaser.Scene {
     this.shake = 0;
     this.zoomK = 1;
     this.staticKey = '';
+    this.hitT.clear();
+    this.hurtT = 0;
+    if (m) {
+      this.camX = m.me.px / U;
+      this.camY = m.me.py / U;
+    }
     m?.on((e) => this.onEvent(e));
   }
 
@@ -253,6 +283,24 @@ export class ArenaScene extends Phaser.Scene {
           const p = m.s.players[e.hero.player]!;
           this.confetti(p.px / U, p.py / U);
         }
+        break;
+      case 'missionHit':
+        if (e.kind === 'tower') {
+          this.hitT.set(`${e.x},${e.y}`, 0.3);
+          this.shake = Math.min(1.6, this.shake + 0.4);
+          if (e.done) {
+            this.debris(e.x, e.y);
+            this.debris(e.x, e.y);
+            this.sparkle(e.x, e.y, 0xff5a4d);
+          } else this.sparkle(e.x, e.y, 0xffffff);
+        } else this.sparkle(e.x, e.y, e.kind === 'cage' ? 0x7dffb0 : 0x6ff4ff);
+        break;
+      case 'friendHome':
+        this.sparkle(HOME[0], HOME[1], 0x7dffb0);
+        break;
+      case 'hurt':
+        this.hurtT = 0.5;
+        this.shake = Math.min(1.6, this.shake + 0.6);
         break;
       case 'death':
         if (e.cause === 'crush') {
@@ -352,13 +400,24 @@ export class ArenaScene extends Phaser.Scene {
     const a = this.area();
     const cam = this.cameras.main;
     cam.setViewport(a.x, a.y, a.w, a.h);
-    const T = Math.max(this.mini ? 4 : 12, Math.floor(Math.min(a.w / s.W, a.h / s.H)));
+    const inf = s.inf !== null;
+    const T = inf
+      ? Math.floor(
+          this.mini
+            ? Math.max(4, Math.min(a.w / 15, a.h / 11))
+            : Math.max(18 * DPR, a.w >= a.h ? a.h / 12 : a.w / 11),
+        )
+      : Math.max(this.mini ? 4 : 12, Math.floor(Math.min(a.w / s.W, a.h / s.H)));
     if (T !== this.T || this.tex.T !== T || this.staticKey === '') {
       this.T = T;
       this.tex.reset(this.theme.id, T);
     }
     const skey = `${this.theme.id}@${T}`;
-    if (this.staticKey !== skey || this.staticFor !== s) this.buildStatic(s);
+    if (inf) {
+      this.staticImg?.setVisible(false);
+      this.staticHard = null;
+      this.staticKey = skey;
+    } else if (this.staticKey !== skey || this.staticFor !== s) this.buildStatic(s);
     cam.setBackgroundColor(this.theme.ink);
     // arena rotativă: încape la orice unghi
     const rot = s.rot && !this.mini ? (s.rot.a / DEG) * (Math.PI / 180) : 0;
@@ -379,6 +438,18 @@ export class ArenaScene extends Phaser.Scene {
     if (Math.abs(this.zoomK - 1) < 0.002) this.zoomK = 1;
     let cx = bw / 2;
     let cy = bh / 2;
+    if (inf) {
+      // camera urmărește lin jucătorul (tu ești mereu în centru)
+      const me = m.me;
+      if (me.alive || s.tick - me.deathTick < 2) {
+        const [px, py] = m.lerp('p0', me.px, me.py);
+        const k = Math.min(1, (this.game.loop.rawDelta / 1000) * 10);
+        this.camX += (px - this.camX) * k;
+        this.camY += (py - this.camY) * k;
+      }
+      cx = (this.camX + 0.5) * T;
+      cy = (this.camY + 0.5) * T;
+    }
     if (this.zoomK > 1 && focusP) {
       const [px, py] = m.lerp(`p${focusP.id}`, focusP.px, focusP.py);
       const k = Math.min(1, (this.zoomK - 1) / 1.4);
@@ -395,6 +466,18 @@ export class ArenaScene extends Phaser.Scene {
     }
     cam.setRotation(rot + rj);
     cam.centerOn(cx, cy);
+    if (inf) {
+      const hw = a.w / (2 * T * cam.zoom) + 2;
+      const hh = a.h / (2 * T * cam.zoom) + 2;
+      const vx = cx / T;
+      const vy = cy / T;
+      this.view = {
+        x0: Math.floor(vx - hw),
+        x1: Math.ceil(vx + hw),
+        y0: Math.floor(vy - hh),
+        y1: Math.ceil(vy + hh),
+      };
+    } else this.view = { x0: 0, x1: s.W - 1, y0: 0, y1: s.H - 1 };
     // amețeala (valuri + culori)
     const amt = m.me.alive && m.me.dizzyT > 0 ? Math.min(1, m.me.dizzyT / 30) : 0;
     if (
@@ -456,6 +539,13 @@ export class ArenaScene extends Phaser.Scene {
     return this.t(`soft${v}`, 1, 1, 0, 0, () => paint.soft(st, 7 + v * 3, 5 + v * 7, 0, 0));
   }
 
+  private groundTex(x: number, y: number) {
+    const st = this.theme.style;
+    const par = (x + y) & 1;
+    const v = Math.floor(paint.hash(x, y, 25) * 4);
+    return this.t(`g${par}${v}`, 1, 1, 0, 0, () => paint.ground(st, 10 + v * 2 + par, 10, 0, 0));
+  }
+
   private hardTex(x: number, y: number) {
     const st = this.theme.style;
     const v = Math.floor(paint.hash(x, y, 23) * 4);
@@ -501,12 +591,21 @@ export class ArenaScene extends Phaser.Scene {
       (sh.axis === 0 ? y === sh.idx && x > 0 && x < s.W - 1 : x === sh.idx && y > 0 && y < s.H - 1);
     const shOff = sh ? (1 - shProg) * -sh.dir * T : 0;
 
-    for (let y = 0; y < s.H; y++)
-      for (let x = 0; x < s.W; x++) {
-        const k = y * s.W + x;
+    const inf = s.inf !== null;
+    const V = this.view;
+    for (let y = V.y0; y <= V.y1; y++)
+      for (let x = V.x0; x <= V.x1; x++) {
+        if (inf && !inBounds(s, x, y)) continue;
+        const k = idx(s, x, y);
         const gv = s.grid[k];
         let px = x * T;
         let py = y * T;
+        if (inf) P.ground!.get(this.groundTex(x, y), px, py);
+        const tgt = s.mission && gv === SOFT ? targetAt(s, x, y) : undefined;
+        if (tgt && (tgt.type === 'tower' || tgt.type === 'cage')) {
+          this.drawTarget(m, tgt, px, py, time);
+          continue;
+        }
         if (onSh(x, y)) {
           if (sh!.axis === 0) px += shOff;
           else py += shOff;
@@ -621,11 +720,14 @@ export class ArenaScene extends Phaser.Scene {
     for (let k = 0; k < s.flame.length; k++) {
       const f = s.flame[k]!;
       if (f <= 0) continue;
-      P.flames!.get(fl, (k % s.W) * T, Math.floor(k / s.W) * T).setAlpha(Math.min(1, f / (0.2 * TICK_HZ)));
+      const fx = inf ? s.inf!.ownX[k]! : k % s.W;
+      const fy = inf ? s.inf!.ownY[k]! : Math.floor(k / s.W);
+      P.flames!.get(fl, fx * T, fy * T).setAlpha(Math.min(1, f / (0.2 * TICK_HZ)));
     }
 
     // capturează steagul: baze și steaguri
     if (s.ctf) this.drawCtf(m, time);
+    if (s.mission) this.drawMission(m, time, dt);
 
     // păianjeni
     for (const c of s.spiders) {
@@ -716,8 +818,8 @@ export class ArenaScene extends Phaser.Scene {
 
     // ambient de temă
     if (th.ambient && !this.mini) {
-      const w = s.W * T;
-      const h = s.H * T;
+      const w = (V.x1 - V.x0 + 1) * T;
+      const h = (V.y1 - V.y0 + 1) * T;
       const amb = this.t('amb', 0.8, 0.5, 0.4, 0.25, () => paint.ambient(st));
       const md = (a: number, n: number) => ((a % n) + n) % n;
       for (let i = 0; i < th.ambient; i++) {
@@ -747,19 +849,29 @@ export class ArenaScene extends Phaser.Scene {
           y = md(b * h + time * T * (0.5 + c * 0.4), h + T * 2) - T;
           alpha = 0.9;
         }
-        const im = P.amb!.get(amb, x, y).setScale(sc).setAlpha(alpha);
+        const im = P.amb!.get(amb, x + V.x0 * T, y + V.y0 * T)
+          .setScale(sc)
+          .setAlpha(alpha);
         if (st === 'halloween') im.setScale(sc, sc * (0.7 + 0.3 * Math.abs(Math.sin(time * 18 + i))));
       }
       if (st === 'halloween') {
         g.fillStyle(0x3c145a, 0.12);
-        g.fillRect(0, 0, w, h);
+        g.fillRect(V.x0 * T, V.y0 * T, w, h);
       }
     }
 
     // fulger: ecranul se luminează
+    const VW = (V.x1 - V.x0 + 1) * T;
+    const VH = (V.y1 - V.y0 + 1) * T;
     if (this.flash > 0) {
       g.fillStyle(0xe6f0ff, 0.22 * this.flash);
-      g.fillRect(0, 0, s.W * T, s.H * T);
+      g.fillRect(V.x0 * T, V.y0 * T, VW, VH);
+    }
+    // rănit: flash roșu
+    if (this.hurtT > 0) {
+      this.hurtT = Math.max(0, this.hurtT - dt);
+      g.fillStyle(0xff2828, this.hurtT * 0.5);
+      g.fillRect(V.x0 * T, V.y0 * T, VW, VH);
     }
 
     for (const p of Object.values(P)) p.end();
@@ -855,6 +967,111 @@ export class ArenaScene extends Phaser.Scene {
       if (!f.atHome) {
         im.setAlpha(0.5 + 0.5 * Math.abs(Math.sin(time * 6)));
         this.label(String(Math.ceil(f.dropT / TICK_HZ)), (f.x + 0.5) * T, (f.y + 0.95) * T);
+      }
+    }
+  }
+
+  /** Turn sau cușcă (în locul lăzii). */
+  private drawTarget(
+    m: Match,
+    t: NonNullable<ReturnType<typeof targetAt>>,
+    px: number,
+    py: number,
+    time: number,
+  ): void {
+    const T = this.T;
+    const k = `${t.x},${t.y}`;
+    if (t.type === 'tower') {
+      const h = this.hitT.get(k) ?? 0;
+      const im = this.pools.actors!.get(
+        this.t(`tower${t.hp}${t.maxHp}`, 1, 1.8, 0, 0.8, () => paint.tower(t.hp, t.maxHp)),
+        px + (h > 0 ? Math.sin(time * 80) * T * 0.04 : 0),
+        py,
+      );
+      im.setDepth(DEPTH.actors + t.y * 0.01 - 0.002);
+      return;
+    }
+    const col = FRIEND_COL[m.s.mission!.targets.indexOf(t) % FRIEND_COL.length]!;
+    this.pools.tiles!.get(
+      this.t(`cage${col}`, 1, 1, 0, 0, () => paint.cage(col)),
+      px,
+      py,
+    );
+    if (Math.sin(time * 2 + t.x) > 0.3) this.label('Ajutor!', px + T / 2, py - T * 0.08);
+  }
+
+  private drawMission(m: Match, time: number, dt: number): void {
+    const s = m.s;
+    const T = this.T;
+    const P = this.pools;
+    const mi = s.mission!;
+    for (const [k, v] of this.hitT)
+      if (v - dt <= 0) this.hitT.delete(k);
+      else this.hitT.set(k, v - dt);
+    // casa (start)
+    const home = P.fx!.get(
+      this.t('home', 1.5, 0.8, 0.75, 0.4, () => paint.ring('#7dffb0', 0.62, 0.3, 0.06)),
+      (HOME[0] + 0.5) * T,
+      (HOME[1] + 0.55) * T,
+    );
+    home.setAlpha(0.6 + 0.3 * Math.sin(time * 3));
+    if (mi.def.kind === 'rescue')
+      P.ctf!.get(
+        this.t('homeflag', 0.6, 0.9, 0.1, 0.8, () => paint.flag('#7dffb0')),
+        (HOME[0] + 0.3) * T,
+        (HOME[1] + 0.5) * T,
+      ).setDepth(DEPTH.actors + HOME[1] * 0.01);
+    // steagul cursei
+    for (const t of mi.targets) {
+      if (t.type !== 'flag' || t.done) continue;
+      const glow = P.fx!.get(
+        this.t('fglow', 1, 1, 0.5, 0.5, () => paint.disc('rgba(255,210,63,0.25)', 0.45)),
+        (t.x + 0.5) * T,
+        (t.y + 0.5) * T,
+      );
+      glow.setScale(1 + 0.18 * Math.sin(time * 4));
+      P.ctf!.get(
+        this.t('raceflag', 0.8, 1.5, 0.3, 1.3, () => paint.raceFlag()),
+        (t.x + 0.5) * T,
+        (t.y + 0.55) * T,
+      ).setDepth(DEPTH.actors + t.y * 0.01);
+    }
+    // prietenii salvați
+    for (const f of mi.friends) {
+      if (f.home) continue;
+      const [x, y] = m.lerp(`f${f.id}`, f.px, f.py);
+      const col = FRIEND_COL[f.target % FRIEND_COL.length]!;
+      const bob = f.moving ? Math.abs(Math.sin(time * 14)) * T * 0.05 : 0;
+      const faint = f.faint > 0;
+      const dir: [number, number] = [
+        [0, -1],
+        [0, 1],
+        [-1, 0],
+        [1, 0],
+      ][f.dir] as [number, number];
+      P.actors!.get(
+        this.t('shadow', 1, 0.4, 0.5, 0.2, () => paint.disc('rgba(0,0,0,1)', 0.42)),
+        (x + 0.5) * T,
+        (y + 0.5) * T + T * 0.3,
+      )
+        .setScale(0.48, 0.14)
+        .setAlpha(0.25);
+      const im = P.actors!.get(
+        this.t(`friend${col}${faint ? 'x' : dir.join()}`, 0.7, 0.7, 0.35, 0.35, () =>
+          paint.friendFace(col, 0, 0, faint, dir),
+        ),
+        (x + 0.5) * T,
+        (y + 0.5) * T - bob,
+      );
+      im.setDepth(DEPTH.actors + y * 0.01);
+      if (faint) {
+        const star = this.t('star', 0.2, 0.2, 0.1, 0.1, () => paint.ring('#ffe14a', 0.05, 0.05, 0.035));
+        for (let i = 0; i < 3; i++) {
+          const a = time * 5 + i * 2.1;
+          P.actors!.get(star, (x + 0.5) * T + Math.cos(a) * T * 0.2, (y + 0.5) * T - T * 0.35).setDepth(
+            DEPTH.actors + y * 0.01 + 0.001,
+          );
+        }
       }
     }
   }

@@ -75,7 +75,7 @@ export class Match {
   paused = false;
   doom: Doom | null = null;
   hero: Hero | null = null;
-  private overT = -1;
+  private overT = 0;
   private done = false;
   private koShown = false;
   private taps: (1 | 2)[] = [];
@@ -171,6 +171,7 @@ export class Match {
     for (const p of this.s.players) this.prev.set(`p${p.id}`, [p.px, p.py]);
     for (const c of this.s.spiders) this.prev.set(`s${c.id}`, [c.px, c.py]);
     for (const c of this.s.clouds) this.prev.set(`c${c.id}`, [c.px, c.py]);
+    for (const f of this.s.mission?.friends ?? []) this.prev.set(`f${f.id}`, [f.px, f.py]);
   }
 
   private tick(): void {
@@ -214,7 +215,14 @@ export class Match {
         if (cel) this.startHero(this.team ? 'team' : 'win', cel.id, 2.6);
       }
     }
-    if (e.type === 'death' && e.player === ME && !s.rules.respawnTicks && !this.koShown && !this.tutorial) {
+    if (
+      e.type === 'death' &&
+      e.player === ME &&
+      !s.rules.respawnTicks &&
+      !this.koShown &&
+      !this.tutorial &&
+      !s.mission
+    ) {
       this.koShown = true;
       const k = e.killerId;
       let msg =
@@ -246,6 +254,8 @@ export class Match {
     const me = this.me;
     if (this.doom || !me.alive || this.s.result || this.tutorial) return;
     if (this.s.rules.mode === 'ctf' || this.s.rules.respawnTicks) return;
+    // în misiuni „bye bye” apare doar dacă lovitura te-ar omorî
+    if (this.s.mission && me.hp > 35) return;
     const b = doomBomb(this.s, me);
     if (b === null) return;
     this.doom = { t: 0, bomb: b, said: false };

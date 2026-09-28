@@ -1,6 +1,7 @@
 import {
   challengeSetup,
   createGame,
+  createMission,
   createTutorial,
   ctfRules,
   duelRules,
@@ -10,14 +11,15 @@ import {
   shiftRules,
 } from '@fitil/sim';
 import type { BotLevel, ChallengeId, GameSetup, GameState, Tutorial, TutorialStep } from '@fitil/sim';
-import { ROSTER } from '@fitil/content';
+import { ROSTER, missionById } from '@fitil/content';
 import type { ModeId } from '@fitil/content';
 
 export type PlayKind =
   | { type: 'mode'; mode: ModeId }
   | { type: 'tutorial'; step: TutorialStep }
   | { type: 'dummies' }
-  | { type: 'challenge'; id: ChallengeId };
+  | { type: 'challenge'; id: ChallengeId }
+  | { type: 'mission'; id: string };
 
 export interface Slot {
   name: string;
@@ -54,6 +56,11 @@ export function build(kind: PlayKind, bots: BotLevel, seed: number, aspect: numb
     const slots = ffaSlots().slice(0, s.players.length);
     if (slots[1]) slots[1] = { ...ROSTER.dummy, bot: true, voice: 1 };
     return { s, slots, tutorial: t };
+  }
+  if (kind.type === 'mission') {
+    const def = missionById(kind.id);
+    if (!def) throw new Error(`misiune necunoscută: ${kind.id}`);
+    return { s: createMission(def, seed), slots: ffaSlots().slice(0, 1), tutorial: null };
   }
   if (kind.type === 'dummies') {
     const s = createGame(dummiesSetup(seed, aspect));

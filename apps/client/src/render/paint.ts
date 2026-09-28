@@ -1428,3 +1428,111 @@ export function ambient(s: ThemeStyle): void {
     ctx.stroke();
   }
 }
+
+/* ---------- misiuni ---------- */
+
+/** Turn roșu-alb cu steag; baza la (0, 0) = colțul pătrățelului; bulinele arată viața turnurilor blindate. */
+export function tower(hp: number, maxHp: number): void {
+  ctx.fillStyle = '#3a1418';
+  ctx.fillRect(T * 0.12, -T * 0.35, T * 0.76, T * 1.25);
+  for (let i = 0; i < 5; i++) {
+    ctx.fillStyle = i % 2 ? '#f3f1ea' : '#e0402f';
+    ctx.fillRect(T * 0.16, -T * 0.3 + i * T * 0.23, T * 0.68, T * 0.23);
+  }
+  ctx.fillStyle = '#8a8f9c';
+  ctx.fillRect(T * 0.1, -T * 0.42, T * 0.8, T * 0.1);
+  ctx.strokeStyle = '#12131c';
+  ctx.lineWidth = T * 0.03;
+  ctx.beginPath();
+  ctx.moveTo(T * 0.5, -T * 0.42);
+  ctx.lineTo(T * 0.5, -T * 0.75);
+  ctx.stroke();
+  ctx.fillStyle = '#ffd23f';
+  ctx.beginPath();
+  ctx.moveTo(T * 0.5, -T * 0.75);
+  ctx.lineTo(T * 0.8, -T * 0.66);
+  ctx.lineTo(T * 0.5, -T * 0.57);
+  ctx.fill();
+  if (maxHp > 1)
+    for (let i = 0; i < maxHp; i++) {
+      ctx.fillStyle = i < hp ? '#ff5a4d' : '#3a3f5c';
+      circle(T * (0.38 + i * 0.24), T * 0.97, T * 0.07);
+      ctx.fill();
+    }
+}
+
+/** Cușca cu prietenul prins (colțul pătrățelului în origine). */
+export function cage(col: string): void {
+  ctx.fillStyle = '#2a2f45';
+  ctx.fillRect(T * 0.08, T * 0.08, T * 0.84, T * 0.84);
+  const cx = T / 2;
+  const cy = T * 0.55;
+  friendFace(col, cx, cy, false, [0, 1], true);
+  ctx.strokeStyle = '#b9c0d3';
+  ctx.lineWidth = T * 0.06;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(T * (0.14 + i * 0.18), T * 0.1);
+    ctx.lineTo(T * (0.14 + i * 0.18), T * 0.9);
+    ctx.stroke();
+  }
+  ctx.strokeRect(T * 0.1, T * 0.1, T * 0.8, T * 0.8);
+}
+
+export function helpText(): void {
+  text('Ajutor!', 0, 0, T * 0.2, '#ffffff', 800);
+}
+
+/** Fața unui prieten (bilă colorată). `faint` = ochi în X. */
+export function friendFace(
+  col: string,
+  cx: number,
+  cy: number,
+  faint: boolean,
+  dir: [number, number],
+  sad = false,
+): void {
+  const dark = '#12131c';
+  ctx.fillStyle = col;
+  ctx.strokeStyle = dark;
+  ctx.lineWidth = T * 0.04;
+  circle(cx, cy, T * 0.25);
+  ctx.fill();
+  if (!sad) ctx.stroke();
+  if (faint) {
+    for (const sd of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(cx + sd * T * 0.08 - T * 0.04, cy - T * 0.07);
+      ctx.lineTo(cx + sd * T * 0.08 + T * 0.04, cy + 0.01);
+      ctx.moveTo(cx + sd * T * 0.08 + T * 0.04, cy - T * 0.07);
+      ctx.lineTo(cx + sd * T * 0.08 - T * 0.04, cy + 0.01);
+      ctx.stroke();
+    }
+    return;
+  }
+  ctx.fillStyle = '#fff';
+  for (const sd of [-1, 1]) {
+    circle(cx + sd * T * 0.08, cy - T * 0.04, T * 0.06);
+    ctx.fill();
+  }
+  ctx.fillStyle = dark;
+  for (const sd of [-1, 1]) {
+    circle(cx + sd * T * 0.08 + dir[0] * T * 0.02, cy - T * 0.03 + dir[1] * T * 0.02, T * 0.03);
+    ctx.fill();
+  }
+  ctx.beginPath();
+  if (sad) ctx.arc(cx, cy + T * 0.12, T * 0.06, Math.PI * 1.1, Math.PI * 1.9);
+  else ctx.arc(cx, cy + T * 0.06, T * 0.08, 0, Math.PI);
+  ctx.stroke();
+}
+
+/** Steagul cu carouri al cursei (baza bățului la origine). */
+export function raceFlag(): void {
+  ctx.fillStyle = '#12131c';
+  ctx.fillRect(-T * 0.2, -T * 1.2, T * 0.06, T * 1.45);
+  for (let r = 0; r < 3; r++)
+    for (let c = 0; c < 4; c++) {
+      ctx.fillStyle = (r + c) % 2 ? '#12131c' : '#ffffff';
+      ctx.fillRect(T * (-0.14 + c * 0.12), T * (-1.18 + r * 0.12), T * 0.12, T * 0.12);
+    }
+}

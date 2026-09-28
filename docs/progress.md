@@ -77,3 +77,22 @@
 - Păianjenii omoară mult (≈0.8 morți/meci în bench) — balans în Faza 4.
 - Boții încă nu folosesc mănușa, detonatorul și linia (din Faza 1).
 - Controalele relative la ecran din Arena rotativă sunt testate doar prin cod și capturi, nu manual pe telefon.
+
+## Faza 2b — Misiuni (singleplayer)
+
+**Mini-plan:** misiunile din prototip se joacă în lumea infinită, deci întâi lumea: stocare circulară 64×64 în `packages/sim`, generată din hash-ul coordonatelor și regenerată în jurul jucătorului (e și primul punct din Faza 7, adus înainte pentru că acceptarea 2b cere „ținte păstrate la regenerarea lumii”). Apoi misiunile ca stare de sim (ținte, prieteni, bară de viață), definițiile în `packages/content`, clientul (cameră care urmărește, HUD, săgeată, hartă de capitole, ecran de rezultat) și testele.
+
+**Făcut:**
+
+- **sim — lume infinită** (`world.ts`): `genCell` determinist (stâlpi pe pozițiile pare, start liber, lăzi/aurii/blestemate din hash), `ensureWindow` cu raza 26 în jurul jucătorului, bombele și păianjenii prea departe dispar; `idx`/`inBounds` știu de stocarea circulară, deci restul simulării (bombe, lanțuri, boți, BFS) merge neschimbat. Aruncarea nu mai face wrap, portalurile apar în jurul jucătorului.
+- **sim — misiuni** (`missions.ts`): ținte deterministe din seed (distanță [dmin, dmax] față de start, nu pe stâlpi, la ≥4 pătrățele între ele), cristale ascunse în lăzi (nu ard), turnuri blindate (2 explozii), cuști înconjurate de lăzi, prieteni care te urmează și leșină 3s în flacără, casa (start), steagul cursei; bară de viață (−35% explozie/fulger, −20% păianjen, 1.2s invulnerabilitate, scutul absoarbe), inimi +25% (~14% din drop-uri), păianjeni rătăcitori, limită de timp, victorie/înfrângere, `missionGoal` (săgeata), `missionStars`.
+- **content**: 8 misiuni în 2 capitole (cele 4 din prototip + variante mai grele), cu tip, număr de ținte, distanțe, limită de timp, densitate, criterii de stele, păianjeni — validate cu zod; deblocare progresivă (misiune cu misiune, capitolul 2 cu 8★ în capitolul 1).
+- **Client**: modul Misiuni în meniul principal cu harta de capitole (stele, lacăte), cameră care te urmărește lin, randarea ferestrei vizibile (2D și 3D), turnuri cu buline de viață și tremurat la lovitură, cuști cu „Ajutor!”, prieteni, casa și steagul verde, steagul cu carouri, flash roșu la rănire, bara de viață în HUD, obiectivul și cronometrul, săgeata de obiectiv (2D pe hartă, 3D relativ la cameră), „bye bye” doar când lovitura te-ar omorî (viață ≤ 35%), ecran de rezultat cu stele/timp/viață/criterii, reîncercare, misiunea următoare. Stelele sunt salvate local (`settings.stars`).
+- **Teste**: sim 81 (16 noi pentru lume și misiuni: generare deterministă, fără margini, zone modificate păstrate cât sunt în rază, ținte din seed pentru fiecare tip, ținte păstrate la regenerare, victorie/înfrângere pe fiecare tip, blindaj, leșin, cursă cu timp, bară de viață, păianjeni, stele, determinism); content 6. Playwright: harta misiunilor (deblocare) + fiecare din cele 8 misiuni pornește, se termină forțat cu reușită (stele salvate) și apoi cu eșec, fără erori; smoke-ul din Faza 2 trece în continuare (FPS 60/60/60 cu CPU 4x).
+
+**Rămas / cunoscut:**
+
+- Stelele sunt doar locale; sincronizarea cu contul e în Faza 6.
+- Nu există boți în lumea infinită (vin cu modul Infinit, Faza 7); nici chunk-uri online.
+- În 3D, săgeata de obiectiv e un overlay 2D la marginea ecranului (ca în prototip), nu un obiect 3D.
+- Misiunile nu au încă provocări de tip puzzle/boss (idei în GAME_DESIGN).

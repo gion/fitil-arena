@@ -145,3 +145,11 @@ export const TUTORIAL_TEXT: Record<TutorialStep, { title: string; hint: string }
   },
   dummy: { title: 'Țintă', hint: 'Manechinul stă după ladă. Sparge lada și prinde-l în flacără!' },
 };
+
+/** Prietenii din cuști (misiunea Salvare). */
+export const FRIEND_NAMES = ['Mimi', 'Pufi', 'Cuca', 'Lulu'];
+
+export const MISSION_END: Record<'time' | 'dead', string> = {
+  time: 'Timpul a expirat.',
+  dead: 'Ai rămas fără viață.',
+};
