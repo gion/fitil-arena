@@ -22,3 +22,7 @@ apps/client/android/local.properties
 apps/client/ios/App/Pods
 apps/client/ios/DerivedData
 xcuserdata
+
+# unelte locale de voce (Python)
+tools/voice/.venv
+tools/voice/out
