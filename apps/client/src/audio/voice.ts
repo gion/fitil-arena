@@ -43,13 +43,16 @@ export class SynthVoice implements VoicePack {
   }
 }
 
-/** Manifestul unui pachet cu fișiere: țipete per voce și replici după text. */
+/** Manifestul unui pachet cu fișiere: țipete per voce și replici după text (una sau mai multe variante). */
 export interface VoiceManifest {
   id: string;
   name: string;
   screams?: Record<number, string[]>;
-  lines?: Record<string, string>;
+  lines?: Record<string, string | string[]>;
 }
+
+const pick = (v: string | string[] | undefined): string | undefined =>
+  Array.isArray(v) ? v[Math.floor(Math.random() * v.length)] : v;
 
 /** Pachet de voce din fișiere audio (URL-uri relative la aplicație). */
 export class FileVoice implements VoicePack {
@@ -70,7 +73,7 @@ export class FileVoice implements VoicePack {
   async load(): Promise<void> {
     const c = this.sfx.ctx;
     if (!c) return;
-    const urls = [...Object.values(this.m.screams ?? {}).flat(), ...Object.values(this.m.lines ?? {})];
+    const urls = [...Object.values(this.m.screams ?? {}), ...Object.values(this.m.lines ?? {})].flat();
     await Promise.all(
       urls.map(async (u) => {
         try {
@@ -95,11 +98,30 @@ export class FileVoice implements VoicePack {
   }
 
   scream(voice: number): void {
-    const list = this.m.screams?.[voice];
-    if (!this.play(list?.[Math.floor(Math.random() * list.length)])) this.fallback.scream(voice);
+    if (!this.play(pick(this.m.screams?.[voice]))) this.fallback.scream(voice);
   }
 
   say(line: string, pitch: number): void {
-    if (!this.play(this.m.lines?.[line])) this.fallback.say(line, pitch);
+    if (!this.play(pick(this.m.lines?.[line]))) this.fallback.say(line, pitch);
   }
 }
+
+/**
+ * Pachetul implicit: replici generate cu Chatterbox (tools/voice), până la înregistrările finale.
+ * Cheile sunt exact textele din `@fitil/content` (și „Bye bye!” din app); restul replicilor rămân pe sinteză.
+ */
+export const DEFAULT_VOICE: VoiceManifest = {
+  id: 'chatterbox-temp',
+  name: 'Chatterbox (temporar)',
+  lines: {
+    'Bye bye!': ['voice/bye_bye.mp3', 'voice/bye_bye_drama.mp3'],
+    'Ouch!': 'voice/ouch.mp3',
+    'Oh no!': 'voice/oh_no.mp3',
+    'Not fair!': 'voice/not_fair.mp3',
+    'My mustache!': 'voice/my_mustache.mp3',
+    'I’m lightning!': 'voice/lightning.mp3',
+    'I’m a legend!': 'voice/legend.mp3',
+    'Too easy!': 'voice/too_easy.mp3',
+    'Hurry up! The arena is shrinking!': 'voice/hurry_up.mp3',
+  },
+};

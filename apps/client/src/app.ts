@@ -38,7 +38,7 @@ import {
 import type { ModeId, Theme } from '@fitil/content';
 import { Music } from './audio/music.ts';
 import { Sfx } from './audio/sfx.ts';
-import { SynthVoice } from './audio/voice.ts';
+import { DEFAULT_VOICE, FileVoice, SynthVoice } from './audio/voice.ts';
 import type { VoicePack } from './audio/voice.ts';
 import { Match } from './game/match.ts';
 import type { MatchEvent } from './game/match.ts';
@@ -60,6 +60,8 @@ export class App {
   readonly sfx = new Sfx();
   readonly music = new Music(this.sfx);
   voice: VoicePack;
+  private synth: SynthVoice;
+  private voiceLoading = false;
   theme: Theme = currentTheme();
   match: Match | null = null;
   kind: PlayKind = { type: 'mode', mode: settings.mode };
@@ -99,7 +101,8 @@ export class App {
     readonly scene: ArenaScene,
   ) {
     this.sfx.theme = this.theme;
-    this.voice = new SynthVoice(this.sfx);
+    this.synth = new SynthVoice(this.sfx);
+    this.voice = this.synth;
     this.buildDom();
     this.controls = new Controls({
       left: $('.zone.left', this.ui),
@@ -647,7 +650,15 @@ export class App {
   private applyAudio(): void {
     this.sfx.sfxOn = settings.sound;
     this.music.on = settings.music && settings.sound;
-    if (this.voice instanceof SynthVoice) this.voice.on = settings.sound;
+    this.synth.on = settings.sound;
+  }
+
+  /** Pachetul de voce din fișiere, încărcat o dată după ce există AudioContext (primul meci). */
+  private loadVoice(): void {
+    if (this.voiceLoading || !this.sfx.ctx) return;
+    this.voiceLoading = true;
+    const pack = new FileVoice(DEFAULT_VOICE, this.sfx, this.synth);
+    void pack.load().then(() => (this.voice = pack));
   }
 
   private aspect(): number {
@@ -658,6 +669,7 @@ export class App {
 
   start(kind: PlayKind): void {
     this.sfx.init();
+    this.loadVoice();
     this.applyAudio();
     this.music.start();
     try {
@@ -968,6 +980,7 @@ export class App {
         break;
       case 'hurryUp':
         this.showBanner('Hurry up! The arena is shrinking!', 1800, 'bad');
+        this.voice.say('Hurry up! The arena is shrinking!', 1.2);
         this.sfx.bad();
         break;
       case 'flagTake': {
