@@ -1,15 +1,27 @@
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
 import type { Bomb, GameState, Player } from './types.ts';
 
-export const idx = (s: GameState, x: number, y: number): number => y * s.W + x;
-export const inBounds = (s: GameState, x: number, y: number): boolean =>
-  x >= 0 && y >= 0 && x < s.W && y < s.H;
+/** Indexul unui pătrățel în stocare (în lumea infinită: circular, cu mască). */
+export const idx = (s: GameState, x: number, y: number): number =>
+  s.inf ? (y & (s.inf.S - 1)) * s.inf.S + (x & (s.inf.S - 1)) : y * s.W + x;
+
+/** Pătrățelul există (în lumea infinită: e generat acum în stocare). */
+export function inBounds(s: GameState, x: number, y: number): boolean {
+  const w = s.inf;
+  if (!w) return x >= 0 && y >= 0 && x < s.W && y < s.H;
+  const k = idx(s, x, y);
+  return w.ownX[k] === x && w.ownY[k] === y;
+}
 export const tileAt = (s: GameState, x: number, y: number): number =>
   inBounds(s, x, y) ? s.grid[idx(s, x, y)]! : HARD;
 
 /** Pătrățelul pe care stă jucătorul (poziția rotunjită). */
 export const tileX = (p: Player): number => Math.floor((p.px + U / 2) / U);
 export const tileY = (p: Player): number => Math.floor((p.py + U / 2) / U);
+
+/** Pătrățelul unei entități cu poziție în unități (păianjeni, nori). */
+export const mobX = (m: { px: number }): number => Math.floor((m.px + U / 2) / U);
+export const mobY = (m: { py: number }): number => Math.floor((m.py + U / 2) / U);
 
 /** Bomba „de pe jos” de pe un pătrățel (nu cea ținută în mână sau în zbor). */
 export function bombAt(s: GameState, x: number, y: number): Bomb | undefined {

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ro">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -27,13 +27,16 @@
       #game {
         position: fixed;
         inset: 0;
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-          env(safe-area-inset-left);
+      }
+      .hidden {
+        display: none !important;
       }
     </style>
   </head>
   <body>
+    <canvas id="cv3" class="hidden"></canvas>
     <div id="game"></div>
+    <div id="ui"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

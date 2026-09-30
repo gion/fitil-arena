@@ -1,13 +1,13 @@
 import { FUSE, LINE_MAX_EXTRA, REMOTE_FUSE } from './constants.ts';
 import { bombAt, getBomb, idx, padIndex, playerAt, tileAt, tileX, tileY, walkable } from './grid.ts';
 import { DX, DY, EMPTY } from './types.ts';
-import type { Dir, GameState, Player } from './types.ts';
+import type { Bomb, Dir, GameState, Player } from './types.ts';
 
 export function placeBomb(s: GameState, p: Player, x = tileX(p), y = tileY(p)): boolean {
   if (!p.alive || p.carry !== null || p.active >= p.bombs || bombAt(s, x, y) || s.flame[idx(s, x, y)]! > 0)
     return false;
   const remote = p.remote && p.bot === null;
-  const b = {
+  const b: Bomb = {
     id: s.nextBombId++,
     x,
     y,
@@ -21,6 +21,7 @@ export function placeBomb(s: GameState, p: Player, x = tileX(p), y = tileY(p)): 
     fly: null,
     chain: 0,
     tpLock: padIndex(s, x, y) >= 0 ? idx(s, x, y) : -1,
+    via: 0,
   };
   s.bombs.push(b);
   p.active++;
@@ -82,6 +83,7 @@ export function throwBomb(s: GameState, p: Player): void {
   let ty = sy;
   let steps = 0;
   const wrap = () => {
+    if (s.inf) return; // fără margini: fără wrap
     if (tx < 1) tx = s.W - 2;
     if (tx > s.W - 2) tx = 1;
     if (ty < 1) ty = s.H - 2;
@@ -102,6 +104,7 @@ export function throwBomb(s: GameState, p: Player): void {
   }
   // durata zborului: 0.18s + 0.06s pe pătrățel
   b.fly = { sx, sy, dir, steps, t: 0, dur: Math.round((36 + 12 * steps) / 10) };
+  b.via = 2;
   b.x = tx;
   b.y = ty;
   b.slide = null;
@@ -117,6 +120,7 @@ export function tryKick(s: GameState, p: Player, dir: Dir): boolean {
   const ny = y + DY[dir]!;
   if (!walkable(s, nx, ny) || playerAt(s, nx, ny)) return false;
   b.slide = dir;
+  b.via = 1;
   b.prog = 0;
   s.events.push({ type: 'kick', player: p.id, bomb: b.id });
   return true;

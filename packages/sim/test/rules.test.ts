@@ -82,7 +82,7 @@ describe('bombe și flăcări', () => {
       step(s, []);
       death = events(s, 'death')[0];
     }
-    expect(death).toEqual({ type: 'death', player: 1, killerId: 0, cause: 'flame' });
+    expect(death).toEqual({ type: 'death', player: 1, killerId: 0, cause: 'flame', via: 0 });
     expect(b.alive).toBe(false);
     expect(s.result).toMatchObject({ winner: 0 });
   });
@@ -187,6 +187,16 @@ describe('picior, mănușă, portaluri', () => {
     }
     expect(landed).toBe(true);
     expect(b.fly).toBeNull();
+  });
+
+  it('în 3D aruncarea merge în direcția privirii camerei (Input.face)', () => {
+    const s = arena();
+    const p = put(s.players[0]!, 5, 5, 3);
+    p.glove = true;
+    tap(s);
+    tap(s);
+    step(s, [{ dir: null, bomb: 1, face: 1 }]);
+    expect(s.bombs[0]!.fly?.dir).toBe(1);
   });
 
   it('dublu tap cu mănușă: pune bomba și o ridică imediat', () => {

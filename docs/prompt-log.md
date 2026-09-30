@@ -1,0 +1,52 @@
+# Jurnal de prompturi
+
+Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
+Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
+
+## 2026-09-30 — Claude Code (Opus 5.5) — Prettier reparat pe PR-ul fazei 2
+
+- **Cerut:** repararea verificării de formatare înainte de merge-ul PR-ului `handover/faza-2-audio`, apoi începerea Fazei 3.
+- **Făcut:** CI pica la `pnpm format:check` pe `apps/client/src/app.ts` și `packages/content/src/texts.ts`; rulat `prettier --write` pe cele două fișiere (doar formatare, fără schimbări de logică).
+- **Verificat:** `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (sim 81, content 6, server 1), `pnpm build` — toate trec local.
+- **Notă operațională:** rulează `pnpm format:check` (sau `pnpm format`) înainte de push; CI-ul îl verifică, dar nu face parte din `lint`.
+
+## 2026-09-30 — Claude Code (Opus 5.5) — Handover, jurnal de prompturi, PR
+
+- **Cerut:** sesiunea din extensia VS Code nu apărea în `claude --resume` din terminal; userul a cerut un fișier de handover, commit și PR, ca să continue în Claude Code. În plus, o regulă nouă: orice interacțiune cu un LLM se încheie cu o intrare într-un jurnal de prompturi, ca un changelog.
+- **Făcut:** `docs/handover.md` (starea proiectului, capcane, pașii următori — Faza 3); `AGENTS.md` nou, cu regula jurnalului și formatul; regula 10 în `CLAUDE.md`; acest jurnal, completat retroactiv pentru sesiunea 2026-09-28 – 30; secțiune nouă în `docs/progress.md`. Commit-urile locale (fazele 2, 2b și sesiunea audio) au fost puse pe un branch separat, cu PR spre `main`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`.
+- **Notă operațională:** după merge, `git pull` pe `main` în directorul local.
+
+## 2026-09-29 — Claude Code (Opus 5.5) — Pachet de voce temporar în joc
+
+- **Cerut:** modelele noi (Turbo, Orpheus, Dia) au dezamăgit; userul a cerut folosirea replicilor din prima iterație Chatterbox până la înregistrări proprii, apoi actualizarea configurației ESLint.
+- **Făcut:** 10 MP3-uri mono în `apps/client/public/voice/` (liniște tăiată, volum egalizat la −16 LUFS); `DEFAULT_VOICE` în `apps/client/src/audio/voice.ts`, cu variante multiple per replică (două „Bye bye”); `FileVoice` se încarcă la primul meci (după `AudioContext`), cu fallback pe sinteză; replica „Hurry up!” se aude acum și ca voce. ESLint ignoră `**/.venv/**` și `tools/voice/out/**`. Sursa e notată în `assets/CREDITS.md`. Commit `09d4937`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 81, content 6, server 1), Playwright 14 trecute. Redarea efectivă în joc nu a fost ascultată manual.
+- **Notă operațională:** înregistrările proprii se pun cu aceleași nume de fișier în `apps/client/public/voice/`; replicile noi primesc un rând în `DEFAULT_VOICE` (cheia = textul exact din `@fitil/content`, inclusiv apostroful tipografic ’).
+
+## 2026-09-29 — Claude Code (Opus 5.5) — Comparație modele de voce locale
+
+- **Cerut:** modele mai jucăușe/exagerate decât Chatterbox; după ce userul a eliberat spațiu, testarea celorlalte unelte locale.
+- **Făcut:** variante Chatterbox cu exagerare maximă și pitch-shift (ffmpeg rubberband); `tools/voice/lines.py` (set comun de replici cu etichete neutre `{laugh}` etc.), `try_turbo.py` (Chatterbox Turbo), `orpheus/try_orpheus.py` (Orpheus 3B, copia unsloth) și `orpheus/try_dia.py` (Dia 1.6B prin transformers), cu venv separat în `tools/voice/orpheus/.venv`. Commit-uri `b1920a1`, `2d3dcd3`.
+- **Verificat:** Turbo și Orpheus: durate normale (1–4s). Dia: ~11.7s la aproape toate replicile (lungimea maximă) — nepotrivit pentru replici scurte, și lent (~45s/replică).
+- **Notă operațională:** descărcările de pe Hugging Face picau cu „CAS Client Error” pe conexiune lentă; merg cu `HF_HUB_DISABLE_XET=1`. Userul a ales Chatterbox original.
+
+## 2026-09-28 — Claude Code (Opus 5.5) — Chatterbox instalat local
+
+- **Cerut:** un TTS gratuit pentru trial; apoi instalarea locală a lui Chatterbox pentru test.
+- **Făcut:** `uv` prin Homebrew; venv Python 3.11 în `tools/voice/.venv` cu `chatterbox-tts` 0.1.7 (+ `setuptools<81`); `tools/voice/try_lines.py` generează 10 replici în `tools/voice/out/` (ignorat de git). Decizia D-029. Commit `0773a0c`.
+- **Verificat:** generare pe MPS, 2–6s per replică, fișiere de 0.5–2s.
+- **Notă operațională:** fără `setuptools<81`, watermarker-ul Perth e `None` (lipsește `pkg_resources`) și modelul pică la încărcare.
+
+## 2026-09-28 — Claude Code (Opus 5.5) — Tot jocul trece pe engleză
+
+- **Cerut:** schimbarea tuturor textelor și a audio-ului pe engleză; varianta aleasă: „doar engleză”, fără sistem de traduceri.
+- **Făcut:** traduse textele din `packages/content` (moduri, bonusuri, replici, mesaje de moarte, echipe „Blue”/„Red”, „You”, provocări, tutorial, teme, misiuni, capitole) și din client (meniuri, HUD, anunțuri, ecrane de final); `speechSynthesis` pe `en-US`; `<html lang="en">`. Id-urile au rămas neschimbate. Decizia D-028. Commit `3cf111c`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`, Playwright 14 trecute.
+- **Notă operațională:** `GAME_DESIGN.md` încă citează replicile în română.
+
+## 2026-09-28 — Claude Code (Opus 5.5) — Surse audio și listă de replici pentru TTS
+
+- **Cerut:** audio-ul sintetizat e slab; de unde se pot genera voci („bye bye”, țipete) de calitate de producție; apoi lista textelor de generat prin TTS.
+- **Făcut:** recomandări (actori de voce, ElevenLabs, SFX din Sonniss/Kenney/Freesound CC0) și lista de replici per personaj, crainic și fatalități, construită din `packages/content/src/texts.ts` și `GAME_DESIGN.md`. Fără schimbări de cod.
+- **Verificat:** —

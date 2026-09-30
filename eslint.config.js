@@ -14,6 +14,8 @@ export default tseslint.config(
       '**/playwright-report/**',
       '**/test-results/**',
       '**/coverage/**',
+      '**/.venv/**',
+      'tools/voice/out/**',
     ],
   },
   js.configs.recommended,
