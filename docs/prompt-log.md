@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-09-30 — Claude Code (Opus 5.5) — Cerințe noi: personaje, progresie, magazin
+
+- **Cerut:** documentele actualizate în alt chat (`PLAN.md` cu Faza 2c, `GAME_DESIGN.md` cu cele 7 personaje, monede și magazin, prototipul cu ecranele Personaje/Magazin) plus idei noi: magazin cu monede, mai multe personaje cu abilități diferite, XP care le crește abilitățile, rarități Epic/Legendar/Mitic, monede cumpărate cu bani, mai puține bonusuri sau bonusuri care expiră (ex. fotbalistul are piciorul permanent, la ceilalți piciorul expiră după 2 folosiri), „ultimate”, pagină per personaj cu close-up, sunete și plusuri/minusuri. PR separat de Faza 3.
+- **Făcut:** copiate `PLAN.md`, `GAME_DESIGN.md` și `reference/prototype.html` din versiunea userului (`CLAUDE.md` din repo a rămas, are regula 10 în plus); propunere în `docs/propuneri/personaje-progresie.md` (rarități, roster cu semnătură/compromis/Ultimate, bonusuri cu încărcări, XP și niveluri cu perk-uri, pagina personajului, economie cu Fitile/Gemuri fără cutii aleatoare, bucle de retenție, impact pe faze); întrebările Q-004 – Q-008. Branch `docs/personaje-progresie`, bazat pe Faza 3.
+- **Verificat:** doar documente; `pnpm format:check`.
+- **Notă operațională:** ideile cu putere cumpărată contrazic „fără pay-to-win” din `BUSINESS.md` §3 — propunerea recomandă varianta B (sidegrade + putere plafonată) și lasă decizia userului. După decizii, textul aprobat se mută în `GAME_DESIGN.md` / `PLAN.md` (și în proiectul claude.ai). `ROSTER` din `packages/content` are încă „Gogu”, documentele noi îl numesc „Gugu” — de aliniat în Faza 2c.
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Faza 3: multiplayer online (camere private)
 
 - **Cerut:** începerea Fazei 3 după handover (după repararea Prettier pe PR-ul fazei 2).
