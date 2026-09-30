@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "server",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["API_PORT=3001", "pnpm", "--filter", "@fitil/server", "dev"],
+      "port": 2567
+    },
+    {
+      "name": "client",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@fitil/client", "dev"],
+      "port": 5173
+    }
+  ]
+}

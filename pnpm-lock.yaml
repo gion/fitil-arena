@@ -53,6 +53,9 @@ importers:
       '@fitil/content':
         specifier: workspace:*
         version: link:../../packages/content
+      '@fitil/net':
+        specifier: workspace:*
+        version: link:../../packages/net
       '@fitil/sim':
         specifier: workspace:*
         version: link:../../packages/sim

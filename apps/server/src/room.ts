@@ -44,6 +44,11 @@ export class ArenaRoom extends Room {
     this.onMessage('start', (c, m: { aspect?: number }) => this.startMatch(c.sessionId, Number(m?.aspect)));
     this.onMessage('in', (c, m: InputMsg) => this.arena.input(c.sessionId, m?.q, m?.i));
     this.onMessage('resync', (c) => this.sendSnap(c));
+    // clientul și-a înregistrat handler-ele: îi retrimitem lobby-ul (și meciul, dacă a pornit)
+    this.onMessage('hello', (c) => {
+      c.send('lobby', this.arena.lobby());
+      this.sendSnap(c);
+    });
     this.onMessage('ping', (c, t: number) => c.send('pong', t));
   }
 

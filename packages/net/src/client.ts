@@ -68,6 +68,7 @@ export class NetClient {
     this.end = null;
     this.frames = [];
     this.pending = this.pending.filter((p) => p.q > m.ack);
+    this.seq = Math.max(this.seq, m.q);
     this.last = m.last.map((w) => (w ? decodeInput(w) : undefined));
     this.waitSnap = false;
     this.onSnap(m);

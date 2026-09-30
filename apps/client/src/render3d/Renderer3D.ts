@@ -744,7 +744,7 @@ export class Renderer3D {
         hat.traverse((o) => (o.castShadow = true));
         grp.add(hat);
       }
-      if (p.id === 0) {
+      if (p.id === (this.match?.meId ?? 0)) {
         const halo = new THREE.Mesh(
           new THREE.TorusGeometry(0.4, 0.035, 6, 28),
           new THREE.MeshBasicMaterial({ color: '#ffe14a' }),
@@ -753,7 +753,7 @@ export class Renderer3D {
         halo.position.y = 0.03;
         halo.name = 'halo';
         grp.add(halo);
-      } else if (this.match?.team && p.team === s.players[0]!.team) {
+      } else if (this.match?.team && p.team === s.players[this.match.meId]!.team) {
         const ring = new THREE.Mesh(
           new THREE.TorusGeometry(0.38, 0.03, 6, 28),
           new THREE.MeshBasicMaterial({ color: TEAMS[p.team]!.color }),
@@ -992,7 +992,7 @@ export class Renderer3D {
     // fereastra randată: toată arena sau, în lumea infinită, ±17 pătrățele în jurul jucătorului
     let [rx0, rx1, ry0, ry1] = [0, s.W - 1, 0, s.H - 1];
     if (inf) {
-      const [px, py] = m.lerp('p0', m.me.px, m.me.py);
+      const [px, py] = m.lerp(`p${m.meId}`, m.me.px, m.me.py);
       const cx = Math.round(px);
       const cy = Math.round(py);
       [rx0, rx1, ry0, ry1] = [cx - 17, cx + 17, cy - 17, cy + 17];
@@ -1078,7 +1078,7 @@ export class Renderer3D {
     let nb = 0;
     for (const b of s.bombs) {
       if (nb >= this.bombPool.length) break;
-      if (b.held === 0 && fps) continue;
+      if (b.held === m.meId && fps) continue;
       let bx: number;
       let by: number;
       let lift: number;
@@ -1125,7 +1125,7 @@ export class Renderer3D {
           const c = s.players[f.carrier]!;
           const [cx, cy] = m.lerp(`p${c.id}`, c.px, c.py);
           g.position.set(cx - 0.15, 0.55, cy);
-          g.visible = !(f.carrier === 0 && fps);
+          g.visible = !(f.carrier === m.meId && fps);
         } else {
           g.position.set(f.x, 0, f.y);
           g.visible = true;
@@ -1294,7 +1294,7 @@ export class Renderer3D {
         return;
       }
       const isHero = hero !== null && hero.player === p.id;
-      g.visible = !(p.id === 0 && fps && !m.doom && !isHero);
+      g.visible = !(p.id === m.meId && fps && !m.doom && !isHero);
       g.scale.setScalar(1);
       let w = this.walk.get(p.id) ?? p.id;
       if (p.moving || (isHero && hero.kind === 'speed'))
@@ -1358,7 +1358,7 @@ export class Renderer3D {
       cam.lookAt(px, 0.45 + jump, py);
       this.players[heroP.id]!.visible = true;
     } else if (m.doom && (me.alive || s.tick - me.deathTick < 1.3 * TICK_HZ)) {
-      const [px, py] = m.lerp('p0', me.px, me.py);
+      const [px, py] = m.lerp(`p${m.meId}`, me.px, me.py);
       const hx = Math.round(px);
       const hy = Math.round(py);
       if (!this.cineDir) {
@@ -1378,14 +1378,14 @@ export class Renderer3D {
         py + az * 1.15,
       );
       cam.lookAt(px, 0.42 + (me.alive ? 0 : ((s.tick - me.deathTick) / TICK_HZ) * 1.2), py);
-      this.players[0]!.visible = true;
+      this.players[m.meId]!.visible = true;
     } else if (me.alive) {
       this.cineDir = null;
       if (!this.camInit) {
         this.yaw = Math.atan2(DX[me.face]!, DY[me.face]!);
         this.camInit = true;
       }
-      const [px, py] = m.lerp('p0', me.px, me.py);
+      const [px, py] = m.lerp(`p${m.meId}`, me.px, me.py);
       const dx = Math.sin(this.yaw);
       const dz = Math.cos(this.yaw);
       if (this.view === 'fps') {
@@ -1403,7 +1403,7 @@ export class Renderer3D {
       this.cineDir = null;
       cam.fov = 55;
       if (s.inf) {
-        const [px, py] = m.lerp('p0', me.px, me.py);
+        const [px, py] = m.lerp(`p${m.meId}`, me.px, me.py);
         cam.position.set(px + jx, 12, py + 9);
         cam.lookAt(px, 0, py);
       } else {

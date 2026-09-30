@@ -118,3 +118,19 @@
 3. Client: `Match` primește id-ul jucătorului local și un „driver” online (fără slow-motion al simulării, D-017); meniul Online (creează / intră cu cod), lobby, carduri de final cu întoarcere în lobby; `?lag=150` pornește simulatorul de latență.
 4. Teste: `packages/net` (buclă în memorie cu latență și ordine amestecată), `apps/server` (4 clienți headless @colyseus/sdk pe serverul local, meci complet, hash-uri egale, inclusiv un client cu latență și o reconectare).
 5. Checkpoint: variante de hosting în `docs/questions.md`.
+
+**Făcut:**
+
+- **`packages/net`** (nou): protocolul (lobby, `snap` cu starea JSON, cadre `f` la fiecare tick cu input-urile umane compacte + ack-uri + hash la 20 de tick-uri, `end` cu hash-ul final), `buildOnline` (aceleași reguli ca offline; pe echipe oamenii se împart alternativ, sloturile goale sunt boți), `ArenaHost` (logica autoritară fără rețea: lobby, gazdă, configurare, start, cozi de input numerotate — maxim 2 în așteptare, bomba/detonarea nu se pierd la contopire —, preluarea sloturilor de boți la plecare, finalul după animații), `NetClient` (starea confirmată, starea afișată cu jitter buffer și salt când se adună >40 de cadre, predicția jucătorului local, resincronizare la desync sau cadru lipsă), `lagLink` (simulator de latență cu coadă ordonată).
+- **Server**: Colyseus 0.18 (`ArenaRoom`) pe portul 2567, lângă API-ul Fastify; codul camerei (4 litere, fără I/O) e `roomId`, cameră privată; reconectare 15s (`onDrop` + `allowReconnection`), la reconectare primești starea completă; camera se blochează în meci și revine în lobby după final (revanșă). Mod rapid de tick doar în afara producției (teste).
+- **Client**: `Match` primește id-ul jucătorului local și driverul online (toate referințele la jucătorul 0 din randare 2D/3D și UI au fost înlocuite), fără slow-motion al simulării online (D-017); meniul **Online** (nume, creează camera, intră cu cod), lobby (locuri, gazdă, mod/boți/temă aleși de gazdă și văzuți de toți, Start), meniul de pauză online (meciul continuă, stai pe loc), carduri de final cu „Back to the room”, bannere la pierderea/revenirea conexiunii, **revenire în cameră după reîncărcarea paginii** (token în `sessionStorage`), tema camerei fără să schimbe tema salvată. `?lag=150&jitter=40&loss=0.02` pornește simulatorul (doar în dev).
+- **Teste**: net 6 (buclă în memorie cu latență/jitter: FFA, 2v2, CTF complete cu hash-uri egale la server și la toți clienții, predicție, plecare → bot); server 4 (**4 clienți headless @colyseus/sdk pe serverul local, meci complet, hash-urile coincid la final** — unul cu latență simulată, unul cu reconectare la mijlocul meciului; cod greșit refuzat); Playwright 15 (nou: doi jucători în browsere separate, cameră cu cod, gazda schimbă modul, meciul pornește la amândoi, mișcarea gazdei se vede la oaspete, 0 desync, 0 erori).
+- **Manual (browser, 150 ms ±37 ms, 2% pierdere)**: mișcarea proprie răspunde imediat (predicția), restul lumii vine cu ~300 ms întârziere, 4–5 input-uri neconfirmate, buffer 1–2 cadre, 0 desync pe un meci complet; revanșa și revenirea după reîncărcare merg.
+
+**Rămas / cunoscut:**
+
+- Hostingul (Q-003) — checkpoint uman; până atunci doar local. Clientul mobil (Capacitor) are nevoie de `VITE_SERVER_URL` spre serverul public (`wss://`).
+- Bombele/flăcările sunt afișate din starea autoritară (întârziată), jucătorul local din predicție (D-031): la 150 ms poți părea că treci printr-o flacără care la tine „s-a stins deja”; moartea e mereu cea de pe server. De reevaluat la teste pe telefon.
+- Fluiditatea „manual la 150 ms” e verificată în browser pe desktop, nu încă pe telefon real.
+- Informația ascunsă (tufișuri, Faza 4) nu e compatibilă cu sincronizarea prin input-uri fără filtrare (D-030).
+- Fără matchmaking public (doar camere private, cum cere faza); fără spectatori.

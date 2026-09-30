@@ -693,3 +693,63 @@ button {
   color: #ffd23f;
   text-shadow: 0 2px 0 #b38d00;
 }
+
+/* ---------- online ---------- */
+.field {
+  font: 800 15px var(--body);
+  color: var(--text);
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+.field:focus-visible {
+  outline: none;
+  border-color: var(--gold);
+}
+.field.code {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  text-align: center;
+}
+.card .row .field.code {
+  flex: 1;
+}
+.room-code {
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  user-select: all;
+}
+.seats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.seats li {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  font: 800 13px var(--body);
+}
+.seats li.off {
+  opacity: 0.45;
+}
+.seats small {
+  color: var(--muted);
+  font-weight: 600;
+}
+.card p.err {
+  color: #ff8a80;
+}
+.opt:disabled {
+  cursor: default;
+  opacity: 0.75;
+}

@@ -15,8 +15,8 @@ import type {
   WireInput,
 } from './protocol.ts';
 
-/** Câte input-uri poate aștepta un jucător (~200 ms); peste, cele vechi se contopesc. */
-const MAX_QUEUE = 4;
+/** Câte input-uri poate aștepta un jucător (~100 ms): cu jitter coada ar crește și n-ar mai scădea, adăugând latență; peste, cele vechi se contopesc. */
+const MAX_QUEUE = 2;
 const LEVELS = ['easy', 'normal', 'hard', 'insane'] as const;
 
 interface Queued {
@@ -213,6 +213,7 @@ export class ArenaHost {
       slots: this.slots,
       cfg: this.cfg,
       ack: me >= 0 ? (this.acks[me] ?? 0) : 0,
+      q: me >= 0 ? (this.lastQ.get(me) ?? 0) : 0,
       last: s.players.map((p) => (p.bot === null ? encodeInput(this.last[p.id] ?? NO_INPUT) : null)),
     };
   }

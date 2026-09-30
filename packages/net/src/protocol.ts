@@ -51,6 +51,8 @@ export interface SnapMsg {
   cfg: RoomCfg;
   /** Ultimul număr de secvență al tău aplicat deja în `state`. */
   ack: number;
+  /** Ultimul număr de secvență primit de server (după o reîncărcare, numerotarea continuă de aici). */
+  q: number;
   /** Ultimele input-uri ale oamenilor (pentru predicție). */
   last: (WireInput | null)[];
 }

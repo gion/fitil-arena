@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-09-30 — Claude Code (Opus 5.5) — Faza 3: multiplayer online (camere private)
+
+- **Cerut:** începerea Fazei 3 după handover (după repararea Prettier pe PR-ul fazei 2).
+- **Făcut:** `packages/net` (protocol, `ArenaHost`, `NetClient`, `lagLink`), `ArenaRoom` Colyseus 0.18 în `apps/server`, client online (meniu, lobby, predicție, reconectare, revenire după reîncărcare), decizii D-030 – D-033, Q-003 (hosting), `.claude/launch.json` pentru preview. Branch `feat/faza-3-multiplayer`.
+- **Verificat:** `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (sim 81, content 6, net 6, server 4), Playwright 15/15 (online + smoke + misiuni; FPS 60/60/60 cu CPU 4x); manual în browser cu 150 ms latență simulată (meci complet, revanșă, reîncărcare).
+- **Notă operațională:** serverul de joc ascultă pe 2567; pe mașina de dezvoltare portul 3000 era ocupat de alt proces, deci preview-ul pornește API-ul pe 3001 (`API_PORT`). Playwright pornește singur serverul de joc (`pnpm --filter @fitil/server serve`). Hostingul așteaptă decizia (Q-003).
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Prettier reparat pe PR-ul fazei 2
 
 - **Cerut:** repararea verificării de formatare înainte de merge-ul PR-ului `handover/faza-2-audio`, apoi începerea Fazei 3.

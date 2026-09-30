@@ -34,6 +34,7 @@ import {
   THEMES,
   TUTORIAL_TEXT,
   seasonalTheme,
+  themeById,
 } from '@fitil/content';
 import type { ModeId, Theme } from '@fitil/content';
 import { Music } from './audio/music.ts';
@@ -50,6 +51,8 @@ import type { Renderer3D } from './render3d/Renderer3D.ts';
 import { currentTheme, save, settings } from './settings.ts';
 import type { Quality, View } from './settings.ts';
 import { $, h, show } from './ui/dom.ts';
+import { maxHumans } from '@fitil/net';
+import { OnlineSession } from './online/session.ts';
 
 type Phase = 'menu' | 'play' | 'paused' | 'over';
 const VIEWS: View[] = ['2d', 'fps', 'chase'];
@@ -64,6 +67,8 @@ export class App {
   private voiceLoading = false;
   theme: Theme = currentTheme();
   match: Match | null = null;
+  online: OnlineSession | null = null;
+  private onlineErr = '';
   kind: PlayKind = { type: 'mode', mode: settings.mode };
   phase: Phase = 'menu';
   view: View = '2d';
@@ -133,6 +138,7 @@ export class App {
     });
     this.showScreen(() => this.mainMenu());
     this.setView(settings.view, false);
+    void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
   }
 
   /* ---------- DOM ---------- */
@@ -203,10 +209,13 @@ export class App {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', this.theme.ink);
   }
 
-  setTheme(id: string): void {
-    settings.theme = id;
-    save();
-    this.theme = currentTheme();
+  /** `persist = false`: tema camerei online, fără să schimbe tema aleasă de jucător. */
+  setTheme(id: string, persist = true): void {
+    if (persist) {
+      settings.theme = id;
+      save();
+    }
+    this.theme = persist ? currentTheme() : themeById(id);
     this.sfx.theme = this.theme;
     this.scene.setTheme(this.theme);
     this.r3?.setTheme(this.theme);
@@ -244,6 +253,11 @@ export class App {
         'button',
         { class: 'btn', 'data-test': 'play', onclick: () => this.showScreen(() => this.playMenu()) },
         'Play',
+      ),
+      h(
+        'button',
+        { class: 'btn', 'data-test': 'online', onclick: () => this.showScreen(() => this.onlineMenu()) },
+        'Online',
       ),
       h(
         'div',
@@ -382,6 +396,234 @@ export class App {
       this.legend(),
       this.back(),
     );
+  }
+
+  /* ---------- online ---------- */
+
+  private onlineMenu(): HTMLElement {
+    const name = h('input', {
+      class: 'field',
+      'data-test': 'name',
+      maxlength: 12,
+      placeholder: 'Your name',
+      value: settings.name,
+      autocomplete: 'nickname',
+    });
+    const code = h('input', {
+      class: 'field code',
+      'data-test': 'code',
+      maxlength: 4,
+      placeholder: 'CODE',
+      autocapitalize: 'characters',
+      autocomplete: 'off',
+    });
+    const go = async (make: () => Promise<OnlineSession>) => {
+      settings.name = name.value.trim().slice(0, 12);
+      save();
+      this.onlineErr = '';
+      try {
+        this.enterRoom(await make());
+      } catch (e) {
+        this.onlineErr = e instanceof Error && e.message ? e.message : 'Could not connect to the server.';
+        this.showScreen(() => this.onlineMenu());
+      }
+    };
+    return this.card(
+      h('h2', {}, 'Online'),
+      h('p', {}, 'Play with friends in a private room. Empty seats are filled with bots.'),
+      name,
+      h(
+        'button',
+        { class: 'btn', 'data-test': 'create', onclick: () => go(() => OnlineSession.create(name.value)) },
+        'Create a room',
+      ),
+      h(
+        'div',
+        { class: 'row' },
+        code,
+        h(
+          'button',
+          {
+            class: 'btn',
+            'data-test': 'join',
+            onclick: () => {
+              if (/^[a-z]{4}$/i.test(code.value)) void go(() => OnlineSession.join(code.value, name.value));
+            },
+          },
+          'Join',
+        ),
+      ),
+      this.onlineErr && h('p', { class: 'err' }, this.onlineErr),
+      this.back(),
+    );
+  }
+
+  private enterRoom(o: OnlineSession): void {
+    this.online = o;
+    o.net.onLobby = () => {
+      if (this.online === o && this.phase === 'menu' && !this.match)
+        this.showScreen(() => this.lobbyScreen());
+    };
+    o.net.onSnap = () => {
+      if (this.online === o && this.match?.net !== o.net) this.startOnline(o);
+    };
+    o.onStatus = (st, reason) => {
+      if (this.online !== o) return;
+      if (st === 'reconnecting') this.showBanner('Connection lost, reconnecting…', 15000);
+      if (st === 'online') this.showBanner('Reconnected', 1400);
+      if (st === 'closed') {
+        this.online = null;
+        this.onlineErr = reason && !/consent/i.test(reason) ? reason : 'Disconnected from the room.';
+        this.toMenu();
+        this.showScreen(() => this.onlineMenu());
+      }
+    };
+    this.showScreen(() => this.lobbyScreen());
+  }
+
+  private lobbyScreen(): HTMLElement {
+    const o = this.online;
+    if (!o) return this.onlineMenu();
+    const l = o.net.lobby;
+    const host = o.isHost;
+    const cfg = l?.cfg;
+    const pick = (
+      attr: string,
+      items: readonly string[],
+      cur: string | undefined,
+      name: (v: string) => string,
+      set: (v: string) => void,
+    ) =>
+      h(
+        'div',
+        { class: items.length > 7 ? 'grid three' : items.length > 4 ? 'grid' : 'grid four' },
+        ...items.map((v) =>
+          h(
+            'button',
+            {
+              class: 'opt',
+              [attr]: v,
+              'aria-pressed': String(v === cur),
+              disabled: !host,
+              onclick: () => set(v),
+            },
+            name(v),
+          ),
+        ),
+      );
+    return this.card(
+      h('h2', {}, 'Room ', h('span', { class: 'room-code', 'data-test': 'room-code' }, o.code)),
+      h(
+        'p',
+        {},
+        host ? 'Share the code with your friends, then press Start.' : 'Waiting for the host to start…',
+      ),
+      h(
+        'ul',
+        { class: 'seats' },
+        ...(l?.seats ?? []).map((st, i) =>
+          h(
+            'li',
+            { class: st.connected ? '' : 'off' },
+            st.name,
+            i === 0 ? h('small', {}, ' host') : null,
+            st.sid === o.room.sessionId ? h('small', {}, ' (you)') : null,
+          ),
+        ),
+      ),
+      !!cfg &&
+        !!l &&
+        l.seats.length > l.max &&
+        h('p', { class: 'err' }, `${MODES[cfg.mode].name} takes only ${l.max} players.`),
+      h('h3', {}, 'Mode'),
+      pick(
+        'data-mode',
+        MODE_IDS,
+        cfg?.mode,
+        (v) => MODES[v as ModeId].name,
+        (v) => o.setCfg({ mode: v as ModeId }),
+      ),
+      !!cfg &&
+        h(
+          'p',
+          {},
+          MODES[cfg.mode].desc.replace(
+            /^You against [^.]*\. ?/,
+            `Up to ${maxHumans(cfg.mode)} players, bots fill the rest. `,
+          ),
+        ),
+      h('h3', {}, 'Bots'),
+      pick(
+        'data-level',
+        LEVELS,
+        cfg?.bots,
+        (v) => BOT_NAMES[v as BotLevel],
+        (v) => o.setCfg({ bots: v as BotLevel }),
+      ),
+      h('h3', {}, 'Theme'),
+      pick(
+        'data-theme',
+        THEMES.map((t) => t.id),
+        cfg?.theme,
+        (v) => themeById(v).name,
+        (v) => o.setCfg({ theme: v }),
+      ),
+      host &&
+        h('button', { class: 'btn', 'data-test': 'start', onclick: () => o.start(this.aspect()) }, 'Start'),
+      h(
+        'button',
+        {
+          class: 'btn ghost',
+          onclick: () => {
+            this.leaveOnline();
+            this.showScreen(() => this.onlineMenu());
+          },
+        },
+        'Leave room',
+      ),
+    );
+  }
+
+  private leaveOnline(): void {
+    const o = this.online;
+    this.online = null;
+    o?.leave();
+    if (this.theme.id !== currentTheme().id) this.setTheme(currentTheme().id, false);
+  }
+
+  /** Pornește (sau repornește) meciul online din starea primită de la server. */
+  private startOnline(o: OnlineSession): void {
+    const net = o.net;
+    if (!net.view || !net.cfg) return;
+    if (net.me < 0) return;
+    this.setTheme(net.cfg.theme, false);
+    this.beginPlay();
+    const kind: PlayKind = { type: 'mode', mode: net.cfg.mode };
+    this.kind = kind;
+    const m = new Match(
+      kind,
+      net.cfg.bots,
+      { s: net.view, slots: net.slots, tutorial: null },
+      this.control(),
+      net.me,
+      net,
+    );
+    this.scores = m.team ? [0, 0] : m.slots.map(() => 0);
+    this.attach(m);
+    if (net.cfg.mode === 'vs')
+      setTimeout(
+        () =>
+          this.showBanner(
+            'Starting with: ' + m.s.rules.startItems.map((i) => ITEM_NAMES[i]).join(' · '),
+            2600,
+          ),
+        60,
+      );
+    if (o.lag)
+      this.showBanner(
+        `Simulated lag ${o.lag.rtt} ms ±${o.lag.jitter}, loss ${Math.round(o.lag.loss * 100)}%`,
+        2600,
+      );
   }
 
   private legend(): HTMLElement {
@@ -591,6 +833,21 @@ export class App {
   }
 
   private pauseDrawer(): HTMLElement[] {
+    if (this.online)
+      return [
+        h('h2', {}, 'Menu'),
+        h('p', {}, 'The match keeps going online — your character stands still.'),
+        h(
+          'div',
+          { class: 'row' },
+          h(
+            'button',
+            { class: 'btn', 'data-test': 'resume', onclick: () => this.resume() },
+            'Back to the match',
+          ),
+          h('button', { class: 'icon-btn', onclick: () => this.toMenu() }, 'Leave room'),
+        ),
+      ];
     return [
       h('h2', {}, 'Paused'),
       h(
@@ -667,7 +924,15 @@ export class App {
     return Math.max(0.3, w / Math.max(1, hgt));
   }
 
-  start(kind: PlayKind): void {
+  private control() {
+    return {
+      dir: () => this.resolveDir(),
+      face: () => (this.view !== '2d' && this.r3 ? this.r3.faceDir() : undefined),
+    };
+  }
+
+  /** Pregătirile comune oricărui meci: audio, ecran, controale. */
+  private beginPlay(): void {
     this.sfx.init();
     this.loadVoice();
     this.applyAudio();
@@ -679,27 +944,35 @@ export class App {
     } catch {
       /* ignorat */
     }
-    const sameKind = JSON.stringify(kind) === JSON.stringify(this.kind);
-    this.kind = kind;
-    if (!sameKind || !this.match) this.scores = [];
     this.hideOverlay();
     show(this.drawer, false);
     show(this.toast, false);
     show(this.banner, false);
+    show(this.tut, false);
     this.controls.reset();
-    const m = new Match(kind, settings.bots, this.seedN++, this.aspect(), {
-      dir: () => this.resolveDir(),
-      face: () => (this.view !== '2d' && this.r3 ? this.r3.faceDir() : undefined),
-    });
+  }
+
+  private attach(m: Match): void {
     this.match = m;
     m.on((e) => this.onEvent(e));
     this.scene.setMatch(m);
     this.r3?.setMatch(m);
-    if (!this.scores.length) this.scores = m.team ? [0, 0] : m.slots.map(() => 0);
     this.phase = 'play';
     this.controls.enabled = true;
     this.music.playing = true;
     this.hudKey = '';
+    if (!this.hintsHidden) setTimeout(() => this.hideHints(), 6000);
+  }
+
+  start(kind: PlayKind): void {
+    if (this.online) this.leaveOnline();
+    this.beginPlay();
+    const sameKind = JSON.stringify(kind) === JSON.stringify(this.kind);
+    this.kind = kind;
+    if (!sameKind || !this.match) this.scores = [];
+    const m = Match.offline(kind, settings.bots, this.seedN++, this.aspect(), this.control());
+    if (!this.scores.length) this.scores = m.team ? [0, 0] : m.slots.map(() => 0);
+    this.attach(m);
     if (kind.type === 'mode' && kind.mode === 'vs')
       setTimeout(
         () =>
@@ -718,14 +991,29 @@ export class App {
     }
     if (kind.type === 'dummies')
       this.showBanner('Dummies come back after 2s. Practice chains and kicks!', 2600);
-    if (!this.hintsHidden) setTimeout(() => this.hideHints(), 6000);
   }
 
   restart(): void {
+    if (this.online) return;
     this.start(this.kind);
   }
 
+  /** Online, după meci: înapoi în lobby-ul camerei (camera rămâne deschisă). */
+  private toLobby(): void {
+    this.match = null;
+    this.scene.setMatch(null);
+    this.r3?.setMatch(null);
+    this.phase = 'menu';
+    this.controls.enabled = false;
+    this.music.playing = false;
+    show(this.drawer, false);
+    show(this.toast, false);
+    show(this.bubble, false);
+    this.showScreen(() => this.lobbyScreen());
+  }
+
   toMenu(): void {
+    if (this.online) this.leaveOnline();
     this.match = null;
     this.scene.setMatch(null);
     this.r3?.setMatch(null);
@@ -875,7 +1163,7 @@ export class App {
     const m = this.match;
     if (!m) return;
     const me = m.me;
-    const mine = (id: number | null) => id === 0;
+    const mine = (id: number | null) => id === m.meId;
     switch (e.type) {
       case 'bombPlaced': {
         const n = m.s.events.filter((x) => x.type === 'bombPlaced' && x.owner === e.owner).length;
@@ -914,7 +1202,7 @@ export class App {
         break;
       case 'pickup': {
         if (!mine(e.player)) break;
-        if (m.s.events.some((x) => x.type === 'maxed' && x.player === 0)) break; // momentul de glorie preia
+        if (m.s.events.some((x) => x.type === 'maxed' && x.player === m.meId)) break; // momentul de glorie preia
         if (isNegative(e.item)) {
           this.sfx.bad();
           vibrate([80, 40, 80]);
@@ -1249,7 +1537,7 @@ export class App {
     } else if (e.winner !== null) {
       this.scores[e.winner]!++;
       const w = m.slots[e.winner]!;
-      if (e.winner === 0) {
+      if (e.winner === m.meId) {
         title = 'You won!';
         msg = 'The arena is yours. One more?';
       } else {
@@ -1267,8 +1555,18 @@ export class App {
         h('h2', {}, title),
         h('p', {}, msg),
         this.scoreRow(),
-        h('button', { class: 'btn', 'data-test': 'again', onclick: () => this.restart() }, 'Next round'),
-        h('button', { class: 'btn ghost', onclick: () => this.toMenu() }, 'Menu'),
+        this.online
+          ? h(
+              'button',
+              { class: 'btn', 'data-test': 'lobby', onclick: () => this.toLobby() },
+              'Back to the room',
+            )
+          : h('button', { class: 'btn', 'data-test': 'again', onclick: () => this.restart() }, 'Next round'),
+        h(
+          'button',
+          { class: 'btn ghost', onclick: () => this.toMenu() },
+          this.online ? 'Leave room' : 'Menu',
+        ),
       ),
     );
   }
