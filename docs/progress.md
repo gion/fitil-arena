@@ -108,3 +108,13 @@
 **Făcut:** 10 replici generate local cu Chatterbox (D-029) în `apps/client/public/voice/`, redate prin `FileVoice` cu fallback pe sinteză; uneltele de generare și comparația de modele (Turbo, Orpheus, Dia) în `tools/voice/`. Handover pentru sesiunea următoare în `docs/handover.md`; jurnalul de prompturi (`docs/prompt-log.md`, regulă în `AGENTS.md`).
 
 **Rămas:** înregistrări proprii (amânate de user); țipetele și restul replicilor sunt încă sintetizate.
+
+## Faza 3 — Multiplayer online (camere private)
+
+**Mini-plan:**
+
+1. `packages/net` (nou, TypeScript pur, fără DOM): protocolul (mesaje, input compact), construcția meciului online (moduri, sloturi, jucători umani → id-uri), `ArenaHost` (logica autoritară a camerei, fără timere: cozi de input cu număr de secvență, cadre, hash-uri periodice, preluare de boți) și `NetClient` (starea confirmată, starea afișată cu jitter buffer, predicția jucătorului local), plus `lagLink` (simulator de latență: întârziere, jitter, pierdere ca retransmisie TCP).
+2. `apps/server`: Colyseus 0.18 (`ArenaRoom` peste `ArenaHost`) pe portul 2567, lângă Fastify; cameră privată cu cod de 4 litere ca `roomId`; lobby (gazda alege modul, tema, boții), start, 20 Hz, reconectare 15s (`allowReconnection`), sloturile părăsite devin boți.
+3. Client: `Match` primește id-ul jucătorului local și un „driver” online (fără slow-motion al simulării, D-017); meniul Online (creează / intră cu cod), lobby, carduri de final cu întoarcere în lobby; `?lag=150` pornește simulatorul de latență.
+4. Teste: `packages/net` (buclă în memorie cu latență și ordine amestecată), `apps/server` (4 clienți headless @colyseus/sdk pe serverul local, meci complet, hash-uri egale, inclusiv un client cu latență și o reconectare).
+5. Checkpoint: variante de hosting în `docs/questions.md`.
