@@ -102,3 +102,9 @@
 **Făcut:** toate textele vizibile au fost traduse în engleză (moduri, bonusuri, replici, mesaje de moarte, echipe „Blue”/„Red”, personajul „You”, provocări, tutorial, teme, misiuni, capitole, meniuri, HUD, anunțuri, ecrane de final, „Help!” din cuști). `speechSynthesis` folosește `en-US`, iar `<html lang="en">`. Id-urile au rămas la fel (D-028). Testele Playwright au fost actualizate la textele noi; lint, typecheck și toate testele trec.
 
 **Rămas:** vocile înregistrate (ElevenLabs sau actori) după lista de replici în engleză; `GAME_DESIGN.md` încă citează replicile în română.
+
+## Voce temporară și handover (2026-09-29 – 30)
+
+**Făcut:** 10 replici generate local cu Chatterbox (D-029) în `apps/client/public/voice/`, redate prin `FileVoice` cu fallback pe sinteză; uneltele de generare și comparația de modele (Turbo, Orpheus, Dia) în `tools/voice/`. Handover pentru sesiunea următoare în `docs/handover.md`; jurnalul de prompturi (`docs/prompt-log.md`, regulă în `AGENTS.md`).
+
+**Rămas:** înregistrări proprii (amânate de user); țipetele și restul replicilor sunt încă sintetizate.

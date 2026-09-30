@@ -34,6 +34,7 @@ Documente de citit înainte de orice task:
 7. Fără asset-uri, nume sau personaje din alte jocuri (Bomberman, Brawl Stars, Mario, Pokémon, Minecraft, Among Us etc.). Doar asset-uri proprii, generate procedural sau CC0 (sursa notată în `assets/CREDITS.md`).
 8. Conținut cartoon, fără sânge/gore (rating de vârstă mic). Fatalitățile sunt comice.
 9. Secrete doar în `.env` (niciodată în git). `.env.example` ține la zi.
+10. Orice interacțiune care schimbă ceva în proiect se încheie cu o intrare în `docs/prompt-log.md` (cerut / făcut / verificat / notă). Formatul și detaliile sunt în `AGENTS.md`.
 
 ## Oprește-te și întreabă (checkpoint uman) când:
 - ceva costă bani (servicii plătite, conturi de store, domenii, hosting de producție);
