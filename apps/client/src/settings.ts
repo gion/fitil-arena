@@ -1,3 +1,4 @@
+import { now } from './clock.ts';
 import type { BotLevel } from '@fitil/sim';
 import { seasonalTheme, themeById } from '@fitil/content';
 import type { ModeId } from '@fitil/content';
@@ -74,4 +75,4 @@ export function save(): void {
 }
 
 /** Tema curentă: cea aleasă, altfel cea de sezon, altfel Clasic. */
-export const currentTheme = () => themeById(settings.theme ?? seasonalTheme(new Date())?.id ?? 'clasic');
+export const currentTheme = () => themeById(settings.theme ?? seasonalTheme(now())?.id ?? 'clasic');

@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { CHAR_IDS, FREE_CHARS, charById, charPrice } from './characters.ts';
 import { NO_OUTFIT, SHOP, SHOP_CATS, cleanOutfit, shopItem } from './shop.ts';
+import { THEMES } from './themes.ts';
+import { charState, eventThemes, playerLevel, themeState, totalXp, unlocksAt } from './progression.ts';
+import type { Access } from './progression.ts';
 import type { Outfit, ShopCat } from './shop.ts';
 
 /**
@@ -27,6 +30,10 @@ export interface Profile {
   eq: Outfit;
   /** Ziua ultimului bonus zilnic. */
   daily: string;
+  /** Temele de eveniment păstrate (jucate în timpul evenimentului sau cumpărate). */
+  themes: string[];
+  /** Deblocările deja văzute (pentru insignele „NEW”). */
+  seen: string[];
 }
 
 export function defaultProfile(): Profile {
@@ -39,6 +46,8 @@ export function defaultProfile(): Profile {
     owned: ['c_green'],
     eq: { ...NO_OUTFIT },
     daily: '',
+    themes: [],
+    seen: [],
   };
 }
 
@@ -52,6 +61,8 @@ const Raw = z
     owned: z.array(z.string()),
     eq: z.unknown(),
     daily: z.string(),
+    themes: z.array(z.string()),
+    seen: z.array(z.string()),
   })
   .partial();
 
@@ -78,22 +89,31 @@ export function loadProfile(raw: unknown): Profile {
     owned,
     eq,
     daily: v.daily ?? '',
+    themes: (v.themes ?? []).filter((t) => THEMES.some((x) => x.id === t)),
+    seen: v.seen ?? [],
   };
 }
 
 export type Refusal = 'owned' | 'funds' | 'locked' | 'unknown';
 export type Result = { ok: true; profile: Profile } | { ok: false; why: Refusal };
 
-export function buyChar(p: Profile, id: string): Result {
+/** Cumpără un personaj; cu `a`, doar dacă e lansat și ai nivelul cerut (D-040). */
+export function buyChar(p: Profile, id: string, a?: Access): Result {
   if (!CHAR_IDS.includes(id)) return { ok: false, why: 'unknown' };
   if (p.chars.includes(id)) return { ok: false, why: 'owned' };
+  if (a) {
+    const st = charState(p, id, a);
+    if (st.kind === 'soon' || st.kind === 'level') return { ok: false, why: 'locked' };
+  }
   const price = charPrice(charById(id));
   if (p.coins < price) return { ok: false, why: 'funds' };
   return { ok: true, profile: { ...p, coins: p.coins - price, chars: [...p.chars, id] } };
 }
 
-export function selectChar(p: Profile, id: string): Result {
-  if (!p.chars.includes(id)) return { ok: false, why: CHAR_IDS.includes(id) ? 'locked' : 'unknown' };
+/** Alege un personaj deținut (sau, cu `a`, unul din rotația gratuită a săptămânii). */
+export function selectChar(p: Profile, id: string, a?: Access): Result {
+  const free = a ? charState(p, id, a).kind === 'rotation' || a.admin : false;
+  if (!p.chars.includes(id) && !free) return { ok: false, why: CHAR_IDS.includes(id) ? 'locked' : 'unknown' };
   return { ok: true, profile: { ...p, ch: id } };
 }
 
@@ -105,6 +125,19 @@ export function buyItem(p: Profile, id: string): Result {
   if (p.coins < it.price) return { ok: false, why: 'funds' };
   return { ok: true, profile: { ...p, coins: p.coins - it.price, owned: [...p.owned, id] } };
 }
+
+/** Cumpără o temă de eveniment în afara perioadei ei. */
+export function buyTheme(p: Profile, id: string, a: Access): Result {
+  const st = themeState(p, id, a);
+  if (st.kind === 'open' || st.kind === 'event') return { ok: false, why: 'owned' };
+  if (st.kind === 'level') return { ok: false, why: 'locked' };
+  if (p.coins < st.price) return { ok: false, why: 'funds' };
+  return { ok: true, profile: { ...p, coins: p.coins - st.price, themes: [...p.themes, id] } };
+}
+
+/** Marchează deblocări ca văzute. */
+export const markSeen = (p: Profile, keys: string[]): Profile =>
+  keys.every((k) => p.seen.includes(k)) ? p : { ...p, seen: [...new Set([...p.seen, ...keys])] };
 
 /** Echipează un obiect deținut (sau scoate categoria cu `id = null`). */
 export function equip(p: Profile, cat: ShopCat, id: string | null): Result {
@@ -175,6 +208,10 @@ export interface Rewards {
   firstToday: boolean;
   daily: number;
   levelUps: LevelReward[];
+  /** Niveluri de jucător noi și ce deschid. */
+  playerUps: { level: number; unlocks: string[] }[];
+  /** Temele de eveniment câștigate pentru totdeauna cu meciul ăsta. */
+  keptThemes: string[];
   profile: Profile;
 }
 
@@ -199,12 +236,19 @@ export function reward(p: Profile, m: MatchSummary, today: string): Rewards {
   const daily = p.daily !== today ? DAILY_BONUS : 0;
   const coins = matchCoins(m) + levelUps.reduce((n, r) => n + r.coins, 0) + daily;
   const items = levelUps.flatMap((r) => (r.item ? [r.item] : []));
+  const pBefore = playerLevel(totalXp(p)).level;
+  const pAfter = playerLevel(totalXp(p) + xp).level;
+  const playerUps = [];
+  for (let l = pBefore + 1; l <= pAfter; l++) playerUps.push({ level: l, unlocks: unlocksAt(l) });
+  const keptThemes = eventThemes(today).filter((t) => !p.themes.includes(t));
   return {
     coins,
     xp,
     firstToday,
     daily,
     levelUps,
+    playerUps,
+    keptThemes,
     profile: {
       ...p,
       coins: p.coins + coins,
@@ -212,6 +256,7 @@ export function reward(p: Profile, m: MatchSummary, today: string): Rewards {
       xpDay: { ...p.xpDay, [ch]: today },
       owned: [...new Set([...p.owned, ...items])],
       daily: today,
+      themes: [...p.themes, ...keptThemes],
     },
   };
 }
