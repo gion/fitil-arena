@@ -80,11 +80,25 @@ Reglaj: frecvența de drop pentru bonusurile de control (gheață, flashbang, bl
 Date în `packages/content`. Fiecare are: statistici de bază, o **abilitate pasivă** și un **Super** (se încarcă din lăzi sparte + lovituri).
 Raritate: Comun · Rar · Epic · Legendar — raritatea aduce abilități mai neobișnuite, **nu** statistici mai mari.
 
-| Personaj (nume de lucru) | Raritate | Pasiv | Super |
+**Implementat în prototip** (statistici, pasiv, înfățișare, mers, voce; Super-ul rămâne pentru Faza 4):
+| Personaj | Raritate / preț | Statistici | Pasiv | Înfățișare | Mers | Voce (sintetizată) + replici |
+|---|---|---|---|---|---|---|
+| **Bubu** | Comun, gratuit | viteză 3.3, rază 1 | prima bombă din rundă e uriașă (+2 rază, desenată mai mare) | rotund, obraji roz | țopăie | „hi hi hi” (3 chicote înalte) |
+| **Gugu** | Comun, gratuit | viteză 2.75, rază 2, **2 vieți**, corp 115% | a doua viață: supraviețuiește o lovitură (clipire 1.8s, „mai am o viață!”) | sprâncene groase, mustață | pași apăsați cu praf | „ho ho ho” grav |
+| **Zuzu** | Comun, gratuit | viteză 4.0, max 5 bombe, corp 88% | cel mai rapid | bentiță roșie care flutură | fuge lăsând praf | „ii-haa!” |
+| **Fifi** | Epic, 150 | viteză 3.45 | **magnet**: culege bonusurile pozitive din pătrățelele vecine | fundă roz, gene | se răsucește | fluierat |
+| **Tanti Veta** | Epic, 150 | viteză 2.95, corp 105% | pornește cu **Mănușă** și **8s de scut** | batic cu flori, poșetă | legănat | „vai…” + „Vai de capul vostru!” |
+| **Maestrul Fitil** | Legendar, 300 | viteză 3.2, rază 2 | **vede cronometrul** tuturor bombelor (cifre deasupra) | păr alb ciufulit, ochelari aurii | plutește | „mua-ha-ha” |
+| **Robo-Mici** | Legendar, 300 | viteză 3.2 | **imun la boli** (încetinire, inversare, amețeală, sughiț); pornește cu Picior | corp pătrat metalic, antenă cu led, grilaj-gură | mers sacadat | „bip-bop” |
+- Vocea personajului se aude când elimini pe cineva, când câștigi, când pierzi o viață; la moarte/victorie spune o replică proprie (speechSynthesis în prototip, înregistrări în final).
+- Boții primesc personaje aleatoare, diferite de al tău; în 3D fiecare personaj are corpul și detaliile lui (mărime, mustață, bentiță, fundă, batic, păr, corp de robot).
+- Ideile de Super din tabelul de mai jos rămân pentru Faza 4.
+
+| Personaj | Raritate | Pasiv (idee inițială) | Super |
 |---|---|---|---|
 | Bubu | Comun | — | Bombă mare (rază +2, o dată) |
-| Zuzu | Rar | Viteză de start +1 | Dash 3 pătrățele |
-| Gogu | Rar | Începe cu Picior | Bombă lipicioasă (se lipește de primul jucător atins) |
+| Zuzu | Comun | Viteză de start +1 | Dash 3 pătrățele |
+| Gugu | Comun | 2 vieți | Cutremur: împinge bombele din jur |
 | Fifi | Epic | Bombe care ricoșează la șut | Cluster: 4 mini-bombe în cruce |
 | Tanti Veta | Epic | Scut 1 lovitură/meci | Poșeta: aruncă o bombă peste tot ecranul |
 | Maestrul Fitil | Legendar | Vede timerul bombelor | Oprește timpul pentru bombele lui 1.5s |
@@ -201,6 +215,18 @@ Fatalitățile au raritate și se deblochează din battle pass / magazin.
 - **Skin-uri** per personaj (culori, costume, efecte de pas).
 - **Pachete de voce** — țipete și replici la moarte/victorie (inspirate de farmecul jocurilor vechi, dar înregistrate de noi). Idee: concurs în comunitate cu voci trimise de jucători (cu acord de licență).
 - **Skin-uri de bombă**, **urme de flacără**, **emote-uri**, **fatalități**, **teme de arenă** (Clasic, Neon, 8-Bit, Cosmos, Cuburi, Junglă + teme de eveniment, vezi mai jos).
+
+## Magazin și monede (implementate în prototip)
+- **Monede** (salvate local): +1 per ladă spartă de tine, +5 per eliminare, +5 la finalul fiecărei runde, +25 victorie (+20 victorie de echipă), +10 per captură de steag, +15 per stea în misiuni, **+50 bonus zilnic** la prima partidă din zi. Start: 100 monede. Afișate în bară și la finalul rundei („+X monede · total Y”).
+- **Personaje**: Bubu, Gugu, Zuzu gratuite; Fifi și Tanti Veta 150; Maestrul Fitil și Robo-Mici 300. Ecran „Personaje” cu previzualizare animată, descriere, bare de statistici, buton „Ascultă” (vocea + replica) și Alege/Cumpără.
+- **Magazin** pe categorii, cu previzualizare animată pe personajul tău; cumperi o dată, apoi echipezi/scoți oricând:
+  - Culori: Verde (gratuit), Roșu aprins 40, Violet 40, Negru 80, Auriu 120, Curcubeu 200 (animat). În echipe se folosește culoarea echipei.
+  - Pălării: Șapcă 50, Coif de petrecere 60, Joben 80, Pălărie de cowboy 90, Coroană 200 (înlocuiesc pălăria temei).
+  - Accesorii: Mustață 40, Fular 50, Ochelari de soare 60.
+  - Bombe: Bomboană 70, Pepene 80, Craniu 100, Disco 150 (și în 3D, ca culoare).
+  - Urme la mers: Steluțe 60, Bule 60, Inimioare 60, Flăcări 90.
+  - Voci (înlocuiesc vocea personajului, cu replici proprii): Pisică 80, Pirat 100, Operă 120.
+- Totul e cosmetic; avantajele vin doar din alegerea personajului (fiecare cu compromisuri). Boost-urile plătite cu monede rămân de adăugat doar pentru misiuni/Infinit.
 
 ## Progres & economie
 - Trofee per personaj; ligi sezoniere (resetare parțială).

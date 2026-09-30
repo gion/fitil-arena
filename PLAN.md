@@ -58,6 +58,15 @@ Nu trece la faza următoare până nu trec criteriile. Progresul se ține în `d
 
 ---
 
+## Faza 2c — Personaje, monede, magazin
+- Cele 7 personaje din prototip data-driven în `packages/content` (statistici, pasiv, mers, voce, replici, preț), cu teste de sim pentru fiecare pasiv (a doua viață, magnet, imunitate, bomba mare, limită de bombe).
+- Economie locală: monede pe evenimente, bonus zilnic, inventar, echipare; migrare pe cont în Faza 6 (serverul devine sursa de adevăr pentru monede).
+- Randare cosmetice în 2D și 3D; ecrane Personaje și Magazin cu previzualizări.
+
+**Acceptare:** test că fiecare personaj pornește cu statisticile corecte; test de economie (cumpărare fără fonduri refuzată, echipare/scoatere, persistență); Playwright: cumpără și echipează un obiect din fiecare categorie fără erori.
+
+---
+
 ## Faza 3 — Multiplayer online (camere private)
 **Scop:** 2–4 jucători online, în aceeași cameră, cu cod.
 - Colyseus room care rulează `packages/sim` autoritar la 20 Hz; clienții trimit doar input cu număr de secvență.

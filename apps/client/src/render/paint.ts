@@ -960,8 +960,33 @@ export function portalRing(color: string, inner: boolean): void {
 
 export type Expr = 'normal' | 'happy' | 'doom' | 'dead';
 
-/** Corpul personajului (fără picioare), cu pălăria temei și ochii spre `face`. Origine = centrul pătrățelului. */
-export function character(s: ThemeStyle, col: string, face: [number, number], expr: Expr): void {
+/** Cum arată un personaj: care e (detaliile lui) și ce cosmetice poartă (id-uri din magazin). */
+export interface Look {
+  ch: string | null;
+  hat: string | null;
+  acc: string | null;
+}
+export const NO_LOOK: Look = { ch: null, hat: null, acc: null };
+
+/**
+ * Corpul personajului (fără picioare), cu pălăria temei (sau cea cumpărată), detaliile personajului
+ * și ochii spre `face`. Origine = centrul pătrățelului.
+ */
+export function character(
+  s: ThemeStyle,
+  col: string,
+  face: [number, number],
+  expr: Expr,
+  look: Look = NO_LOOK,
+): void {
+  body(s, col, face, expr, look);
+  extras(look, face, expr !== 'dead');
+}
+
+/** Personajele care au pălăria lor (Bucătarul, Magicianul) nu mai primesc pălăria temei. */
+const OWN_HAT = new Set(['chef', 'magician']);
+
+function body(s: ThemeStyle, col: string, face: [number, number], expr: Expr, look: Look): void {
   const r = T * 0.34;
   const dark = '#12131c';
   const [fx, fy] = face;
@@ -1084,10 +1109,25 @@ export function character(s: ThemeStyle, col: string, face: [number, number], ex
   ctx.fillStyle = col;
   ctx.strokeStyle = dark;
   ctx.lineWidth = T * 0.05;
-  circle(0, -T * 0.02, r);
+  if (look.ch === 'robo') {
+    rr(-r, -T * 0.02 - r, r * 2, r * 2, r * 0.35);
+  } else if (look.ch === 'ghost') {
+    // fantoma: cap rotund și poale ondulate, puțin transparentă
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.arc(0, -T * 0.02, r, Math.PI, 0);
+    const y0 = -T * 0.02 + r * 0.9;
+    ctx.lineTo(r, y0);
+    for (let i = 0; i < 4; i++) {
+      const x = r - (i + 0.5) * (r / 2);
+      ctx.quadraticCurveTo(x, y0 + (i % 2 ? -r * 0.25 : r * 0.25), r - (i + 1) * (r / 2), y0);
+    }
+    ctx.closePath();
+  } else circle(0, -T * 0.02, r);
   ctx.fill();
   ctx.stroke();
-  if (s === 'classic') {
+  ctx.globalAlpha = 1;
+  if (s === 'classic' && look.ch !== 'robo') {
     ctx.lineWidth = T * 0.04;
     ctx.beginPath();
     ctx.moveTo(0, -T * 0.02 - r);
@@ -1108,7 +1148,7 @@ export function character(s: ThemeStyle, col: string, face: [number, number], ex
     ctx.lineTo(r * 0.6, -r * 1.25);
     ctx.stroke();
   }
-  hat(s, r);
+  if (!look.hat && !OWN_HAT.has(look.ch ?? '')) hat(s, r);
   eyes(-r * 0.12 - T * 0.02, r * 0.2);
   if (s === 'school') {
     ctx.strokeStyle = dark;
@@ -1535,4 +1575,383 @@ export function raceFlag(): void {
       ctx.fillStyle = (r + c) % 2 ? '#12131c' : '#ffffff';
       ctx.fillRect(T * (-0.14 + c * 0.12), T * (-1.18 + r * 0.12), T * 0.12, T * 0.12);
     }
+}
+
+/* ---------- personaje și cosmetice (portate din prototip; personajele noi desenate aici) ---------- */
+
+/** Detaliile personajului și cosmeticele (pălărie, accesoriu), peste corp. */
+function extras(look: Look, face: [number, number], alive: boolean): void {
+  const r = T * 0.34;
+  const [fx, fy] = face;
+  const hc = -T * 0.02;
+  const top = hc - r;
+  const ey = -r * 0.12 - T * 0.02 + fy * r * 0.12;
+  const ex = fx * r * 0.28;
+  const dk = '#12131c';
+  ctx.save();
+  ctx.lineCap = 'round';
+  switch (look.ch) {
+    case 'bubu':
+      if (!alive) break;
+      ctx.fillStyle = 'rgba(255,110,140,.55)';
+      for (const sd of [-1, 1]) {
+        ellipse(sd * r * 0.55 + ex, ey + r * 0.32, r * 0.13, r * 0.08);
+        ctx.fill();
+      }
+      break;
+    case 'gugu':
+      ctx.fillStyle = '#2b1d12';
+      for (const sd of [-1, 1]) {
+        ctx.save();
+        ctx.translate(sd * r * 0.36 + ex, ey - r * 0.36);
+        ctx.rotate(sd * 0.2);
+        ctx.fillRect(-r * 0.24, -r * 0.07, r * 0.48, r * 0.14);
+        ctx.restore();
+      }
+      mustache(ex, ey, r, '#2b1d12');
+      break;
+    case 'zuzu': {
+      ctx.fillStyle = '#e0302f';
+      ctx.fillRect(-r * 0.98, top + r * 0.3, r * 1.96, r * 0.2);
+      const sd = fx || 1;
+      ctx.beginPath();
+      ctx.moveTo(-sd * r * 0.9, top + r * 0.35);
+      ctx.lineTo(-sd * r * 1.4, top + r * 0.18);
+      ctx.lineTo(-sd * r * 1.35, top + r * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'fifi': {
+      ctx.fillStyle = '#ff5fa8';
+      const bx = r * 0.55;
+      const by = top + r * 0.2;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx - r * 0.35, by - r * 0.2);
+      ctx.lineTo(bx - r * 0.35, by + r * 0.2);
+      ctx.closePath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + r * 0.35, by - r * 0.2);
+      ctx.lineTo(bx + r * 0.35, by + r * 0.2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#ffd0e6';
+      circle(bx, by, r * 0.09);
+      ctx.fill();
+      if (!alive) break;
+      ctx.strokeStyle = dk;
+      ctx.lineWidth = T * 0.02;
+      for (const sd of [-1, 1])
+        for (let i = 0; i < 3; i++) {
+          const x0 = sd * r * 0.36 + ex + (i - 1) * r * 0.1;
+          ctx.beginPath();
+          ctx.moveTo(x0, ey - r * 0.24);
+          ctx.lineTo(x0 + (i - 1) * r * 0.05, ey - r * 0.36);
+          ctx.stroke();
+        }
+      break;
+    }
+    case 'veta':
+      ctx.fillStyle = '#d8306a';
+      ctx.beginPath();
+      ctx.moveTo(-r * 1.02, hc + r * 0.1);
+      ctx.quadraticCurveTo(-r * 1.05, top - r * 0.15, 0, top - r * 0.12);
+      ctx.quadraticCurveTo(r * 1.05, top - r * 0.15, r * 1.02, hc + r * 0.1);
+      ctx.quadraticCurveTo(r * 0.6, top + r * 0.4, 0, top + r * 0.42);
+      ctx.quadraticCurveTo(-r * 0.6, top + r * 0.4, -r * 1.02, hc + r * 0.1);
+      ctx.fill();
+      ctx.fillStyle = '#ffe14a';
+      for (const [a, b] of [
+        [-0.5, 0.05],
+        [0, -0.05],
+        [0.5, 0.05],
+        [-0.25, 0.25],
+        [0.28, 0.25],
+      ] as const) {
+        circle(a * r, top + b * r + r * 0.05, r * 0.07);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#8a4a22';
+      rr(r * 0.75, hc + r * 0.25, r * 0.45, r * 0.38, r * 0.08);
+      ctx.fill();
+      ctx.strokeStyle = '#8a4a22';
+      ctx.lineWidth = T * 0.025;
+      ctx.beginPath();
+      ctx.arc(r * 0.97, hc + r * 0.25, r * 0.14, Math.PI, 0);
+      ctx.stroke();
+      break;
+    case 'maestru':
+      ctx.fillStyle = '#f4f4f8';
+      for (const sd of [-1, 1])
+        for (let i = 0; i < 3; i++) {
+          circle(sd * r * (0.85 + i * 0.08), top + r * (0.35 + i * 0.18), r * (0.2 - i * 0.03));
+          ctx.fill();
+        }
+      circle(0, top - r * 0.02, r * 0.18);
+      ctx.fill();
+      if (!alive) break;
+      ctx.strokeStyle = '#d9a520';
+      ctx.lineWidth = T * 0.028;
+      for (const sd of [-1, 1]) {
+        circle(sd * r * 0.36 + ex, ey, r * 0.27);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(ex - r * 0.1, ey);
+      ctx.lineTo(ex + r * 0.1, ey);
+      ctx.stroke();
+      break;
+    case 'robo':
+      ctx.strokeStyle = dk;
+      ctx.lineWidth = T * 0.03;
+      ctx.beginPath();
+      ctx.moveTo(0, top);
+      ctx.lineTo(0, top - r * 0.45);
+      ctx.stroke();
+      ctx.fillStyle = '#ff3b3b';
+      circle(0, top - r * 0.5, r * 0.1);
+      ctx.fill();
+      if (!alive) break;
+      ctx.fillStyle = dk;
+      ctx.fillRect(ex - r * 0.3, ey + r * 0.36, r * 0.6, r * 0.14);
+      ctx.fillStyle = '#9fe3ff';
+      for (let i = 0; i < 4; i++)
+        ctx.fillRect(ex - r * 0.26 + i * r * 0.14, ey + r * 0.39, r * 0.08, r * 0.08);
+      break;
+    case 'striker':
+      // bentiță albă cu dungă și o minge lângă picior
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-r * 0.96, top + r * 0.28, r * 1.92, r * 0.18);
+      ctx.fillStyle = '#12131c';
+      ctx.fillRect(-r * 0.96, top + r * 0.34, r * 1.92, r * 0.05);
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = dk;
+      ctx.lineWidth = T * 0.02;
+      circle(r * 0.95, hc + r * 0.85, r * 0.26);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = dk;
+      circle(r * 0.95, hc + r * 0.85, r * 0.09);
+      ctx.fill();
+      break;
+    case 'chef':
+      if (!look.hat) {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#c9c9d4';
+        ctx.lineWidth = T * 0.02;
+        ctx.fillRect(-r * 0.5, top - r * 0.15, r, r * 0.35);
+        ctx.strokeRect(-r * 0.5, top - r * 0.15, r, r * 0.35);
+        for (const [x, y, rad] of [
+          [-0.35, -0.45, 0.32],
+          [0.35, -0.45, 0.32],
+          [0, -0.65, 0.36],
+        ] as const) {
+          circle(x * r, top + y * r, rad * r);
+          ctx.fill();
+        }
+      }
+      mustache(ex, ey, r, '#3a2414');
+      break;
+    case 'ghost':
+      if (!alive) break;
+      ctx.fillStyle = dk;
+      ellipse(ex, ey + r * 0.42, r * 0.1, r * 0.14);
+      ctx.fill();
+      break;
+    case 'magician':
+      if (!look.hat) {
+        ctx.fillStyle = '#16161e';
+        ctx.fillRect(-r * 0.75, top + r * 0.04, r * 1.5, r * 0.16);
+        ctx.fillRect(-r * 0.45, top - r * 0.78, r * 0.9, r * 0.85);
+        ctx.fillStyle = '#8a5cff';
+        ctx.fillRect(-r * 0.45, top - r * 0.13, r * 0.9, r * 0.14);
+      }
+      // bagheta
+      ctx.strokeStyle = dk;
+      ctx.lineWidth = T * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(r * 0.8, hc + r * 0.6);
+      ctx.lineTo(r * 1.25, hc - r * 0.05);
+      ctx.stroke();
+      ctx.strokeStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(r * 1.18, hc + r * 0.05);
+      ctx.lineTo(r * 1.25, hc - r * 0.05);
+      ctx.stroke();
+      break;
+  }
+  switch (look.acc) {
+    case 'a_shades':
+      if (!alive) break;
+      ctx.fillStyle = '#111';
+      for (const sd of [-1, 1]) {
+        rr(sd * r * 0.36 + ex - r * 0.26, ey - r * 0.16, r * 0.52, r * 0.3, r * 0.1);
+        ctx.fill();
+      }
+      ctx.fillRect(ex - r * 0.12, ey - r * 0.1, r * 0.24, r * 0.06);
+      break;
+    case 'a_mustache':
+      mustache(ex, ey, r, '#3a2414');
+      break;
+    case 'a_scarf':
+      for (let i = 0; i < 5; i++) {
+        ctx.fillStyle = i % 2 ? '#ffffff' : '#e0302f';
+        ctx.fillRect(-r * 0.95 + i * r * 0.38, hc + r * 0.62, r * 0.38, r * 0.22);
+      }
+      ctx.fillStyle = '#e0302f';
+      ctx.fillRect(r * 0.35, hc + r * 0.75, r * 0.2, r * 0.45);
+      break;
+  }
+  if (look.hat) cosmeticHat(look.hat, top + r * 0.12, r, fx);
+  ctx.restore();
+}
+
+function mustache(ex: number, ey: number, r: number, col: string): void {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(ex, ey + r * 0.34);
+  ctx.bezierCurveTo(ex - r * 0.3, ey + r * 0.2, ex - r * 0.55, ey + r * 0.5, ex - r * 0.62, ey + r * 0.3);
+  ctx.bezierCurveTo(ex - r * 0.5, ey + r * 0.55, ex - r * 0.2, ey + r * 0.52, ex, ey + r * 0.44);
+  ctx.bezierCurveTo(ex + r * 0.2, ey + r * 0.52, ex + r * 0.5, ey + r * 0.55, ex + r * 0.62, ey + r * 0.3);
+  ctx.bezierCurveTo(ex + r * 0.55, ey + r * 0.5, ex + r * 0.3, ey + r * 0.2, ex, ey + r * 0.34);
+  ctx.fill();
+}
+
+function cosmeticHat(h: string, y: number, r: number, fx: number): void {
+  if (h === 'h_top') {
+    ctx.fillStyle = '#16161e';
+    ctx.fillRect(-r * 0.75, y - r * 0.08, r * 1.5, r * 0.16);
+    ctx.fillRect(-r * 0.45, y - r * 0.9, r * 0.9, r * 0.85);
+    ctx.fillStyle = '#e0302f';
+    ctx.fillRect(-r * 0.45, y - r * 0.25, r * 0.9, r * 0.14);
+  } else if (h === 'h_crown') {
+    ctx.fillStyle = '#ffd23f';
+    ctx.strokeStyle = '#8a6a00';
+    ctx.lineWidth = T * 0.02;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.6, y);
+    ctx.lineTo(-r * 0.65, y - r * 0.6);
+    ctx.lineTo(-r * 0.32, y - r * 0.3);
+    ctx.lineTo(0, y - r * 0.75);
+    ctx.lineTo(r * 0.32, y - r * 0.3);
+    ctx.lineTo(r * 0.65, y - r * 0.6);
+    ctx.lineTo(r * 0.6, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    for (const [a, c] of [
+      [-0.3, '#ff3b6b'],
+      [0, '#3bc6ff'],
+      [0.3, '#7dff6a'],
+    ] as const) {
+      ctx.fillStyle = c;
+      circle(a * r, y - r * 0.15, r * 0.08);
+      ctx.fill();
+    }
+  } else if (h === 'h_cap') {
+    ctx.fillStyle = '#2f6de0';
+    ctx.beginPath();
+    ctx.arc(0, y + r * 0.05, r * 0.78, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(-r * 0.78, y, r * 1.56, r * 0.1);
+    const vd = fx > 0 ? 1 : fx < 0 ? -1 : 1;
+    ctx.fillStyle = '#1f4ea8';
+    ellipse(vd * r * 0.7, y + r * 0.08, r * 0.45, r * 0.1);
+    ctx.fill();
+  } else if (h === 'h_cowboy') {
+    ctx.fillStyle = '#8a5a2b';
+    ellipse(0, y, r * 1.15, r * 0.2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.5, y);
+    ctx.quadraticCurveTo(-r * 0.55, y - r * 0.75, -r * 0.15, y - r * 0.6);
+    ctx.lineTo(0, y - r * 0.5);
+    ctx.lineTo(r * 0.15, y - r * 0.6);
+    ctx.quadraticCurveTo(r * 0.55, y - r * 0.75, r * 0.5, y);
+    ctx.fill();
+    ctx.fillStyle = '#4a2a10';
+    ctx.fillRect(-r * 0.5, y - r * 0.18, r, r * 0.12);
+  } else if (h === 'h_party') {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.45, y + r * 0.05);
+    ctx.lineTo(r * 0.1, y - r * 1.05);
+    ctx.lineTo(r * 0.5, y + r * 0.05);
+    ctx.closePath();
+    ctx.fillStyle = '#ff5fa8';
+    ctx.fill();
+    ctx.clip();
+    for (let i = 0; i < 5; i++) {
+      ctx.fillStyle = i % 2 ? '#ffe14a' : '#4fc3ff';
+      ctx.fillRect(-r, y - r * 1.1 + i * r * 0.28, r * 2, r * 0.12);
+    }
+    ctx.restore();
+    ctx.fillStyle = '#fff';
+    circle(r * 0.1, y - r * 1.08, r * 0.12);
+    ctx.fill();
+  }
+}
+
+/** O urmă la mers (magazin): stea, bulă, inimă sau punct. */
+export function trail(shape: string, col: string): void {
+  const r = T * 0.09;
+  ctx.fillStyle = col;
+  ctx.strokeStyle = col;
+  ctx.lineWidth = T * 0.03;
+  if (shape === 'star') {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+      const rad = i % 2 ? r * 0.45 : r;
+      ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+    }
+    ctx.closePath();
+    ctx.fill();
+  } else if (shape === 'ring') {
+    circle(0, 0, r * 0.8);
+    ctx.stroke();
+  } else if (shape === 'heart') {
+    heartPath(0, 0, r * 2);
+    ctx.fill();
+  } else {
+    circle(0, 0, r * 0.8);
+    ctx.fill();
+  }
+}
+
+/** Uleiul Bucătarului pe un pătrățel. */
+export function oil(): void {
+  ctx.fillStyle = 'rgba(160,110,20,.55)';
+  ellipse(T * 0.5, T * 0.55, T * 0.4, T * 0.28);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,230,140,.45)';
+  ellipse(T * 0.38, T * 0.45, T * 0.1, T * 0.05, -0.4);
+  ctx.fill();
+}
+
+/** Porumbelul Magicianului (bomba transformată). */
+export function pigeon(): void {
+  const r = T * 0.22;
+  ctx.fillStyle = '#f4f4f8';
+  ctx.strokeStyle = '#12131c';
+  ctx.lineWidth = T * 0.025;
+  ellipse(0, 0, r, r * 0.7);
+  ctx.fill();
+  ctx.stroke();
+  circle(r * 0.8, -r * 0.45, r * 0.42);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#ffb000';
+  ctx.beginPath();
+  ctx.moveTo(r * 1.15, -r * 0.5);
+  ctx.lineTo(r * 1.45, -r * 0.4);
+  ctx.lineTo(r * 1.15, -r * 0.3);
+  ctx.fill();
+  ctx.fillStyle = '#12131c';
+  circle(r * 0.9, -r * 0.55, r * 0.07);
+  ctx.fill();
+  ctx.fillStyle = '#d8dde8';
+  ellipse(-r * 0.2, -r * 0.35, r * 0.6, r * 0.3, -0.5);
+  ctx.fill();
 }

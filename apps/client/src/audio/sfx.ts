@@ -238,4 +238,109 @@ export class Sfx {
     o.stop(t + dur + 0.05);
     lfo.stop(t + dur + 0.05);
   }
+
+  /** Vocea unui personaj (sau a unui pachet din magazin): câteva silabe sintetizate (portate din prototip). */
+  voiceLine(v: string): void {
+    const c = this.on();
+    if (!c) return;
+    const t = c.currentTime;
+    const blip = (
+      f0: number,
+      f1: number,
+      st: number,
+      dur: number,
+      type: Wave = 'sawtooth',
+      vol = 0.3,
+      q = 2,
+      fc = 1200,
+      vib = 0,
+    ) => {
+      const o = c.createOscillator();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t + st);
+      o.frequency.exponentialRampToValueAtTime(f1, t + st + dur);
+      if (vib) {
+        const l = c.createOscillator();
+        const lg = c.createGain();
+        l.frequency.value = vib;
+        lg.gain.value = f0 * 0.05;
+        l.connect(lg).connect(o.frequency);
+        l.start(t + st);
+        l.stop(t + st + dur + 0.05);
+      }
+      const bp = c.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = fc;
+      bp.Q.value = q;
+      const g = c.createGain();
+      this.env(g, t + st, 0.012, dur, vol);
+      o.connect(bp).connect(g).connect(this.master);
+      o.start(t + st);
+      o.stop(t + st + dur + 0.05);
+    };
+    switch (v) {
+      case 'hihi':
+        [0, 0.14, 0.28].forEach((st, i) =>
+          blip(820 + i * 50, 1080 + i * 50, st, 0.1, 'sawtooth', 0.4, 3, 1900),
+        );
+        break;
+      case 'hoho':
+        [0, 0.24, 0.48].forEach((st) => blip(155, 118, st, 0.19, 'sawtooth', 0.6, 2, 480));
+        break;
+      case 'yeehaw':
+        blip(380, 980, 0, 0.22, 'sawtooth', 0.4, 2, 1400);
+        blip(980, 420, 0.24, 0.32, 'sawtooth', 0.4, 2, 1100);
+        break;
+      case 'whistle':
+        blip(1300, 1950, 0, 0.18, 'sine', 0.3, 1, 1600);
+        blip(1950, 1250, 0.22, 0.24, 'sine', 0.3, 1, 1600);
+        break;
+      case 'vai':
+        blip(460, 300, 0, 0.6, 'sawtooth', 0.4, 2, 1000, 6);
+        break;
+      case 'muahaha':
+        [0, 0.16, 0.32, 0.48].forEach((st, i) =>
+          blip(310 - i * 25, 265 - i * 25, st, 0.13, 'sawtooth', 0.45, 2, 800),
+        );
+        blip(700, 1150, 0.68, 0.26, 'sawtooth', 0.3, 3, 1500);
+        break;
+      case 'robot':
+        for (const [f, st] of [
+          [600, 0],
+          [400, 0.12],
+          [820, 0.24],
+          [520, 0.36],
+        ] as const)
+          blip(f, f, st, 0.09, 'square', 0.18, 1, f);
+        break;
+      case 'whoosh':
+        // fluierul arbitrului: trei țignale scurte
+        [0, 0.16, 0.32].forEach((st, i) =>
+          blip(2600, 2500, st, i === 2 ? 0.3 : 0.1, 'sine', 0.25, 1, 2600, 30),
+        );
+        break;
+      case 'sizzle':
+        if (this.noise) this.noiseHit(t, 0.5, 3500, 0.2, 'highpass');
+        blip(520, 700, 0.1, 0.25, 'sawtooth', 0.3, 2, 1100);
+        break;
+      case 'boo':
+        blip(220, 180, 0, 0.8, 'sine', 0.45, 1, 400, 5);
+        break;
+      case 'tada':
+        blip(523, 523, 0, 0.14, 'triangle', 0.35, 1, 1000);
+        blip(784, 790, 0.16, 0.4, 'triangle', 0.35, 1, 1400);
+        break;
+      case 'pirate':
+        blip(185, 110, 0, 0.5, 'sawtooth', 0.6, 3, 600, 16);
+        break;
+      case 'opera':
+        blip(660, 700, 0, 0.75, 'sine', 0.4, 1, 660, 6);
+        blip(880, 930, 0.38, 0.6, 'triangle', 0.22, 1, 880, 6);
+        break;
+      case 'cat':
+        blip(700, 1050, 0, 0.16, 'sawtooth', 0.35, 4, 1500);
+        blip(1050, 600, 0.16, 0.32, 'sawtooth', 0.35, 4, 1300);
+        break;
+    }
+  }
 }
