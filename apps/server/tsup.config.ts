@@ -7,5 +7,5 @@ export default defineConfig({
   clean: true,
   splitting: false,
   // pachetele interne se exportă ca sursă TS, deci intră în bundle
-  noExternal: ['@fitil/sim', '@fitil/content'],
+  noExternal: ['@fitil/sim', '@fitil/content', '@fitil/net'],
 });

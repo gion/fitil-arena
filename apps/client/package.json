@@ -19,7 +19,9 @@
     "@capacitor/core": "^8.0.0",
     "@capacitor/haptics": "^8.0.0",
     "@capacitor/ios": "^8.0.0",
+    "@colyseus/sdk": "^0.18.4",
     "@fitil/content": "workspace:*",
+    "@fitil/net": "workspace:*",
     "@fitil/sim": "workspace:*",
     "phaser": "~3.90.0",
     "three": "^0.186.1"

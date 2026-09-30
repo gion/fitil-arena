@@ -442,7 +442,7 @@ export class ArenaScene extends Phaser.Scene {
       // camera urmărește lin jucătorul (tu ești mereu în centru)
       const me = m.me;
       if (me.alive || s.tick - me.deathTick < 2) {
-        const [px, py] = m.lerp('p0', me.px, me.py);
+        const [px, py] = m.lerp(`p${m.meId}`, me.px, me.py);
         const k = Math.min(1, (this.game.loop.rawDelta / 1000) * 10);
         this.camX += (px - this.camX) * k;
         this.camY += (py - this.camY) * k;
@@ -1102,7 +1102,7 @@ export class ArenaScene extends Phaser.Scene {
     const [x, y] = m.lerp(`p${p.id}`, p.px, p.py);
     const depth = DEPTH.actors + y * 0.01;
     const hero = m.hero && m.hero.player === p.id && p.alive ? m.hero : null;
-    const isMe = p.id === 0;
+    const isMe = p.id === m.meId;
     const doom = isMe && m.doom;
     let w = this.walk.get(p.id) ?? p.id * 1.7;
     if (p.moving) w += dt * ((p.speed * TICK_HZ) / U) * 5;

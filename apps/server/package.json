@@ -8,14 +8,20 @@
     "build": "tsup",
     "start": "node dist/main.js",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "serve": "tsx src/main.ts"
   },
   "dependencies": {
+    "@colyseus/core": "^0.18.18",
+    "@colyseus/schema": "^5.0.35",
+    "@colyseus/ws-transport": "^0.18.4",
     "@fitil/content": "workspace:*",
+    "@fitil/net": "workspace:*",
     "@fitil/sim": "workspace:*",
     "fastify": "^5.0.0"
   },
   "devDependencies": {
+    "@colyseus/sdk": "^0.18.4",
     "@types/node": "^22.0.0",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0"

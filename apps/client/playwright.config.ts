@@ -13,9 +13,18 @@ export default defineConfig({
     // headless-ul nou al Chromium folosește GPU-ul real (Metal/ANGLE); cel vechi randează software
     channel: 'chromium',
   },
-  webServer: {
-    command: 'pnpm build && pnpm preview',
-    url: 'http://localhost:4173',
-    reuseExistingServer: true,
-  },
+  webServer: [
+    {
+      command: 'pnpm build && pnpm preview',
+      url: 'http://localhost:4173',
+      reuseExistingServer: true,
+    },
+    {
+      // serverul de joc (Colyseus) pentru testele online; API-ul pe alt port ca să nu se ciocnească
+      command: 'pnpm --filter @fitil/server serve',
+      port: 2567,
+      env: { API_PORT: '3099' },
+      reuseExistingServer: true,
+    },
+  ],
 });
