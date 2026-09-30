@@ -1,11 +1,20 @@
-import { CTF_NEED, CTF_TIME, RESPAWN, RESPAWN_SHIELD, SHIFT_FIRST, SPEED_START, sec } from './constants.ts';
+import {
+  CTF_NEED,
+  CTF_TIME,
+  MAX_BOMBS,
+  RESPAWN,
+  RESPAWN_SHIELD,
+  SHIFT_FIRST,
+  SPEED_START,
+  sec,
+} from './constants.ts';
 import { countSoft, idx, inBounds } from './grid.ts';
 import { applyItem } from './items.ts';
 import { INF_S, ensureWindow } from './world.ts';
 import { createRng, nextFloat, shuffle } from './rng.ts';
 import type { RngState } from './rng.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
-import type { BotKind, Dir, Flag, GameState, ItemType, Player, Rules } from './types.ts';
+import type { BotKind, CharKit, Dir, Flag, GameState, ItemType, Player, Rules } from './types.ts';
 
 export const DEFAULT_RULES: Rules = {
   width: 15,
@@ -27,6 +36,7 @@ export const DEFAULT_RULES: Rules = {
   hurryUpTick: sec(90),
   hurryEvery: 6,
   startItems: [],
+  charges: false,
 };
 
 export const isTeamMode = (r: Rules): boolean => r.mode !== 'ffa';
@@ -34,6 +44,9 @@ export const isTeamMode = (r: Rules): boolean => r.mode !== 'ffa';
 export interface PlayerSetup {
   bot: BotKind | null;
   team?: number;
+  /** Personajul (id din content) și kitul lui; fără kit = jucătorul clasic. */
+  ch?: string;
+  kit?: CharKit;
 }
 
 export interface GameSetup {
@@ -136,6 +149,21 @@ function spawnPoints(W: number, H: number, setup: PlayerSetup[], mode: Rules['mo
   return setup.map((_, i) => corners[i % corners.length]!);
 }
 
+/** Aplică kitul unui personaj pe un jucător nou. */
+export function applyKit(p: Player, kit: CharKit, ch: string | null): void {
+  p.ch = ch;
+  p.kit = kit;
+  p.speed = kit.speed;
+  p.range = kit.range;
+  p.maxBombs = kit.maxBombs;
+  p.bombs = Math.min(kit.bombs, kit.maxBombs);
+  p.lives = kit.lives;
+  p.kick = !!kit.kick;
+  p.glove = !!kit.glove;
+  if (kit.shield) p.shieldT = kit.shield;
+  p.bigBomb = !!kit.bigFirst;
+}
+
 export function makePlayer(id: number, team: number, bot: BotKind | null, x: number, y: number): Player {
   return {
     id,
@@ -169,6 +197,14 @@ export function makePlayer(id: number, team: number, bot: BotKind | null, x: num
     shieldT: 0,
     graceT: 0,
     hp: 100,
+    ch: null,
+    kit: null,
+    maxBombs: MAX_BOMBS,
+    lives: 1,
+    charges: { kick: 0, glove: 0, remote: 0, line: 0 },
+    bigBomb: false,
+    ghostT: 0,
+    pigeonUsed: false,
     alive: true,
     deathTick: -1,
     killerId: null,
@@ -222,6 +258,8 @@ export function createGame(setup: GameSetup): GameState {
     gold: new Array<number>(N).fill(0),
     cursed: new Array<number>(N).fill(0),
     flameVia: new Array<number>(N).fill(0),
+    oil: new Array<number>(N).fill(0),
+    oilOwner: new Array<number>(N).fill(-1),
     players: [],
     bombs: [],
     nextBombId: 1,
@@ -286,6 +324,7 @@ export function createGame(setup: GameSetup): GameState {
     const p = makePlayer(i, team, ps.bot, x, y);
     const open = DIRS.find((d: Dir) => s.grid[idx(s, x + DX[d]!, y + DY[d]!)] === EMPTY);
     if (open !== undefined) p.face = open;
+    if (ps.kit) applyKit(p, ps.kit, ps.ch ?? null);
     for (const it of rules.startItems) applyItem(p, it);
     return p;
   });

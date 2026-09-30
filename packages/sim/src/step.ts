@@ -3,11 +3,14 @@ import { BOT_LEVELS, botCooldown } from './botLevels.ts';
 import {
   CARRIER_SPEED_PCT,
   CHAIN_DELAY,
+  FLAME,
+  GHOST_CD,
+  OIL,
+  OIL_SPEED_PCT,
   HURT_FLAME,
   CURSE_DELAY,
   GRACE,
   HICCUP_EVERY,
-  MAX_BOMBS,
   MAX_RANGE,
   PORTAL,
   SLIDE_SPEED,
@@ -17,6 +20,7 @@ import { addFlame, damage, kill, shieldSave } from './effects.ts';
 import { collectCrystal, hitTarget, updateMission } from './missions.ts';
 import { updateWorld } from './world.ts';
 import {
+  blast,
   bombAt,
   countSoft,
   idx,
@@ -30,13 +34,13 @@ import {
   tileY,
   walkable,
 } from './grid.ts';
-import { applyItem, rollDrop, rollGold } from './items.ts';
+import { applyItem, isNegative, rollDrop, rollGold } from './items.ts';
 import { updateMobs } from './mobs.ts';
 import { carriedFlag, updateCtf, updateRespawn, updateRotation, updateShift } from './modes.ts';
 import { nextFloat, nextInt } from './rng.ts';
 import { isTeamMode } from './setup.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U, VIA_LIGHTNING, opposite } from './types.ts';
-import type { Bomb, Dir, GameState, Input, Player } from './types.ts';
+import type { Bomb, Dir, GameState, Input, ItemType, Player } from './types.ts';
 
 /**
  * Avansează simularea cu un tick (50 ms). Modifică `s` pe loc și îl întoarce.
@@ -130,6 +134,20 @@ function updateBombs(s: GameState): void {
         s.bombs.some((o) => o !== b && o.x === nx && o.y === ny && o.held === null && o.fly === null) ||
         playerAt(s, nx, ny) !== undefined;
       if (blocked) {
+        // ricoșeu (Fotbalistul): se întoarce o dată, dacă înapoi e liber
+        const back = opposite(b.slide);
+        const bx = b.x + DX[back]!;
+        const by = b.y + DY[back]!;
+        if (
+          b.bounce &&
+          tileAt(s, bx, by) === EMPTY &&
+          !s.bombs.some((o) => o !== b && o.x === bx && o.y === by && o.held === null && o.fly === null) &&
+          playerAt(s, bx, by) === undefined
+        ) {
+          b.bounce--;
+          b.slide = back;
+          continue;
+        }
         b.slide = null;
         b.prog = 0;
       }
@@ -183,7 +201,15 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
     owner: b.owner,
     chain: b.chain,
   });
-  addFlame(s, b.x, b.y, b.owner, b.via);
+  const oily = owner?.kit?.oil === true;
+  const burn = (x: number, y: number) => {
+    addFlame(s, x, y, b.owner, b.via);
+    if (!oily) return;
+    const k = idx(s, x, y);
+    s.oil[k] = FLAME + OIL;
+    s.oilOwner[k] = b.owner;
+  };
+  burn(b.x, b.y);
   for (const d of DIRS) {
     for (let i = 1; i <= b.range; i++) {
       const nx = b.x + DX[d]! * i;
@@ -194,7 +220,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
       if (g === SOFT && s.mission && hitTarget(s, nx, ny, b.owner, b.via)) break;
       if (g === SOFT) {
         s.grid[k] = EMPTY;
-        addFlame(s, nx, ny, b.owner, b.via);
+        burn(nx, ny);
         const gold = s.gold[k] === 1;
         const cursed = s.cursed[k] === 1;
         s.gold[k] = 0;
@@ -209,9 +235,29 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
         o.fuse = Math.min(o.fuse, CHAIN_DELAY);
         if (!o.chain) o.chain = b.chain;
       }
-      addFlame(s, nx, ny, b.owner, b.via);
+      burn(nx, ny);
     }
   }
+}
+
+/** Magicianul: o dată pe rundă, bomba unui adversar care l-ar prinde se transformă în porumbel. */
+function pigeon(s: GameState, b: Bomb, dead: Set<number>): boolean {
+  const mags = s.players.filter((p) => p.alive && p.kit?.pigeon && !p.pigeonUsed && p.id !== b.owner);
+  if (!mags.length) return false;
+  const owner = s.players[b.owner];
+  const hit = new Uint8Array(s.grid.length);
+  blast(s, b.x, b.y, b.range, hit);
+  const mag = mags.find(
+    (p) =>
+      hit[idx(s, tileX(p), tileY(p))] &&
+      !(isTeamMode(s.rules) && !s.rules.friendlyFire && owner && owner.team === p.team),
+  );
+  if (!mag) return false;
+  mag.pigeonUsed = true;
+  dead.add(b.id);
+  if (owner) owner.active = Math.max(0, owner.active - 1);
+  s.events.push({ type: 'pigeon', player: mag.id, bomb: b.id, x: b.x, y: b.y });
+  return true;
 }
 
 function explodeBombs(s: GameState): void {
@@ -221,6 +267,7 @@ function explodeBombs(s: GameState): void {
     again = false;
     for (const b of s.bombs) {
       if (dead.has(b.id) || b.held !== null || b.fly !== null || b.fuse > 0) continue;
+      if (pigeon(s, b, dead)) continue;
       explode(s, b, dead);
       again = true;
     }
@@ -230,6 +277,7 @@ function explodeBombs(s: GameState): void {
 }
 
 function updateFlames(s: GameState): void {
+  for (let k = 0; k < s.oil.length; k++) if (s.oil[k]! > 0 && --s.oil[k]! === 0) s.oilOwner[k] = -1;
   for (let k = 0; k < s.flame.length; k++) {
     if (s.flame[k]! <= 0) continue;
     s.flame[k]!--;
@@ -264,9 +312,42 @@ function arrive(s: GameState, p: Player): boolean {
   return false;
 }
 
+/** Uleiul Bucătarului îi încetinește pe ceilalți (nu pe el și nici pe coechipieri). */
+function onOil(s: GameState, p: Player): boolean {
+  const k = idx(s, tileX(p), tileY(p));
+  if (s.oil[k]! <= 0) return false;
+  const o = s.players[s.oilOwner[k]!];
+  if (!o || o.id === p.id) return false;
+  return !(isTeamMode(s.rules) && o.team === p.team);
+}
+
+/** Culege bonusul de pe pătrățelul k (și anunță maximele). */
+function pickup(s: GameState, p: Player, x: number, y: number): void {
+  const k = idx(s, x, y);
+  const it = s.items[k];
+  if (!it) return;
+  s.items[k] = null;
+  const pre = { speed: p.speed, bombs: p.bombs, range: p.range };
+  if (!applyItem(p, it, s.rules.charges)) {
+    s.events.push({ type: 'immune', player: p.id, item: it });
+    return;
+  }
+  if (it === 'crystal') collectCrystal(s, x, y);
+  s.events.push({ type: 'pickup', player: p.id, item: it, x, y });
+  if (p.speed >= SPEED_MAX && pre.speed < SPEED_MAX)
+    s.events.push({ type: 'maxed', player: p.id, stat: 'speed' });
+  if (p.bombs >= p.maxBombs && pre.bombs < p.maxBombs)
+    s.events.push({ type: 'maxed', player: p.id, stat: 'bombs' });
+  if (p.range >= MAX_RANGE && pre.range < MAX_RANGE)
+    s.events.push({ type: 'maxed', player: p.id, stat: 'fire' });
+}
+
+const magnetable = (it: ItemType | null): boolean => !!it && !isNegative(it) && it !== 'crystal';
+
 /** Mișcare pe grilă, pătrățel cu pătrățel (portat din `move()` din prototip). */
 function move(s: GameState, p: Player, want: Dir | null): void {
   let rem = carriedFlag(s, p) ? Math.floor((p.speed * CARRIER_SPEED_PCT) / 100) : p.speed;
+  if (onOil(s, p)) rem = Math.floor((rem * OIL_SPEED_PCT) / 100);
   if (want !== null) p.face = want;
   if (p.moving && want !== null && want === opposite(p.dir)) {
     [p.tx, p.fx] = [p.fx, p.tx];
@@ -282,8 +363,14 @@ function move(s: GameState, p: Player, want: Dir | null): void {
       const nx = cx + DX[want]!;
       const ny = cy + DY[want]!;
       if (!walkable(s, nx, ny)) {
-        if (p.kick && bombAt(s, nx, ny)) tryKick(s, p, want);
-        break;
+        // Fantoma trece printr-o ladă, o dată la 20s
+        if (p.kit?.ghost && p.ghostT === 0 && tileAt(s, nx, ny) === SOFT && !bombAt(s, nx, ny)) {
+          p.ghostT = GHOST_CD;
+          s.events.push({ type: 'ghostIn', player: p.id, x: nx, y: ny });
+        } else {
+          if (p.kick && bombAt(s, nx, ny)) tryKick(s, p, want);
+          break;
+        }
       }
       p.fx = cx;
       p.fy = cy;
@@ -338,20 +425,15 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
       }
     }
     if (p.shieldT > 0) p.shieldT--;
-    const it = s.items[k];
-    if (it) {
-      s.items[k] = null;
-      const pre = { speed: p.speed, bombs: p.bombs, range: p.range };
-      applyItem(p, it);
-      if (it === 'crystal') collectCrystal(s, tileX(p), tileY(p));
-      s.events.push({ type: 'pickup', player: p.id, item: it, x: tileX(p), y: tileY(p) });
-      if (p.speed >= SPEED_MAX && pre.speed < SPEED_MAX)
-        s.events.push({ type: 'maxed', player: p.id, stat: 'speed' });
-      if (p.bombs >= MAX_BOMBS && pre.bombs < MAX_BOMBS)
-        s.events.push({ type: 'maxed', player: p.id, stat: 'bombs' });
-      if (p.range >= MAX_RANGE && pre.range < MAX_RANGE)
-        s.events.push({ type: 'maxed', player: p.id, stat: 'fire' });
-    }
+    if (p.ghostT > 0) p.ghostT--;
+    pickup(s, p, tileX(p), tileY(p));
+    // Fifi: magnet pentru bonusurile pozitive din pătrățelele vecine
+    if (p.kit?.magnet && p.alive)
+      for (const d of DIRS) {
+        const nx = tileX(p) + DX[d]!;
+        const ny = tileY(p) + DY[d]!;
+        if (tileAt(s, nx, ny) === EMPTY && magnetable(s.items[idx(s, nx, ny)] ?? null)) pickup(s, p, nx, ny);
+      }
     if (p.revT > 0) p.revT--;
     if (p.dizzyT > 0) p.dizzyT--;
     if (p.hicT > 0) {

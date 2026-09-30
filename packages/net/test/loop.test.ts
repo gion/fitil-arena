@@ -89,7 +89,7 @@ describe('net: construcția meciului online', () => {
     const b = buildOnline({ mode: 'ctf', theme: 'clasic', bots: 'hard' }, 3, 1.6, ['A', 'B', 'C']);
     expect(b.humans).toEqual([0, 3, 1]);
     expect(b.state.players.map((p) => p.bot)).toEqual([null, null, 'hard', null, 'hard', 'hard']);
-    expect(b.slots.map((s) => s.name)).toEqual(['A', 'C', 'Titi', 'B', 'Zuzu', 'Gogu']);
+    expect(b.slots.map((s) => s.name)).toEqual(['A', 'C', 'Titi', 'B', 'Zuzu', 'Gugu']);
     expect(maxHumans('vs')).toBe(2);
   });
 });

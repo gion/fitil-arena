@@ -65,3 +65,13 @@ export const RESPAWN = sec(3);
 export const RESPAWN_SHIELD = sec(2);
 /** Purtătorul steagului e cu 15% mai lent. */
 export const CARRIER_SPEED_PCT = 85;
+
+// personaje
+/** Încărcările abilităților luate din arenă când `Rules.charges` e activ. */
+export const CHARGES = { kick: 3, glove: 3, remote: 2, line: 2 } as const;
+export const CHARGE_MAX = 9;
+export const LIFE_GRACE = sec(1.8);
+export const BIG_BOMB_EXTRA = 2;
+export const OIL = sec(2);
+export const OIL_SPEED_PCT = 60;
+export const GHOST_CD = sec(20);

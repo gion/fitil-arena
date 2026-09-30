@@ -3,7 +3,7 @@ import { kill, shieldSave } from './effects.ts';
 import { bombAt, idx, tileX, tileY } from './grid.ts';
 import { applyItem } from './items.ts';
 import { nextFloat, nextInt } from './rng.ts';
-import { makePlayer } from './setup.ts';
+import { applyKit, makePlayer } from './setup.ts';
 import { DIRS, DX, DY, EMPTY, SOFT, U, opposite } from './types.ts';
 import type { Dir, Flag, GameState, Player, Shift } from './types.ts';
 
@@ -201,8 +201,9 @@ export function respawn(s: GameState, p: Player): void {
   const fresh = makePlayer(p.id, p.team, p.bot, p.sx, p.sy);
   const open = DIRS.find((d: Dir) => s.grid[idx(s, p.sx + DX[d]!, p.sy + DY[d]!)] === EMPTY);
   if (open !== undefined) fresh.face = open;
+  if (p.kit) applyKit(fresh, p.kit, p.ch);
   for (const it of s.rules.startItems) applyItem(fresh, it);
-  fresh.shieldT = s.rules.respawnShield;
+  fresh.shieldT = Math.max(fresh.shieldT, s.rules.respawnShield);
   Object.assign(p, fresh);
   s.events.push({ type: 'respawn', player: p.id });
 }
