@@ -1,6 +1,8 @@
 # Propunere: personaje care cresc, abilități semnătură, magazin și monetizare
 
-> Stare: **propunere, de discutat** (2026-09-30). Pornește de la ideile proprietarului (mesajul din 2026-09-30, vezi `docs/prompt-log.md`) și de la Faza 2c, deja scrisă în `PLAN.md` / `GAME_DESIGN.md` (7 personaje, monede, magazin cosmetic, implementate în `reference/prototype.html`).
+> Stare: **aprobată cu variantele recomandate** (2026-09-30, D-034 – D-036); implementat: rarități, cele 11 personaje cu semnături, încărcări, XP/niveluri cu recompense cosmetice, pagina personajului, magazinul. Rămân pentru Faza 4: Ultimate, perk-uri; pentru Faza 6: server ca sursă de adevăr, normalizare în clasat; pentru Faza 9: Gemuri și bani reali.
+>
+> Propunerea inițială (2026-09-30). Pornește de la ideile proprietarului (mesajul din 2026-09-30, vezi `docs/prompt-log.md`) și de la Faza 2c, deja scrisă în `PLAN.md` / `GAME_DESIGN.md` (7 personaje, monede, magazin cosmetic, implementate în `reference/prototype.html`).
 > Nu modifică `PLAN.md` / `GAME_DESIGN.md` (rămân identice cu proiectul claude.ai). După ce deciziile de la final sunt luate, textul aprobat se mută acolo.
 
 ## 1. Ce vrem să obținem

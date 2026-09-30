@@ -76,7 +76,7 @@ function shiftStep(s: GameState, sh: Shift): void {
       s.grid[k] = EMPTY;
       s.gold[k] = 0;
       s.cursed[k] = 0;
-      s.events.push({ type: 'boxDestroyed', x: px, y: py, gold: false, cursed: false });
+      s.events.push({ type: 'boxDestroyed', x: px, y: py, gold: false, cursed: false, owner: -1 });
     } else kill(s, p, null, 'crush');
   }
 }

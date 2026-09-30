@@ -1,20 +1,32 @@
 import type { BotKind, BotLevel, Dir, Input } from '@fitil/sim';
-import type { ModeId } from '@fitil/content';
+import type { ModeId, Outfit } from '@fitil/content';
 
 /** Configurația camerei, aleasă de gazdă în lobby. */
 export interface RoomCfg {
   mode: ModeId;
   theme: string;
   bots: BotLevel;
+  /** Clasic: fără personaje și fără încărcări (jocul original, Q-005). */
+  classic: boolean;
 }
 
-export const DEFAULT_CFG: RoomCfg = { mode: 'ffa', theme: 'clasic', bots: 'normal' };
+export const DEFAULT_CFG: RoomCfg = { mode: 'ffa', theme: 'clasic', bots: 'normal', classic: false };
 
 /** Un loc ocupat de un om în cameră (în ordinea intrării; primul e gazda). */
 export interface Seat {
   sid: string;
   name: string;
   connected: boolean;
+  /** Personajul ales și ce poartă (proprietatea nu se verifică încă — conturile vin în Faza 6). */
+  ch: string;
+  outfit: Outfit;
+}
+
+/** Ce trimite clientul despre el (la intrare și când își schimbă personajul în lobby). */
+export interface MeMsg {
+  name?: string;
+  ch?: string;
+  outfit?: Partial<Outfit>;
 }
 
 export type RoomPhase = 'lobby' | 'play';
@@ -36,6 +48,9 @@ export interface SlotInfo {
   color: string;
   bot: boolean;
   voice: number;
+  /** Personajul (null = clasic) și cosmeticele (doar oamenii). */
+  ch: string | null;
+  outfit: Outfit | null;
 }
 
 /** Input compact pe fir: [dir, bomb, detonate, face], -1 = lipsă. */

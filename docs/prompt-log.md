@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-09-30 — Claude Code (Opus 5.5) — Personaje, progresie, magazin (implementare)
+
+- **Cerut:** „continuă cu implementarea lucrurilor noi, fă acțiunile recomandate și împinge codul în PR-ul acela” (PR #3).
+- **Făcut:** deciziile Q-004 – Q-008 pe variantele recomandate (D-034 – D-038); kitul personajelor și încărcările în sim; 11 personaje, magazin și economie în content; lobby cu personaje; client cu randare, voci, ecranele Personaje/pagina personajului/Magazin, recompense și HUD. Detalii în `docs/progress.md` (Faza 2c).
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 96, content 18, net 6, server 4), Playwright 17/17 (FPS 60/60/60); manual în browser: grila de personaje, pagina Magicianului, cumpărarea unei pălării, meci FFA cu personaje.
+- **Notă operațională:** Playwright a găsit un bug real (Back din pagina personajului ducea la meniul principal) — reparat. Profilul local folosește cheia `fitil-profile` (compatibilă cu prototipul).
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Cerințe noi: personaje, progresie, magazin
 
 - **Cerut:** documentele actualizate în alt chat (`PLAN.md` cu Faza 2c, `GAME_DESIGN.md` cu cele 7 personaje, monede și magazin, prototipul cu ecranele Personaje/Magazin) plus idei noi: magazin cu monede, mai multe personaje cu abilități diferite, XP care le crește abilitățile, rarități Epic/Legendar/Mitic, monede cumpărate cu bani, mai puține bonusuri sau bonusuri care expiră (ex. fotbalistul are piciorul permanent, la ceilalți piciorul expiră după 2 folosiri), „ultimate”, pagină per personaj cu close-up, sunete și plusuri/minusuri. PR separat de Faza 3.

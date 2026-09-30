@@ -24,6 +24,8 @@ export interface Settings {
   stars: Record<string, number>;
   /** Numele din camerele online. */
   name: string;
+  /** Jocul clasic: fără personaje și fără încărcări (Q-005). */
+  classic: boolean;
 }
 
 const KEY = 'fitil-settings';
@@ -51,6 +53,7 @@ function load(): Settings {
     challenges: [],
     stars: {},
     name: '',
+    classic: false,
   };
   try {
     const raw = localStorage.getItem(KEY);

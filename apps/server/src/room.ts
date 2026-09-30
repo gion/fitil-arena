@@ -2,7 +2,7 @@ import { Room, ServerError } from '@colyseus/core';
 import type { Client } from '@colyseus/core';
 import { TICK_MS } from '@fitil/sim';
 import { ArenaHost, CODE_LETTERS, RECONNECT_S } from '@fitil/net';
-import type { InputMsg, RoomCfg } from '@fitil/net';
+import type { InputMsg, MeMsg, RoomCfg } from '@fitil/net';
 
 /** Codurile camerelor active (4 litere, fără I și O). */
 const codes = new Set<string>();
@@ -41,6 +41,9 @@ export class ArenaRoom extends Room {
     this.onMessage('cfg', (c, m: Partial<RoomCfg>) => {
       if (this.arena.setCfg(c.sessionId, m ?? {})) this.sendLobby();
     });
+    this.onMessage('me', (c, m: MeMsg) => {
+      if (this.arena.setMe(c.sessionId, m)) this.sendLobby();
+    });
     this.onMessage('start', (c, m: { aspect?: number }) => this.startMatch(c.sessionId, Number(m?.aspect)));
     this.onMessage('in', (c, m: InputMsg) => this.arena.input(c.sessionId, m?.q, m?.i));
     this.onMessage('resync', (c) => this.sendSnap(c));
@@ -52,8 +55,8 @@ export class ArenaRoom extends Room {
     this.onMessage('ping', (c, t: number) => c.send('pong', t));
   }
 
-  override onJoin(client: Client, opts: { name?: string } = {}): void {
-    const err = this.arena.join(client.sessionId, opts.name);
+  override onJoin(client: Client, opts: MeMsg = {}): void {
+    const err = this.arena.join(client.sessionId, opts);
     if (err) throw new ServerError(4001, err);
     this.sendLobby();
   }

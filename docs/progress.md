@@ -134,3 +134,22 @@
 - Fluiditatea „manual la 150 ms” e verificată în browser pe desktop, nu încă pe telefon real.
 - Informația ascunsă (tufișuri, Faza 4) nu e compatibilă cu sincronizarea prin input-uri fără filtrare (D-030).
 - Fără matchmaking public (doar camere private, cum cere faza); fără spectatori.
+
+## Faza 2c — Personaje, monede, magazin (+ progresie)
+
+**Mini-plan:** după decizia „variantele recomandate” (D-034 – D-036): kitul personajelor în sim (statistici + semnături + încărcări) cu teste pentru fiecare pasiv; datele (11 personaje, magazin, economie cu XP) în content, cu teste de economie; construcția comună a meciurilor offline/online cu personaje; clientul: randare 2D/3D, voci, ecranele Personaje, pagina personajului, Magazin, recompense la final; lobby online cu personajul fiecăruia.
+
+**Făcut:**
+
+- **sim**: `CharKit` (viteză, rază, bombe, maxim de bombe, vieți) și semnăturile: bomba mare la început (Bubu), a doua viață (Gugu), maxim 5 bombe (Zuzu), magnet (Fifi), Mănușă + scut la start (Tanti Veta), imunitate la boli fără Scut (Robo-Mici), Picior permanent + ricoșeu fără Mănușă (Striker), ulei care încetinește ceilalți + fitil mai lung (Chef), trecere printr-o ladă la 20s (Ghost), porumbel o dată pe rundă + scut la jumătate (Magician); `Rules.charges` — abilitățile din arenă cu încărcări; evenimente noi (`lifeLost`, `chargeOut`, `immune`, `pigeon`, `ghostIn`); `boxDestroyed` are proprietarul.
+- **content**: 11 personaje pe 5 rarități (plusuri, minusuri, semnătură, Ultimate — doar prezentare —, voce, mers, replici în engleză), magazin (culori, pălării, accesorii, bombe, urme, voci + 11 culori exclusive de nivel 5), economie (profil valid din orice, cumpărare/echipare, XP și niveluri 1–10, recompense pe nivel, bonus zilnic, XP dublu la primul meci din zi), `botChars` din seed.
+- **net/server**: fiecare loc din lobby are personaj și ținută (`me`), gazda poate alege „Classic”; meciurile offline folosesc aceeași construcție.
+- **client**: personajele desenate în 2D (detaliile din prototip + cele 4 noi, corp pătrat Robo, fantoma transparentă și pe jumătate văzută în ladă, mărimea corpului, pălăriile și accesoriile cumpărate, bombe colorate, urme la mers, curcubeu animat, bomba mare, cronometrul bombelor pentru Maestru, uleiul, porumbelul, clipire după o viață pierdută) și în 3D (corp, detalii, pălării, mărime); voci sintetizate per personaj și pachete de voce; ecranele Personaje (cărți cu portrete animate și raritate), pagina personajului (close-up care se rotește, Listen, Try it, plusuri/minusuri, bare față de medie, Ultimate „coming soon”, nivel, bara de XP, recompensele pe niveluri, cumpărare/alegere), Magazin (tab-uri, previzualizare pe personajul tău, cumpărare/purtare/scoatere); monedele și personajul în meniul principal; „Characters / Classic” în meniul Play și în lobby; recompensele pe cardul de final (monede, XP, niveluri noi); HUD cu încărcări („Kick ×2”), vieți și maximul de bombe.
+- **Teste**: sim 96 (15 noi: fiecare pasiv, încărcări, determinism cu toate pasivele), content 18 (economie: cumpărare fără fonduri refuzată, echipare/scoatere, persistență, niveluri, recompense; fiecare personaj pornește cu statisticile corecte; meciuri între boți cu toate personajele), Playwright 17 (nou: un obiect din fiecare categorie cumpărat și echipat + persistență; pagina personajului, cumpărare, meci cu personajul ales, recompense), FPS 60/60/60.
+
+**Rămas / cunoscut:**
+
+- Ultimate și perk-urile: Faza 4 (cu bench-ul de balans pe personaje; rata de victorie per personaj încă nemăsurată).
+- În 3D lipsesc cronometrul Maestrului, uleiul, urmele și porumbelul (sunt doar în 2D).
+- Boții nu știu de semnăturile noi (Ghost nu trece prin lăzi intenționat, nu evită uleiul).
+- Proprietatea personajelor/cosmeticelor nu se verifică online (Faza 6).

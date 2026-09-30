@@ -227,7 +227,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
         s.cursed[k] = 0;
         if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
         else s.drops[k] = gold ? rollGold(s.rng) : rollDrop(s.rng, s.rules.hearts);
-        s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed });
+        s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed, owner: b.owner });
         break;
       }
       for (const o of s.bombs) {

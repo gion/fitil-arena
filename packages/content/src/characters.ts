@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { sec } from '@fitil/sim';
+import { deriveRng, sec, shuffle } from '@fitil/sim';
 import type { CharKit } from '@fitil/sim';
 
 /** Raritățile (Q-006): raritatea aduce abilități mai neobișnuite, nu cifre mai mari. */
@@ -314,3 +314,13 @@ export const charById = (id: string | null | undefined): Character =>
 export const charPrice = (c: Character): number => RARITY[c.rarity].price;
 /** Personajele gratuite de la început. */
 export const FREE_CHARS = CHARACTERS.filter((c) => c.rarity === 'common').map((c) => c.id);
+
+/**
+ * Personajele boților: amestecate din seed (identic pe server și client), altele decât cele
+ * ale oamenilor cât se poate.
+ */
+export function botChars(seed: number, taken: readonly (string | null)[], n: number): string[] {
+  const free = CHAR_IDS.filter((c) => !taken.includes(c));
+  const pool = shuffle(deriveRng(seed, 0xc4a5), free.length ? free : [...CHAR_IDS]);
+  return Array.from({ length: n }, (_, i) => pool[i % pool.length]!);
+}

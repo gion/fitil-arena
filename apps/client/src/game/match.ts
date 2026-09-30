@@ -16,7 +16,7 @@ import type { ChallengeProgress, Dir, GameEvent, GameState, Input, MaxStat, Tuto
 import { DEATH_MSG, HERO_LINES } from '@fitil/content';
 import type { NetClient } from '@fitil/net';
 import { build, isTeamKind } from './setup.ts';
-import type { Built, PlayKind, Slot } from './setup.ts';
+import type { Built, Me, PlayKind, Slot } from './setup.ts';
 import type { BotLevel } from '@fitil/sim';
 
 export type HeroKind = MaxStat | 'win' | 'team';
@@ -103,8 +103,15 @@ export class Match {
     this.snapshot();
   }
 
-  static offline(kind: PlayKind, bots: BotLevel, seed: number, aspect: number, control: HumanControl): Match {
-    return new Match(kind, bots, build(kind, bots, seed, aspect), control);
+  static offline(
+    kind: PlayKind,
+    bots: BotLevel,
+    seed: number,
+    aspect: number,
+    control: HumanControl,
+    me?: Me,
+  ): Match {
+    return new Match(kind, bots, build(kind, bots, seed, aspect, me), control);
   }
 
   /** Starea de randat (online: starea afișată din cadrele serverului). */

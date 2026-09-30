@@ -35,8 +35,24 @@ import {
   TUTORIAL_TEXT,
   seasonalTheme,
   themeById,
+  CAT_NAMES,
+  CHARACTERS,
+  MAX_LEVEL,
+  RARITY,
+  SHOP,
+  SHOP_CATS,
+  buyChar,
+  buyItem,
+  charById,
+  charPrice,
+  equip,
+  levelOf,
+  levelRewards,
+  reward,
+  selectChar,
+  shopItem,
 } from '@fitil/content';
-import type { ModeId, Theme } from '@fitil/content';
+import type { MatchSummary, ModeId, Profile, Rewards, ShopCat, Theme } from '@fitil/content';
 import { Music } from './audio/music.ts';
 import { Sfx } from './audio/sfx.ts';
 import { DEFAULT_VOICE, FileVoice, SynthVoice } from './audio/voice.ts';
@@ -53,8 +69,13 @@ import type { Quality, View } from './settings.ts';
 import { $, h, show } from './ui/dom.ts';
 import { maxHumans } from '@fitil/net';
 import { OnlineSession } from './online/session.ts';
+import { store, today } from './profile.ts';
+import { Portraits } from './ui/portrait.ts';
 
 type Phase = 'menu' | 'play' | 'paused' | 'over';
+
+const ABILITY = { kick: 'Kick', glove: 'Glove', remote: 'Detonator', line: 'Line' } as const;
+const pickOne = <T>(a: readonly T[]): T => a[Math.floor(Math.random() * a.length)]!;
 const VIEWS: View[] = ['2d', 'fps', 'chase'];
 const VIEW_LBL: Record<View, string> = { '2d': '2D view', fps: '1P view', chase: '3P view' };
 const LEVELS: BotLevel[] = ['easy', 'normal', 'hard', 'insane'];
@@ -69,6 +90,9 @@ export class App {
   match: Match | null = null;
   online: OnlineSession | null = null;
   private onlineErr = '';
+  private portraits = new Portraits();
+  /** Ce ai făcut în meciul curent (pentru monede și XP). */
+  private sum: MatchSummary = { boxes: 0, kills: 0, won: false, team: false, caps: 0, stars: 0 };
   kind: PlayKind = { type: 'mode', mode: settings.mode };
   phase: Phase = 'menu';
   view: View = '2d';
@@ -259,9 +283,24 @@ export class App {
         { class: 'btn', 'data-test': 'online', onclick: () => this.showScreen(() => this.onlineMenu()) },
         'Online',
       ),
+      this.coinRow(),
       h(
         'div',
-        { class: 'grid four' },
+        { class: 'grid three' },
+        h(
+          'button',
+          {
+            class: 'opt',
+            'data-test': 'characters',
+            onclick: () => this.showScreen(() => this.charactersMenu()),
+          },
+          'Characters',
+        ),
+        h(
+          'button',
+          { class: 'opt', 'data-test': 'shop', onclick: () => this.showScreen(() => this.shopMenu('color')) },
+          'Shop',
+        ),
         h(
           'button',
           {
@@ -386,6 +425,12 @@ export class App {
         this.showScreen(() => this.playMenu());
       }),
       h('p', {}, MODES[mode].desc),
+      h('h3', {}, 'Rules'),
+      this.classicGrid(settings.classic, (v) => {
+        settings.classic = v;
+        save();
+        this.showScreen(() => this.playMenu());
+      }),
       h('h3', {}, 'Bots'),
       this.levelGrid(),
       h(
@@ -434,7 +479,11 @@ export class App {
       name,
       h(
         'button',
-        { class: 'btn', 'data-test': 'create', onclick: () => go(() => OnlineSession.create(name.value)) },
+        {
+          class: 'btn',
+          'data-test': 'create',
+          onclick: () => go(() => OnlineSession.create(this.meMsg(name.value))),
+        },
         'Create a room',
       ),
       h(
@@ -447,7 +496,8 @@ export class App {
             class: 'btn',
             'data-test': 'join',
             onclick: () => {
-              if (/^[a-z]{4}$/i.test(code.value)) void go(() => OnlineSession.join(code.value, name.value));
+              if (/^[a-z]{4}$/i.test(code.value))
+                void go(() => OnlineSession.join(code.value, this.meMsg(name.value)));
             },
           },
           'Join',
@@ -528,6 +578,7 @@ export class App {
             st.name,
             i === 0 ? h('small', {}, ' host') : null,
             st.sid === o.room.sessionId ? h('small', {}, ' (you)') : null,
+            cfg && !cfg.classic ? h('small', { class: 'seat-ch' }, charById(st.ch).name) : null,
           ),
         ),
       ),
@@ -535,6 +586,17 @@ export class App {
         !!l &&
         l.seats.length > l.max &&
         h('p', { class: 'err' }, `${MODES[cfg.mode].name} takes only ${l.max} players.`),
+      cfg && !cfg.classic
+        ? h(
+            'button',
+            {
+              class: 'btn ghost',
+              'data-test': 'lobby-char',
+              onclick: () => this.showScreen(() => this.charactersMenu(() => this.lobbyScreen())),
+            },
+            `Your character: ${charById(store.profile.ch).name}`,
+          )
+        : null,
       h('h3', {}, 'Mode'),
       pick(
         'data-mode',
@@ -552,6 +614,8 @@ export class App {
             `Up to ${maxHumans(cfg.mode)} players, bots fill the rest. `,
           ),
         ),
+      h('h3', {}, 'Rules'),
+      this.classicGrid(!!cfg?.classic, (v) => o.setCfg({ classic: v }), !host),
       h('h3', {}, 'Bots'),
       pick(
         'data-level',
@@ -624,6 +688,351 @@ export class App {
         `Simulated lag ${o.lag.rtt} ms ±${o.lag.jitter}, loss ${Math.round(o.lag.loss * 100)}%`,
         2600,
       );
+  }
+
+  /* ---------- personaje, magazin, recompense ---------- */
+
+  private meMsg(name: string) {
+    const p = store.profile;
+    return { name, ch: p.ch, outfit: p.eq };
+  }
+
+  private setProfile(p: Profile): void {
+    store.set(p);
+    this.online?.setMe({ ch: p.ch, outfit: p.eq });
+  }
+
+  private coinRow(): HTMLElement {
+    const p = store.profile;
+    const lv = levelOf(p.xp[p.ch] ?? 0).level;
+    return h(
+      'div',
+      { class: 'coin-row' },
+      h('span', { class: 'coinpill', 'data-test': 'coins' }, h('i'), String(p.coins)),
+      h(
+        'button',
+        { class: 'chip-btn', onclick: () => this.showScreen(() => this.characterPage(p.ch)) },
+        `${charById(p.ch).name} · Lv ${lv}`,
+      ),
+    );
+  }
+
+  private classicGrid(classic: boolean, set: (v: boolean) => void, disabled = false): HTMLElement {
+    return h(
+      'div',
+      { class: 'grid' },
+      ...[false, true].map((v) =>
+        h(
+          'button',
+          {
+            class: 'opt',
+            'data-classic': String(v),
+            'aria-pressed': String(v === classic),
+            disabled,
+            onclick: () => set(v),
+          },
+          v ? 'Classic' : 'Characters',
+          h('small', {}, v ? 'everyone equal' : 'abilities · pick-ups with charges'),
+        ),
+      ),
+    );
+  }
+
+  private rarityChip(r: keyof typeof RARITY): HTMLElement {
+    return h('span', { class: 'rar', style: `--rar:${RARITY[r].color}` }, RARITY[r].name);
+  }
+
+  /** Grila de personaje. `back` = unde te întorci (meniul principal sau lobby-ul online). */
+  private charactersMenu(back: () => HTMLElement = () => this.mainMenu()): HTMLElement {
+    const p = store.profile;
+    return this.card(
+      h('h2', {}, 'Characters'),
+      this.coinRow(),
+      h('p', {}, 'Every character plays differently. Tap one to see it up close.'),
+      h(
+        'div',
+        { class: 'cgrid' },
+        ...CHARACTERS.map((c) => {
+          const own = p.chars.includes(c.id);
+          const lv = levelOf(p.xp[c.id] ?? 0).level;
+          return h(
+            'button',
+            {
+              class: 'ccard' + (own ? '' : ' locked'),
+              'data-char': c.id,
+              'aria-pressed': String(p.ch === c.id),
+              style: `--rar:${RARITY[c.rarity].color}`,
+              onclick: () => this.showScreen(() => this.characterPage(c.id, () => this.charactersMenu(back))),
+            },
+            this.portraits.add({ ch: c.id, outfit: p.ch === c.id ? p.eq : null }),
+            h('span', { class: 'cname' }, c.name),
+            this.rarityChip(c.rarity),
+            h(
+              'small',
+              {},
+              p.ch === c.id ? `Selected · Lv ${lv}` : own ? `Lv ${lv}` : `${charPrice(c)} Fitile`,
+            ),
+          );
+        }),
+      ),
+      h('button', { class: 'btn ghost', onclick: () => this.showScreen(back) }, 'Back'),
+    );
+  }
+
+  /** Pagina unui personaj: aproape, cu vocea lui, plusuri/minusuri, nivel și recompense. */
+  private characterPage(id: string, back: () => HTMLElement = () => this.charactersMenu()): HTMLElement {
+    const c = charById(id);
+    const p = store.profile;
+    const own = p.chars.includes(id);
+    const xp = p.xp[id] ?? 0;
+    const lv = levelOf(xp);
+    const canvas = this.portraits.add(
+      { ch: id, outfit: p.ch === id ? p.eq : null, turn: true },
+      'portrait big',
+    );
+    const listen = () => {
+      this.sfx.init();
+      this.sfx.voiceLine(c.voice);
+      const spec = this.portraits.get(canvas);
+      if (spec) spec.happyUntil = performance.now() + 1600;
+      setTimeout(() => this.voice.say(pickOne([...c.win, ...c.quips]), 1.2), 450);
+    };
+    const refresh = () => this.showScreen(() => this.characterPage(id, back));
+    type Stat = 'speed' | 'range' | 'maxBombs' | 'lives';
+    const seg = (v: number, lo: number, hi: number) =>
+      Math.max(1, Math.min(5, Math.round(((v - lo) / (hi - lo)) * 4) + 1));
+    const bar = (label: string, k: Stat, lo: number, hi: number) => {
+      const n = seg(c.kit[k], lo, hi);
+      const a = seg(CHARACTERS.reduce((t, o) => t + o.kit[k], 0) / CHARACTERS.length, lo, hi);
+      return [
+        h('span', {}, label),
+        h(
+          'span',
+          { class: 'sbar' },
+          ...[1, 2, 3, 4, 5].map((i) => h('i', { class: (i <= n ? 'on' : '') + (i === a ? ' avg' : '') })),
+        ),
+      ];
+    };
+    const price = charPrice(c);
+    const action = own
+      ? p.ch === id
+        ? h('button', { class: 'btn', disabled: true }, 'Selected')
+        : h(
+            'button',
+            {
+              class: 'btn',
+              'data-test': 'select-char',
+              onclick: () => {
+                const r = selectChar(store.profile, id);
+                if (r.ok) this.setProfile(r.profile);
+                this.sfx.init();
+                this.sfx.voiceLine(c.voice);
+                this.showScreen(back);
+              },
+            },
+            'Select',
+          )
+      : h(
+          'button',
+          {
+            class: 'btn',
+            'data-test': 'buy-char',
+            disabled: p.coins < price,
+            onclick: () => {
+              const r = buyChar(store.profile, id);
+              if (!r.ok) return;
+              const sel = selectChar(r.profile, id);
+              this.setProfile(sel.ok ? sel.profile : r.profile);
+              this.sfx.init();
+              this.sfx.win();
+              refresh();
+            },
+          },
+          p.coins < price ? `${price} Fitile · you have ${p.coins}` : `Buy for ${price} Fitile`,
+        );
+    return this.card(
+      h('div', { class: 'char-head' }, h('h2', {}, c.name), this.rarityChip(c.rarity)),
+      h('p', {}, c.tagline),
+      this.coinRow(),
+      canvas,
+      h(
+        'div',
+        { class: 'row center' },
+        h('button', { class: 'icon-btn', 'data-test': 'listen', onclick: listen }, '🔊 Listen'),
+        h(
+          'button',
+          { class: 'icon-btn', 'data-test': 'try', onclick: () => this.start({ type: 'dummies', ch: id }) },
+          '▶ Try it',
+        ),
+      ),
+      action,
+      h('p', { class: 'sig' }, h('b', {}, 'Signature: '), c.signature),
+      h(
+        'div',
+        { class: 'proscons' },
+        h('ul', { class: 'pros' }, ...c.pros.map((t) => h('li', {}, t))),
+        h('ul', { class: 'cons' }, ...c.cons.map((t) => h('li', {}, t))),
+      ),
+      h(
+        'div',
+        { class: 'bars' },
+        ...bar('Speed', 'speed', 135, 200),
+        ...bar('Range', 'range', 1, 2),
+        ...bar('Max bombs', 'maxBombs', 5, 8),
+        ...bar('Lives', 'lives', 1, 2),
+      ),
+      h(
+        'p',
+        { class: 'ult' },
+        h('b', {}, `Ultimate · ${c.ultimate.name}: `),
+        c.ultimate.desc,
+        h('small', {}, ' (coming soon)'),
+      ),
+      h('h3', {}, `Level ${lv.level}${lv.level >= MAX_LEVEL ? ' · Master' : ''} · ${xp} XP`),
+      h(
+        'div',
+        { class: 'xpbar' },
+        h('i', { style: `width:${lv.need ? Math.round((lv.into / lv.need) * 100) : 100}%` }),
+      ),
+      h(
+        'ol',
+        { class: 'track' },
+        ...levelRewards(id).map((r) =>
+          h(
+            'li',
+            { class: r.level <= lv.level ? 'done' : '' },
+            h('b', {}, `Lv ${r.level}`),
+            ` +${r.coins} Fitile`,
+            r.item ? ` · ${shopItem(r.item)!.name}` : '',
+            r.title ? ` · “${r.title}”` : '',
+          ),
+        ),
+      ),
+      h('button', { class: 'btn ghost', onclick: () => this.showScreen(back) }, 'Back'),
+    );
+  }
+
+  private shopMenu(cat: ShopCat): HTMLElement {
+    const p = store.profile;
+    const refresh = () => this.showScreen(() => this.shopMenu(cat));
+    const items = SHOP.filter(
+      (i) => i.cat === cat && (!i.unlock || p.owned.includes(i.id) || i.unlock.char === p.ch),
+    );
+    return this.card(
+      h('h2', {}, 'Shop'),
+      this.coinRow(),
+      h('p', {}, 'Cosmetics only: buy once, wear any time. Abilities come from characters.'),
+      h(
+        'div',
+        { class: 'tabs' },
+        ...SHOP_CATS.map((k) =>
+          h(
+            'button',
+            {
+              class: 'opt',
+              'data-cat': k,
+              'aria-pressed': String(k === cat),
+              onclick: () => this.showScreen(() => this.shopMenu(k)),
+            },
+            CAT_NAMES[k],
+          ),
+        ),
+      ),
+      h(
+        'div',
+        { class: 'sgrid' },
+        ...items.map((it) => {
+          const own = p.owned.includes(it.id);
+          const worn = p.eq[cat] === it.id;
+          const icon =
+            cat === 'voice' || cat === 'trail'
+              ? h(
+                  'span',
+                  { class: 'sicon', style: it.col ? `color:${it.col}` : '' },
+                  cat === 'voice' ? '🔊' : '✦',
+                )
+              : this.portraits.add(
+                  { ch: p.ch, outfit: { ...p.eq, [cat]: it.id }, bomb: cat === 'bomb' },
+                  'portrait small',
+                );
+          return h(
+            'button',
+            {
+              class: 'sitem' + (worn ? ' eq' : '') + (own ? '' : ' locked'),
+              'data-item': it.id,
+              onclick: () => {
+                this.sfx.init();
+                if (it.voice) this.sfx.voiceLine(it.voice);
+                if (!own) {
+                  const r = buyItem(store.profile, it.id);
+                  if (!r.ok) return;
+                  const e = equip(r.profile, cat, it.id);
+                  this.setProfile(e.ok ? e.profile : r.profile);
+                  this.sfx.win();
+                } else {
+                  const e = equip(store.profile, cat, worn ? null : it.id);
+                  if (e.ok) this.setProfile(e.profile);
+                }
+                refresh();
+              },
+            },
+            icon,
+            h('span', {}, it.name),
+            h(
+              'small',
+              { class: own ? '' : 'price' },
+              worn
+                ? 'Wearing'
+                : own
+                  ? 'Owned'
+                  : it.unlock
+                    ? `🔒 ${charById(it.unlock.char).name} Lv ${it.unlock.level}`
+                    : `${it.price} Fitile`,
+            ),
+          );
+        }),
+      ),
+      this.back(),
+    );
+  }
+
+  /** Aplică recompensele meciului pe profil și întoarce rândul de pe cardul de final. */
+  private grantRewards(won: boolean, team: boolean): HTMLElement {
+    const r: Rewards = reward(store.profile, { ...this.sum, won, team }, today());
+    store.set(r.profile);
+    const ch = charById(r.profile.ch);
+    const lv = levelOf(r.profile.xp[ch.id] ?? 0);
+    for (const [i, l] of r.levelUps.entries())
+      setTimeout(
+        () =>
+          this.showBanner(
+            `${ch.name} reached level ${l.level}!` +
+              (l.item ? ` Unlocked: ${shopItem(l.item)!.name}` : '') +
+              (l.title ? ` · ${l.title}` : ''),
+            2600,
+            'gold',
+          ),
+        700 + i * 2700,
+      );
+    return h(
+      'p',
+      { class: 'coinline', 'data-test': 'rewards' },
+      h('i'),
+      `+${r.coins} Fitile${r.daily ? ` (incl. +${r.daily} daily)` : ''} · total ${r.profile.coins}`,
+      h('br'),
+      `+${r.xp} XP ${ch.name}${r.firstToday ? ' (×2 first today)' : ''} · Lv ${lv.level}`,
+    );
+  }
+
+  private voiceOf(id: number): string {
+    const sl = this.match?.slots[id];
+    return shopItem(sl?.outfit?.voice)?.voice ?? charById(sl?.ch).voice;
+  }
+
+  private linesOf(id: number, kind: 'quips' | 'win'): readonly string[] {
+    const sl = this.match?.slots[id];
+    if (!sl?.ch) return kind === 'quips' ? QUIPS : TAUNTS;
+    return shopItem(sl.outfit?.voice)?.[kind] ?? charById(sl.ch)[kind];
   }
 
   private legend(): HTMLElement {
@@ -954,6 +1363,8 @@ export class App {
 
   private attach(m: Match): void {
     this.match = m;
+    this.sum = { boxes: 0, kills: 0, won: false, team: false, caps: 0, stars: 0 };
+    this.portraits.style = this.theme.style;
     m.on((e) => this.onEvent(e));
     this.scene.setMatch(m);
     this.r3?.setMatch(m);
@@ -970,7 +1381,12 @@ export class App {
     const sameKind = JSON.stringify(kind) === JSON.stringify(this.kind);
     this.kind = kind;
     if (!sameKind || !this.match) this.scores = [];
-    const m = Match.offline(kind, settings.bots, this.seedN++, this.aspect(), this.control());
+    const p = store.profile;
+    const m = Match.offline(kind, settings.bots, this.seedN++, this.aspect(), this.control(), {
+      ch: p.ch,
+      outfit: p.eq,
+      classic: settings.classic,
+    });
     if (!this.scores.length) this.scores = m.team ? [0, 0] : m.slots.map(() => 0);
     this.attach(m);
     if (kind.type === 'mode' && kind.mode === 'vs')
@@ -1220,8 +1636,14 @@ export class App {
         const slot = m.slots[e.player];
         this.voice.scream(slot?.voice ?? 0);
         const bot = m.s.players[e.player]!.bot !== null;
+        if (slot?.ch) this.sfx.voiceLine(this.voiceOf(e.player));
         if (!bot || Math.random() < 0.5)
-          this.voice.say(QUIPS[Math.floor(Math.random() * QUIPS.length)]!, 1.1 + (slot?.voice ?? 0) * 0.25);
+          this.voice.say(pickOne(this.linesOf(e.player, 'quips')), 1.1 + (slot?.voice ?? 0) * 0.25);
+        const victim = m.s.players[e.player]!;
+        if (e.killerId === m.meId && e.player !== m.meId && !(m.team && victim.team === me.team)) {
+          this.sum.kills++;
+          if (m.slots[m.meId]?.ch) setTimeout(() => this.sfx.voiceLine(this.voiceOf(m.meId)), 380);
+        }
         vibrate(bot ? 15 : [60, 40, 90]);
         if (
           e.killerId !== null &&
@@ -1233,6 +1655,26 @@ export class App {
           this.scores[0]!++;
         break;
       }
+      case 'boxDestroyed':
+        if (e.owner === m.meId) this.sum.boxes++;
+        break;
+      case 'lifeLost':
+        if (mine(e.player)) {
+          this.showBanner(`${charById(m.slots[e.player]?.ch).name}: one more life!`, 1400, 'gold');
+          this.sfx.voiceLine(this.voiceOf(e.player));
+          vibrate([60, 30, 60]);
+        }
+        break;
+      case 'chargeOut':
+        if (mine(e.player)) this.showBanner(`${ABILITY[e.ability]} used up`, 1200, 'bad');
+        break;
+      case 'immune':
+        if (mine(e.player)) this.showBanner('Immune!', 1100);
+        break;
+      case 'pigeon':
+        this.sfx.voiceLine('tada');
+        this.showBanner(mine(e.player) ? 'Poof! Your trick saved you!' : 'Poof! A pigeon!', 1500, 'gold');
+        break;
       case 'shieldSaved':
         this.sfx.shield();
         if (mine(e.player)) {
@@ -1378,6 +1820,8 @@ export class App {
     this.phase = 'over';
     this.controls.enabled = false;
     show(this.toast, false);
+    this.sum.stars = stars;
+    const rewardLine = this.grantRewards(won, false);
     const t = Math.round((mi.over?.tick ?? m.s.tick) / TICK_HZ);
     const hp = Math.round(m.me.hp);
     const st = def.stars;
@@ -1398,6 +1842,7 @@ export class App {
           ...[1, 2, 3].map((i) => h('span', { class: i <= stars ? 'on' : '' }, '★')),
         ),
         h('p', {}, `Time ${t}s · Health ${hp}%`),
+        rewardLine,
         h('p', { style: 'font-size:12px' }, crit),
         h(
           'button',
@@ -1519,6 +1964,9 @@ export class App {
     if (!m || m.kind.type === 'challenge' || m.kind.type === 'tutorial') return;
     if (m.kind.type === 'mission') return this.missionOver();
     this.phase = 'over';
+    const won = m.team ? e.team !== null && e.team === m.me.team : e.winner === m.meId;
+    if (m.s.ctf) this.sum.caps = m.s.ctf.caps[m.me.team] ?? 0;
+    const rewardLine = m.kind.type === 'mode' ? this.grantRewards(won, m.team) : null;
     this.controls.enabled = false;
     show(this.toast, false);
     let title: string;
@@ -1543,7 +1991,8 @@ export class App {
       } else {
         title = `${w.name} wins`;
         msg = `${w.name} dances on the ruins.`;
-        this.voice.say(TAUNTS[Math.floor(Math.random() * TAUNTS.length)]!, 1.2 + w.voice * 0.25);
+        if (w.ch) this.sfx.voiceLine(this.voiceOf(e.winner));
+        this.voice.say(pickOne(this.linesOf(e.winner, 'win')), 1.2 + w.voice * 0.25);
       }
     } else {
       title = 'Draw';
@@ -1554,6 +2003,7 @@ export class App {
       this.card(
         h('h2', {}, title),
         h('p', {}, msg),
+        rewardLine,
         this.scoreRow(),
         this.online
           ? h(
@@ -1654,10 +2104,15 @@ export class App {
     const stats =
       `<span>${bombs}</span><span><span class="lbl">Range </span><b>${me.range}${me.range >= MAX_RANGE ? '★' : ''}</b></span><span><span class="lbl">Speed </span><b>${lvl}${me.speed >= SPEED_MAX ? '★' : ''}</b></span>` +
       (me.bombs >= MAX_BOMBS ? '<span class="on">8 bombs</span>' : '') +
-      (me.kick ? '<span class="on">Kick</span>' : '') +
-      (me.glove ? '<span class="on">Glove</span>' : '') +
-      (me.remote ? '<span class="on">Detonator</span>' : '') +
-      (me.line ? '<span class="on">Line</span>' : '') +
+      (me.bombs >= me.maxBombs && me.maxBombs < MAX_BOMBS
+        ? `<span class="on">${me.maxBombs} bombs</span>`
+        : '') +
+      (me.lives > 1 ? `<span class="on">Lives ${me.lives}</span>` : '') +
+      (['kick', 'glove', 'remote', 'line'] as const)
+        .map((a) =>
+          me[a] ? `<span class="on">${ABILITY[a]}${me.charges[a] ? ` ×${me.charges[a]}` : ''}</span>` : '',
+        )
+        .join('') +
       (me.revT > 0 ? `<span class="bad">Reversed ${sec(me.revT)}s</span>` : '') +
       (me.dizzyT > 0 ? `<span class="bad">Dizzy ${sec(me.dizzyT)}s</span>` : '') +
       (me.hicT > 0 ? `<span class="bad">Hiccups ${sec(me.hicT)}s</span>` : '') +

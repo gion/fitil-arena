@@ -255,7 +255,7 @@ export type MaxStat = 'speed' | 'bombs' | 'fire';
 export type GameEvent =
   | { type: 'bombPlaced'; bomb: number; x: number; y: number; owner: number }
   | { type: 'explode'; bomb: number; x: number; y: number; range: number; owner: number; chain: number }
-  | { type: 'boxDestroyed'; x: number; y: number; gold: boolean; cursed: boolean }
+  | { type: 'boxDestroyed'; x: number; y: number; gold: boolean; cursed: boolean; owner: number }
   | { type: 'death'; player: number; killerId: number | null; cause: DeathCause; via: number }
   | { type: 'pickup'; player: number; item: ItemType; x: number; y: number }
   | { type: 'maxed'; player: number; stat: MaxStat }
