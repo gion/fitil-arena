@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-09-30 — Claude Code (Opus 5.5) — Prettier reparat pe PR-ul fazei 2
+
+- **Cerut:** repararea verificării de formatare înainte de merge-ul PR-ului `handover/faza-2-audio`, apoi începerea Fazei 3.
+- **Făcut:** CI pica la `pnpm format:check` pe `apps/client/src/app.ts` și `packages/content/src/texts.ts`; rulat `prettier --write` pe cele două fișiere (doar formatare, fără schimbări de logică).
+- **Verificat:** `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (sim 81, content 6, server 1), `pnpm build` — toate trec local.
+- **Notă operațională:** rulează `pnpm format:check` (sau `pnpm format`) înainte de push; CI-ul îl verifică, dar nu face parte din `lint`.
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Handover, jurnal de prompturi, PR
 
 - **Cerut:** sesiunea din extensia VS Code nu apărea în `claude --resume` din terminal; userul a cerut un fișier de handover, commit și PR, ca să continue în Claude Code. În plus, o regulă nouă: orice interacțiune cu un LLM se încheie cu o intrare într-un jurnal de prompturi, ca un changelog.

@@ -70,15 +70,7 @@ export const HERO_LINES: Record<MaxStat | 'win' | 'team', string[]> = {
 };
 
 /** Ce strigă personajele când mor. */
-export const QUIPS = [
-  'Ouch!',
-  'Oh no!',
-  'Mommy!',
-  'Not fair!',
-  'Again?!',
-  'My mustache!',
-  'Help!',
-];
+export const QUIPS = ['Ouch!', 'Oh no!', 'Mommy!', 'Not fair!', 'Again?!', 'My mustache!', 'Help!'];
 export const TAUNTS = ['Hehe!', 'Too easy!', 'Ha ha ha!'];
 export const BYE = 'bye bye…';
 
@@ -129,7 +121,10 @@ export const CHALLENGE_TEXT: Record<ChallengeId, { name: string; desc: string }>
 };
 
 export const TUTORIAL_TEXT: Record<TutorialStep, { title: string; hint: string }> = {
-  move: { title: 'Move', hint: 'Hold your finger on the left side of the screen and drag toward the gold circle.' },
+  move: {
+    title: 'Move',
+    hint: 'Hold your finger on the left side of the screen and drag toward the gold circle.',
+  },
   bomb: {
     title: 'Bomb',
     hint: 'Walk next to the crate, tap the right side of the screen to drop a bomb, then get out of the cross!',
@@ -143,7 +138,10 @@ export const TUTORIAL_TEXT: Record<TutorialStep, { title: string; hint: string }
     title: 'Glove',
     hint: 'You have Glove: drop a bomb, tap again to pick it up, and once more to throw it over walls.',
   },
-  dummy: { title: 'Target', hint: 'The dummy is behind the crate. Break the crate and catch it in the blast!' },
+  dummy: {
+    title: 'Target',
+    hint: 'The dummy is behind the crate. Break the crate and catch it in the blast!',
+  },
 };
 
 /** Prietenii din cuști (misiunea Salvare). */

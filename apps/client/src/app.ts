@@ -703,7 +703,10 @@ export class App {
     if (kind.type === 'mode' && kind.mode === 'vs')
       setTimeout(
         () =>
-          this.showBanner('Starting with: ' + m.s.rules.startItems.map((i) => ITEM_NAMES[i]).join(' · '), 2600),
+          this.showBanner(
+            'Starting with: ' + m.s.rules.startItems.map((i) => ITEM_NAMES[i]).join(' · '),
+            2600,
+          ),
         60,
       );
     if (kind.type === 'tutorial') this.showTut(kind.step);
@@ -987,7 +990,9 @@ export class App {
         this.sfx.pick();
         const ally = m.s.players[e.player]!.team === me.team;
         this.showBanner(
-          mine(e.player) ? 'You stole the flag! Run home!' : `${TEAMS[1 - e.team]!.name} team stole the flag!`,
+          mine(e.player)
+            ? 'You stole the flag! Run home!'
+            : `${TEAMS[1 - e.team]!.name} team stole the flag!`,
           1500,
           ally ? 'gold' : 'bad',
         );
@@ -998,8 +1003,7 @@ export class App {
         this.showBanner(`${TEAMS[e.team]!.name} flag dropped!`, 1300);
         break;
       case 'flagReturn':
-        if (e.player === null)
-          this.showBanner(`${TEAMS[e.team]!.name} flag is back home`, 1200);
+        if (e.player === null) this.showBanner(`${TEAMS[e.team]!.name} flag is back home`, 1200);
         else
           this.showBanner(
             `${m.slots[e.player]?.name ?? '?'} saved the flag!`,
@@ -1066,7 +1070,8 @@ export class App {
           this.sfx.pick();
           this.showBanner(`Crystal ${e.count}/${e.need}`, 1000, 'gold');
         }
-        if (mi.def.kind === 'demolish') this.showBanner(`Tower destroyed! ${e.count}/${e.need}`, 1300, 'gold');
+        if (mi.def.kind === 'demolish')
+          this.showBanner(`Tower destroyed! ${e.count}/${e.need}`, 1300, 'gold');
         break;
       }
     }
@@ -1233,8 +1238,7 @@ export class App {
     if (m.team) {
       if (e.team !== null) this.scores[e.team]!++;
       const mine = e.team === m.me.team;
-      title =
-        e.team === null ? 'Draw' : mine ? 'Your team won!' : `${TEAMS[e.team]!.name} team wins`;
+      title = e.team === null ? 'Draw' : mine ? 'Your team won!' : `${TEAMS[e.team]!.name} team wins`;
       msg = m.s.ctf
         ? `Captures: ${TEAMS[0].name} ${m.s.ctf.caps[0]} – ${m.s.ctf.caps[1]} ${TEAMS[1].name}`
         : e.team === null
