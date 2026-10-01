@@ -1,4 +1,12 @@
-import { CHARGE_HIT, FLAME, HURT_GRACE, LIFE_GRACE, SUPER_FULL, TRAP_LIFE } from './constants.ts';
+import {
+  CHARGE_HIT,
+  FLAME,
+  GUARD_GRACE,
+  HURT_GRACE,
+  LIFE_GRACE,
+  SUPER_FULL,
+  TRAP_LIFE,
+} from './constants.ts';
 import { idx, tileX, tileY } from './grid.ts';
 import type { DeathCause, GameState, Player } from './types.ts';
 
@@ -89,10 +97,14 @@ export function kill(s: GameState, p: Player, killerId: number | null, cause: De
  * se folosește după cel temporar. Întoarce true dacă a salvat.
  */
 export function shieldSave(s: GameState, p: Player, grace: number): boolean {
-  if (p.shieldT > 0) p.shieldT = 0;
-  else if (p.guard > 0) p.guard--;
-  else return false;
-  p.graceT = grace;
+  if (p.shieldT > 0) {
+    p.shieldT = 0;
+    p.graceT = grace;
+  } else if (p.guard > 0) {
+    // șalul dă doar o clipă de fugă (mai scurtă decât flacăra)
+    p.guard--;
+    p.graceT = Math.min(grace, GUARD_GRACE);
+  } else return false;
   s.events.push({ type: 'shieldSaved', player: p.id });
   return true;
 }

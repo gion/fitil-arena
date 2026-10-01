@@ -78,23 +78,15 @@ function sticky(s: GameState, p: Player): boolean {
   return true;
 }
 
-/** Fifi: 4 mini-bombe (rază 1) în cruce, la 2 pătrățele (sau cât se poate până la un obstacol). */
+/** Fifi: până la 4 mini-bombe (rază 1) în cruce, la 2 pătrățele (doar pe direcțiile libere). */
 function cluster(s: GameState, p: Player): boolean {
   const cx = tileX(p);
   const cy = tileY(p);
   let n = 0;
   for (const d of DIRS) {
-    let tx = -1;
-    let ty = -1;
-    for (let i = 1; i <= 2; i++) {
-      const x = cx + DX[d]! * i;
-      const y = cy + DY[d]! * i;
-      if (!freeTile(s, x, y)) break;
-      tx = x;
-      ty = y;
-    }
-    if (tx < 0) continue;
-    newBomb(s, p.id, tx, ty, 1, { free: true });
+    // doar la exact 2 pătrățele: o mini-bombă mai aproape ar ajunge cu flacăra la Fifi
+    if (!freeTile(s, cx + DX[d]!, cy + DY[d]!) || !freeTile(s, cx + DX[d]! * 2, cy + DY[d]! * 2)) continue;
+    newBomb(s, p.id, cx + DX[d]! * 2, cy + DY[d]! * 2, 1, { free: true });
     n++;
   }
   return n > 0;

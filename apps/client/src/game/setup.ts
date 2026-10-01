@@ -1,18 +1,7 @@
-import {
-  challengeSetup,
-  createGame,
-  createMission,
-  createTutorial,
-  ctfRules,
-  duelRules,
-  dummiesSetup,
-  gridForAspect,
-  rotateRules,
-  shiftRules,
-} from '@fitil/sim';
+import { challengeSetup, createGame, createMission, createTutorial, dummiesSetup } from '@fitil/sim';
 import type { BotLevel, ChallengeId, GameSetup, GameState, Tutorial, TutorialStep } from '@fitil/sim';
-import { ROSTER, missionById } from '@fitil/content';
-import type { ModeId } from '@fitil/content';
+import { HEROES, ROSTER, botHeroes, heroSpec, matchRules, missionById } from '@fitil/content';
+import type { HeroId, ModeId } from '@fitil/content';
 
 export type PlayKind =
   | { type: 'mode'; mode: ModeId }
@@ -27,6 +16,14 @@ export interface Slot {
   bot: boolean;
   /** Vocea (0–3) pentru țipete. */
   voice: number;
+  /** Personajul (Faza 4); lipsă în Practice, tutorial și misiuni. */
+  hero?: HeroId;
+}
+
+/** Tema și personajul jucătorului pentru un meci de arenă. */
+export interface ArenaChoice {
+  theme: string;
+  hero: HeroId;
 }
 
 export interface Built {
@@ -37,20 +34,48 @@ export interface Built {
 
 const ffaSlots = (): Slot[] => ROSTER.ffa.map((r, i) => ({ ...r, bot: i > 0, voice: i % 4 }));
 
-function teamSetup(n: number, bots: BotLevel): { players: GameSetup['players']; slots: Slot[] } {
+/** Locurile unui meci de arenă: omul pe locul 0 (cu personajul ales), boții cu personaje trase din seed. */
+function arenaSetup(
+  mode: ModeId,
+  bots: BotLevel,
+  seed: number,
+  pick: ArenaChoice,
+): { players: GameSetup['players']; slots: Slot[] } {
+  const team = mode === 'team2' || mode === 'team3' || mode === 'ctf';
+  const n = mode === 'vs' ? 2 : team ? (mode === 'team2' ? 4 : 6) : 4;
+  const size = n / 2;
+  const others = botHeroes(seed, n - 1, [pick.hero]);
   const players: GameSetup['players'] = [];
   const slots: Slot[] = [];
-  for (const team of [0, 1])
-    for (let i = 0; i < n; i++) {
-      const human = team === 0 && i === 0;
-      players.push({ bot: human ? null : bots, team });
-      slots.push({ ...ROSTER.teams[team]![i]!, bot: !human, voice: (i + team) % 4 });
-    }
+  for (let i = 0; i < n; i++) {
+    const hero = i === 0 ? pick.hero : others[i - 1]!;
+    const human = i === 0;
+    const t = team ? Math.floor(i / size) : undefined;
+    const base = team ? ROSTER.teams[t!]![i % size]! : null;
+    players.push({
+      bot: human ? null : bots,
+      hero: heroSpec(hero, pick.theme),
+      ...(t === undefined ? {} : { team: t }),
+    });
+    slots.push({
+      name: human ? 'You' : HEROES[hero].name,
+      color: base ? base.color : human ? ROSTER.ffa[0].color : HEROES[hero].color,
+      bot: !human,
+      voice: (i + (t ?? 0)) % 4,
+      hero,
+    });
+  }
   return { players, slots };
 }
 
 /** Construiește starea de joc pentru un mod / pas de Practice. `aspect` = proporția zonei de joc. */
-export function build(kind: PlayKind, bots: BotLevel, seed: number, aspect: number): Built {
+export function build(
+  kind: PlayKind,
+  bots: BotLevel,
+  seed: number,
+  aspect: number,
+  pick: ArenaChoice = { theme: 'clasic', hero: 'bubu' },
+): Built {
   if (kind.type === 'tutorial') {
     const { s, t } = createTutorial(kind.step, seed);
     const slots = ffaSlots().slice(0, s.players.length);
@@ -72,31 +97,12 @@ export function build(kind: PlayKind, bots: BotLevel, seed: number, aspect: numb
   }
   if (kind.type === 'challenge')
     return { s: createGame(challengeSetup(kind.id, seed, aspect)), slots: ffaSlots(), tutorial: null };
-  const four = (): GameSetup['players'] => [{ bot: null }, { bot: bots }, { bot: bots }, { bot: bots }];
-  const make = (rules: GameSetup['rules'], players: GameSetup['players'], slots: Slot[]): Built => ({
-    s: createGame({ seed, rules, players }),
-    slots,
+  const t = arenaSetup(kind.mode, bots, seed, pick);
+  return {
+    s: createGame({ seed, rules: matchRules(kind.mode, pick.theme, seed, aspect), players: t.players }),
+    slots: t.slots,
     tutorial: null,
-  });
-  switch (kind.mode) {
-    case 'ffa':
-      return make(gridForAspect(aspect), four(), ffaSlots());
-    case 'vs':
-      return make(duelRules(seed), [{ bot: null }, { bot: bots }], ffaSlots().slice(0, 2));
-    case 'team2':
-    case 'team3': {
-      const t = teamSetup(kind.mode === 'team2' ? 2 : 3, bots);
-      return make({ ...gridForAspect(aspect), mode: 'teams' }, t.players, t.slots);
-    }
-    case 'ctf': {
-      const t = teamSetup(3, bots);
-      return make(ctfRules(aspect), t.players, t.slots);
-    }
-    case 'rot':
-      return make(rotateRules(), four(), ffaSlots());
-    case 'shift':
-      return make(shiftRules(aspect), four(), ffaSlots());
-  }
+  };
 }
 
 export const isTeamKind = (k: PlayKind): boolean =>

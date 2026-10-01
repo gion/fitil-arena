@@ -16,7 +16,8 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck",
     "sim:bench": "pnpm --filter @fitil/sim bench",
-    "mobile:sync": "pnpm --filter @fitil/client cap:sync"
+    "mobile:sync": "pnpm --filter @fitil/client cap:sync",
+    "balance": "pnpm --filter @fitil/content balance"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

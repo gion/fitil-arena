@@ -556,7 +556,14 @@ export const ITEM_COLOR: Record<ItemType, string> = {
   maxbomb: '#ffd23f',
   heart: '#ff5f93',
   crystal: '#6ff4ff',
+  ice: '#9fe8ff',
+  flash: '#fff27a',
+  poison: '#8dff5a',
+  hex: '#c27bff',
 };
+
+/** Culoarea bombelor speciale (corp + strălucire), folosită și la randarea bombelor. */
+export const SPECIAL_COLOR = { ice: '#9fe8ff', flash: '#fff27a', poison: '#8dff5a' } as const;
 const NEG = new Set<ItemType>(['slow', 'shrink', 'fewer', 'reverse', 'hiccup', 'dizzy']);
 const GOLDS = new Set<ItemType>(['maxspeed', 'maxfire', 'maxbomb']);
 const BASE_ICON: Partial<Record<ItemType, ItemType>> = {
@@ -616,8 +623,63 @@ export function item(it: ItemType, px: number, py: number, round: boolean): void
   itemIcon(it, cx, cy);
 }
 
+/** Bombă specială: corp colorat și un semn (fulg, stea, picătură). */
+export function specialIcon(kind: 'ice' | 'flash' | 'poison', cx: number, cy: number, r = T * 0.19): void {
+  const c = SPECIAL_COLOR[kind];
+  glow(c, 8);
+  ctx.fillStyle = '#10121c';
+  circle(cx, cy + r * 0.2, r);
+  ctx.fill();
+  noGlow();
+  ctx.strokeStyle = c;
+  ctx.fillStyle = c;
+  ctx.lineWidth = r * 0.22;
+  ctx.lineCap = 'round';
+  const y = cy + r * 0.2;
+  if (kind === 'ice') {
+    ctx.beginPath();
+    for (let i = 0; i < 3; i++) {
+      const a = (i * Math.PI) / 3;
+      ctx.moveTo(cx - Math.cos(a) * r * 0.6, y - Math.sin(a) * r * 0.6);
+      ctx.lineTo(cx + Math.cos(a) * r * 0.6, y + Math.sin(a) * r * 0.6);
+    }
+    ctx.stroke();
+  } else if (kind === 'flash') {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = (i * Math.PI) / 5 - Math.PI / 2;
+      const rad = i % 2 ? r * 0.25 : r * 0.62;
+      ctx.lineTo(cx + Math.cos(a) * rad, y + Math.sin(a) * rad);
+    }
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(cx, y - r * 0.6);
+    ctx.quadraticCurveTo(cx + r * 0.5, y + r * 0.1, cx, y + r * 0.5);
+    ctx.quadraticCurveTo(cx - r * 0.5, y + r * 0.1, cx, y - r * 0.6);
+    ctx.fill();
+  }
+}
+
 function itemIcon(it: ItemType, cx: number, cy: number): void {
   switch (it) {
+    case 'ice':
+    case 'flash':
+    case 'poison':
+      specialIcon(it, cx, cy);
+      text('×3', cx + T * 0.2, cy + T * 0.24, T * 0.16, ITEM_COLOR[it]);
+      return;
+    case 'hex':
+      ctx.fillStyle = '#c27bff';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, T * 0.24, T * 0.14, 0, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = '#1a0a26';
+      circle(cx, cy, T * 0.08);
+      ctx.fill();
+      text('−1', cx, cy + T * 0.26, T * 0.16, '#c27bff');
+      return;
     case 'heart':
       ctx.fillStyle = '#ff5f93';
       ctx.beginPath();

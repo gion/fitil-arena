@@ -74,6 +74,8 @@ export const CHARGE_HIT = 35;
 export const CHARGE_TICK = TICK_HZ;
 export const MAX_LIVES = 3;
 export const LIFE_GRACE = sec(1.5);
+/** Șalul lui Tanti Veta: 0.4s de invulnerabilitate (flacăra ține 0.55s, deci trebuie să fugi). */
+export const GUARD_GRACE = sec(0.4);
 export const SPECIAL_CHARGES = 3;
 export const MAX_SPECIALS = 6;
 export const FREEZE = sec(2);
