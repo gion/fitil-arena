@@ -3,6 +3,20 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-01 — Claude Code (Opus 5.5) — Faza 4: personaje, Super, moduri
+
+- **Cerut:** după demo-ul pe Pages, Faza 4 din PLAN.
+- **Făcut:** sim (personaje, Super-uri, pasive, inimi, bombe speciale, Blestem, tufișuri, evenimente de arenă, Coroana, Cartoful, boți), content (personaje, afinități, evenimente, `matchRules`), bench de balans (`pnpm balance`, `docs/balance.md`), net/server (personaj per loc, extras, joc rapid public pe mod), client (selecție, Super, bombe speciale, HUD, randare 2D/3D). Decizii D-035–D-039, întrebarea Q-004 (tufișuri online). Branch `feat/faza-4-personaje` (include și branch-ul de Pages).
+- **Verificat:** `pnpm lint`, `typecheck`, `format:check`, `test` (sim 111, content 13, net 11, server 5); `pnpm sim:bench` 1000 meciuri, 0 excepții/neterminate/desync; `pnpm balance 3500`: ținte atinse; Playwright: testele existente (fără FPS) + 6 noi, trecute.
+- **Notă operațională:** în containerul cloud, Playwright are nevoie de `PW_CHROMIUM=/opt/pw-browsers/chromium` (Chromium-ul instalat nu e versiunea cerută de `@playwright/test`); testul de FPS cere GPU.
+
+## 2026-10-01 — Claude Code (Opus 5.5) — Demo jucabil pe GitHub Pages
+
+- **Cerut:** un demo jucabil online (HTML); dacă merge pe GitHub Pages sau e nevoie de Vercel. Apoi Faza 4.
+- **Făcut:** `.github/workflows/pages.yml` (build client cu `VITE_OFFLINE_ONLY=1` → deploy Pages la push pe `main`); în `apps/client/src/app.ts` meniul Online și reluarea camerei sunt ascunse în build-ul demo; `.env.example` și D-034.
+- **Verificat:** `pnpm lint`, `format:check`, `typecheck`, `test` (sim 81, content 6, net 6, server 4). Build-ul demo servit sub `/fitil-arena/`: meniul pornește fără butonul Online, un meci cu boți rulează, 0 erori în consolă.
+- **Notă operațională:** Pages se activează o dată manual: Settings → Pages → Source: „GitHub Actions”. Pe repo privat, Pages cere GitHub Pro.
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Faza 3: multiplayer online (camere private)
 
 - **Cerut:** începerea Fazei 3 după handover (după repararea Prettier pe PR-ul fazei 2).

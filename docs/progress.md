@@ -135,6 +135,12 @@
 - Informația ascunsă (tufișuri, Faza 4) nu e compatibilă cu sincronizarea prin input-uri fără filtrare (D-030).
 - Fără matchmaking public (doar camere private, cum cere faza); fără spectatori.
 
+## Demo web pe GitHub Pages (2026-10-01)
+
+**Făcut:** workflow `Pages` care construiește clientul cu `VITE_OFFLINE_ONLY=1` (fără meniul Online și fără reluarea camerei) și îl publică pe GitHub Pages la fiecare push pe `main` (D-034). Se joacă tot ce e offline: Play cu boți, Practice, Misiuni, 2D/1P/3P, teme.
+
+**Rămas:** Pages trebuie activat o dată din setările repo-ului (Settings → Pages → Source: GitHub Actions). Online-ul în demo așteaptă hostingul serverului (Q-003).
+
 ## Faza 4 — Personaje, Super, moduri
 
 **Mini-plan** (milestone-uri, fiecare cu `lint + typecheck + test` verde și commit):
