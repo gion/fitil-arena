@@ -65,3 +65,41 @@ export const RESPAWN = sec(3);
 export const RESPAWN_SHIELD = sec(2);
 /** Purtătorul steagului e cu 15% mai lent. */
 export const CARRIER_SPEED_PCT = 85;
+
+/** Faza 4 — personaje, inimi, bombe speciale, moduri noi. */
+export const SUPER_FULL = 100;
+/** Încărcarea Super-ului: ladă spartă, adversar lovit (inimă pierdută sau eliminat), câte 1 pe secundă. */
+export const CHARGE_BOX = 8;
+export const CHARGE_HIT = 35;
+export const CHARGE_TICK = TICK_HZ;
+export const MAX_LIVES = 3;
+export const LIFE_GRACE = sec(1.5);
+export const SPECIAL_CHARGES = 3;
+export const MAX_SPECIALS = 6;
+export const FREEZE = sec(2);
+/** Fiecare apăsare pe buton cât ești înghețat scurtează înghețul. */
+export const FREEZE_TAP = 4;
+export const BLIND = sec(2.5);
+export const TOXIC = sec(3);
+export const TOXIC_HURT = sec(1);
+export const HEX = sec(8);
+export const DASH_TILES = 3;
+export const STICKY_FUSE = sec(1.5);
+export const BOUNCES = 2;
+export const BIG_EXTRA = 2;
+export const PURSE_MIN = 4;
+export const PURSE_MAX = 9;
+export const TIME_STOP = sec(1.5);
+export const TRAP_LIFE = sec(15);
+export const TRAP_RANGE = 2;
+export const WARP_MIN = 5;
+/** Coroana: 60s de ținut, maxim 2.5 minute. */
+export const CROWN_NEED = sec(60);
+export const CROWN_TIME = sec(150);
+/** Cartoful fierbinte: primul după 3s, fitil 10–16s, pauză 1s între pasări, următorul după 2s, raza 2. */
+export const POTATO_FIRST = sec(3);
+export const POTATO_MIN = sec(10);
+export const POTATO_VAR = sec(6);
+export const POTATO_PASS = sec(1);
+export const POTATO_NEXT = sec(2);
+export const POTATO_RANGE = 2;

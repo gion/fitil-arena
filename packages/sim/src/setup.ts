@@ -1,11 +1,29 @@
-import { CTF_NEED, CTF_TIME, RESPAWN, RESPAWN_SHIELD, SHIFT_FIRST, SPEED_START, sec } from './constants.ts';
+import {
+  CROWN_NEED,
+  CROWN_TIME,
+  CTF_NEED,
+  CTF_TIME,
+  FUSE,
+  MAX_BOMBS,
+  MAX_LIVES,
+  MAX_RANGE,
+  POTATO_FIRST,
+  RESPAWN,
+  RESPAWN_SHIELD,
+  SHIFT_FIRST,
+  SPEED_MAX,
+  SPEED_MIN,
+  SPEED_START,
+  SPEED_STEP,
+  sec,
+} from './constants.ts';
 import { countSoft, idx, inBounds } from './grid.ts';
 import { applyItem } from './items.ts';
 import { INF_S, ensureWindow } from './world.ts';
 import { createRng, nextFloat, shuffle } from './rng.ts';
 import type { RngState } from './rng.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
-import type { BotKind, Dir, Flag, GameState, ItemType, Player, Rules } from './types.ts';
+import type { BotKind, Dir, Flag, GameState, HeroSpec, ItemType, Player, Rules } from './types.ts';
 
 export const DEFAULT_RULES: Rules = {
   width: 15,
@@ -27,13 +45,23 @@ export const DEFAULT_RULES: Rules = {
   hurryUpTick: sec(90),
   hurryEvery: 6,
   startItems: [],
+  lives: 1,
+  extras: false,
+  bushRate: 0,
+  dropPct: 100,
+  kickPct: 100,
+  throwExtra: 0,
+  fuse: FUSE,
+  event: null,
 };
 
-export const isTeamMode = (r: Rules): boolean => r.mode !== 'ffa';
+export const isTeamMode = (r: Rules): boolean => r.mode === 'teams' || r.mode === 'ctf';
 
 export interface PlayerSetup {
   bot: BotKind | null;
   team?: number;
+  /** Personajul (cu afinitățile aplicate); lipsă = jucător fără personaj. */
+  hero?: HeroSpec;
 }
 
 export interface GameSetup {
@@ -69,6 +97,23 @@ export const rotateRules = (): Partial<Rules> => ({ width: 11, height: 11, rotat
 
 /** Rânduri mobile: toți contra toți pe grila adaptată la ecran. */
 export const shiftRules = (aspect: number): Partial<Rules> => ({ ...gridForAspect(aspect), shift: true });
+
+/** Coroana: toți contra toți, revii după 3s; câștigă cine ține coroana 60s (sau cel mai mult în 2.5 min). */
+export const crownRules = (aspect: number): Partial<Rules> => ({
+  ...gridForAspect(aspect),
+  mode: 'crown',
+  respawnTicks: RESPAWN,
+  respawnShield: RESPAWN_SHIELD,
+  timeLimit: CROWN_TIME,
+  hurryUpTick: 0,
+});
+
+/** Cartoful fierbinte: toți contra toți, eliminare; cartoful explodează în mâna cui îl ține. */
+export const potatoRules = (aspect: number): Partial<Rules> => ({
+  ...gridForAspect(aspect),
+  mode: 'potato',
+  softDensity: 0.5,
+});
 
 /** Capturează steagul 3v3: fără eliminare (revii după 3s cu 2s de scut), 3 capturi sau 3 minute. */
 export const ctfRules = (aspect: number): Partial<Rules> => ({
@@ -174,7 +219,30 @@ export function makePlayer(id: number, team: number, bot: BotKind | null, x: num
     killerId: null,
     lastTapPlaced: false,
     botCd: 12,
+    hero: null,
+    charge: 0,
+    lives: 1,
+    guard: 0,
+    specials: [],
+    frozenT: 0,
+    blindT: 0,
+    toxT: 0,
+    hexT: 0,
+    crownT: 0,
   };
+}
+
+/** Statisticile de start ale personajului (după afinități) și inimile meciului. */
+export function applyHero(p: Player, hero: HeroSpec | null, rules: Rules): void {
+  p.hero = hero;
+  p.lives = Math.min(MAX_LIVES, Math.max(1, rules.lives + (hero?.lives ?? 0)));
+  if (!hero) return;
+  const base = SPEED_START + hero.speedSteps * SPEED_STEP;
+  p.speed = Math.min(SPEED_MAX, Math.max(SPEED_MIN, Math.floor((base * hero.speedPct) / 100)));
+  p.bombs = Math.min(MAX_BOMBS, Math.max(1, 1 + hero.bombs));
+  p.range = Math.min(MAX_RANGE, Math.max(1, 1 + hero.range));
+  p.kick = hero.kick;
+  p.guard = hero.passive === 'guard' ? 1 : 0;
 }
 
 /** Ordinea în spirală (din margine spre centru) în care cad blocurile la „hurry up”. */
@@ -222,6 +290,14 @@ export function createGame(setup: GameSetup): GameState {
     gold: new Array<number>(N).fill(0),
     cursed: new Array<number>(N).fill(0),
     flameVia: new Array<number>(N).fill(0),
+    flameKind: new Array<number>(N).fill(0),
+    toxic: new Array<number>(N).fill(0),
+    toxicOwner: new Array<number>(N).fill(-1),
+    bush: new Array<number>(N).fill(0),
+    traps: [],
+    timeStop: null,
+    crown: null,
+    potato: null,
     players: [],
     bombs: [],
     nextBombId: 1,
@@ -278,18 +354,36 @@ export function createGame(setup: GameSetup): GameState {
         }
       }
   if (rules.mode === 'ctf') setupCtf(s, spawns, setup.players, rng);
+  if (rules.mode === 'crown') setupCrown(s);
+  if (rules.mode === 'potato') s.potato = { holder: null, fuse: 0, cd: POTATO_FIRST };
+  if (rules.bushRate > 0 && !inf)
+    for (let k = 0; k < N; k++)
+      if (s.grid[k] === EMPTY && !safe.has(k) && nextFloat(rng) < rules.bushRate) s.bush[k] = 1;
   s.softStart = countSoft(s);
 
   s.players = setup.players.map((ps, i) => {
     const [x, y] = spawns[i]!;
     const team = isTeamMode(rules) ? (ps.team ?? i % 2) : i;
     const p = makePlayer(i, team, ps.bot, x, y);
+    applyHero(p, ps.hero ?? null, rules);
     const open = DIRS.find((d: Dir) => s.grid[idx(s, x + DX[d]!, y + DY[d]!)] === EMPTY);
     if (open !== undefined) p.face = open;
     for (const it of rules.startItems) applyItem(p, it);
     return p;
   });
   return s;
+}
+
+/** Coroana pornește din centrul arenei; se curăță 3×3 în jur. */
+function setupCrown(s: GameState): void {
+  let cx = (s.W - 1) >> 1;
+  let cy = (s.H - 1) >> 1;
+  if (s.grid[idx(s, cx, cy)] === HARD) cx += cx + 1 < s.W - 1 ? 1 : -1;
+  if (s.grid[idx(s, cx, cy)] === HARD) cy += 1;
+  for (let y = cy - 1; y <= cy + 1; y++)
+    for (let x = cx - 1; x <= cx + 1; x++)
+      if (inBounds(s, x, y) && s.grid[idx(s, x, y)] === SOFT) clearBox(s, idx(s, x, y));
+  s.crown = { x: cx, y: cy, holder: null, need: CROWN_NEED };
 }
 
 const clearBox = (s: GameState, k: number): void => {

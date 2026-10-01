@@ -17,11 +17,41 @@ export const opposite = (d: Dir): Dir => (d ^ 1) as Dir;
 export const U = 1000;
 
 export type PositiveItem = 'bomb' | 'fire' | 'speed' | 'kick' | 'glove' | 'remote' | 'line' | 'shield';
+/** Faza 4: bombe speciale (3 încărcături) și Blestem (adversarii −1 rază, 8s). */
+export type SpecialKind = 'ice' | 'flash' | 'poison';
+export type ExtraItem = SpecialKind | 'hex';
 export type NegativeItem = 'slow' | 'shrink' | 'fewer' | 'reverse' | 'hiccup' | 'dizzy';
 export type GoldItem = 'maxspeed' | 'maxfire' | 'maxbomb';
 /** Doar în misiuni: inimă (+25% viață) și cristal (obiectiv; nu îl distrug flăcările). */
 export type MissionItem = 'heart' | 'crystal';
-export type ItemType = PositiveItem | NegativeItem | GoldItem | MissionItem;
+/** `heart`: în misiuni +25% viață, în arenă +1 inimă (maxim 3). */
+export type ItemType = PositiveItem | NegativeItem | GoldItem | MissionItem | ExtraItem;
+
+/** Super-urile personajelor (Faza 4). */
+export type SuperKind = 'bigbomb' | 'dash' | 'sticky' | 'cluster' | 'purse' | 'timestop' | 'warp';
+/** Abilitățile pasive care cer reguli în sim (statisticile de start sunt separate). */
+export type PassiveKind = 'none' | 'bounce' | 'guard' | 'timers' | 'trap';
+
+/**
+ * Personajul unui jucător, cu afinitățile de arenă deja aplicate (le calculează packages/content).
+ * Totul în întregi: viteza în procente, Super-ul în procente de încărcare.
+ */
+export interface HeroSpec {
+  id: string;
+  super: SuperKind;
+  passive: PassiveKind;
+  /** Trepte de viteză în plus la start (ca bonusul de viteză). */
+  speedSteps: number;
+  /** Procent aplicat vitezei (100 = neschimbat; afinități ±10–15). */
+  speedPct: number;
+  bombs: number;
+  range: number;
+  kick: boolean;
+  /** Inimi în plus față de regula meciului (afinități, maxim +1). */
+  lives: number;
+  /** Viteza de încărcare a Super-ului, în procente. */
+  superPct: number;
+}
 
 export type BotLevel = 'easy' | 'normal' | 'hard' | 'insane';
 /** Ce controlează un jucător fără om: un nivel de bot sau un manechin (stă pe loc, nu pune bombe). */
@@ -32,6 +62,10 @@ export interface Input {
   dir: Dir | null;
   bomb?: 0 | 1 | 2;
   detonate?: boolean;
+  /** Folosește Super-ul (dacă bara e plină). */
+  super?: boolean;
+  /** Schimbă tipul bombei speciale următoare (glisare în sus pe buton). */
+  swap?: boolean;
   /** Direcția privirii (vederile 3D: bomba, aruncarea și linia merg unde se uită camera). */
   face?: Dir;
 }
@@ -77,6 +111,23 @@ export interface Player {
   killerId: number | null;
   lastTapPlaced: boolean;
   botCd: number;
+  /** Faza 4: personajul (null = fără personaj, ca în fazele anterioare). */
+  hero: HeroSpec | null;
+  /** Încărcarea Super-ului, 0…SUPER_FULL. */
+  charge: number;
+  /** Inimi rămase (o flacără ia o inimă; la 0 mori). */
+  lives: number;
+  /** Scutul pasiv (o lovitură pe meci) încă nefolosit. */
+  guard: number;
+  /** Bombe speciale în așteptare, în ordinea folosirii (fiecare element = o încărcătură). */
+  specials: SpecialKind[];
+  frozenT: number;
+  blindT: number;
+  /** Cât a stat în norul toxic (tick-uri, se resetează când iese). */
+  toxT: number;
+  hexT: number;
+  /** Coroana: cât a ținut-o (tick-uri). */
+  crownT: number;
 }
 
 export interface Fly {
@@ -104,6 +155,43 @@ export interface Bomb {
   tpLock: number;
   /** Cum a ajuns bomba unde e: 0 pusă, 1 șutată, 2 aruncată (pentru provocări și statistici). */
   via: BombVia;
+  /** Tipul exploziei: normală sau specială (gheață, flashbang, otravă). */
+  kind: BombKind;
+  /** Bombă de Super (nu ocupă din numărul de bombe al jucătorului). */
+  free: boolean;
+  /** Bombă lipicioasă: jucătorul de care s-a lipit (null = nelipită); `sticky` = încă poate lipi. */
+  stuck: number | null;
+  sticky: boolean;
+  /** Ricoșeuri rămase la șut (pasivul Fifi). */
+  bounce: number;
+}
+
+export type BombKind = 'normal' | SpecialKind;
+/** Tipul flăcării pe pătrățel: 0 normală, 1 gheață, 2 flashbang, 3 otravă. */
+export const FLAME_KIND: Record<BombKind, number> = { normal: 0, ice: 1, flash: 2, poison: 3 };
+
+/** Capcana lăsată de Robo-Mici la moarte: explodează când calcă un adversar pe ea. */
+export interface Trap {
+  x: number;
+  y: number;
+  owner: number;
+  t: number;
+}
+
+/** Coroana: cine o ține acumulează timp; cade la moarte. */
+export interface Crown {
+  x: number;
+  y: number;
+  holder: number | null;
+  need: number;
+}
+
+/** Cartoful fierbinte: o bombă uriașă care trece de la un jucător la altul prin atingere. */
+export interface Potato {
+  holder: number | null;
+  fuse: number;
+  /** Tick-uri până poate fi pasat din nou (sau până apare cartoful următor). */
+  cd: number;
 }
 
 export type BombVia = 0 | 1 | 2;
@@ -182,7 +270,7 @@ export interface Ctf {
   caps: [number, number];
   need: number;
 }
-export type DeathCause = 'flame' | 'hurry' | 'spider' | 'lightning' | 'crush';
+export type DeathCause = 'flame' | 'hurry' | 'spider' | 'lightning' | 'crush' | 'poison' | 'potato';
 export type MaxStat = 'speed' | 'bombs' | 'fire';
 
 export type GameEvent =
@@ -223,10 +311,25 @@ export type GameEvent =
   | { type: 'boxSpawn'; x: number; y: number; gold: boolean; cursed: boolean }
   | { type: 'hurryUp' }
   | { type: 'blockFall'; x: number; y: number }
+  | { type: 'super'; player: number; kind: SuperKind }
+  | { type: 'dash'; player: number; x: number; y: number }
+  | { type: 'stick'; bomb: number; player: number }
+  | { type: 'bounce'; bomb: number; x: number; y: number }
+  | { type: 'lifeLost'; player: number; lives: number }
+  | { type: 'frozen'; player: number }
+  | { type: 'blinded'; player: number }
+  | { type: 'trapSet'; x: number; y: number; owner: number }
+  | { type: 'trapFire'; x: number; y: number; owner: number }
+  | { type: 'timeStop'; owner: number }
+  | { type: 'bushBurn'; x: number; y: number }
+  | { type: 'crownTake'; player: number }
+  | { type: 'crownDrop'; x: number; y: number }
+  | { type: 'potatoGive'; player: number; from: number | null }
+  | { type: 'potatoBoom'; player: number; x: number; y: number }
   | { type: 'roundEnd'; winner: number | null; team: number | null };
 
-/** `teams` și `ctf` sunt moduri pe echipe (foc prieten oprit implicit). */
-export type Mode = 'ffa' | 'teams' | 'ctf';
+/** `teams` și `ctf` sunt moduri pe echipe (foc prieten oprit implicit); `crown` și `potato` sunt toți contra toți. */
+export type Mode = 'ffa' | 'teams' | 'ctf' | 'crown' | 'potato';
 
 export interface Rules {
   width: number;
@@ -263,6 +366,22 @@ export interface Rules {
   hurryEvery: number;
   /** Bonusuri primite de toți la start (1 vs 1). */
   startItems: ItemType[];
+  /** Inimi la start (1 = o flacără te elimină). */
+  lives: number;
+  /** Bonusurile din Faza 4 printre drop-uri: bombe speciale, Blestem, Inimă. */
+  extras: boolean;
+  /** Proporția de tufișuri pe pătrățelele libere. */
+  bushRate: number;
+  /** Șansa de drop dintr-o ladă, în procente față de normal (evenimentul „Lăzi grase”). */
+  dropPct: number;
+  /** Viteza bombelor șutate, în procente (evenimentul „Vânt”). */
+  kickPct: number;
+  /** Pătrățele în plus la aruncare (gravitație mică). */
+  throwExtra: number;
+  /** Fitilul bombelor (tick-uri). */
+  fuse: number;
+  /** Evenimentul de arenă tras din seed (doar pentru afișare; efectele sunt în celelalte reguli). */
+  event: string | null;
 }
 
 export interface GameResult {
@@ -286,6 +405,16 @@ export interface GameState {
   gold: number[];
   cursed: number[];
   flameVia: number[];
+  /** Faza 4: tipul flăcării (`FLAME_KIND`), norul toxic (tick-uri) și al cui e, tufișurile. */
+  flameKind: number[];
+  toxic: number[];
+  toxicOwner: number[];
+  bush: number[];
+  traps: Trap[];
+  /** Super-ul „oprește timpul”: bombele celorlalți stau pe loc. */
+  timeStop: { owner: number; t: number } | null;
+  crown: Crown | null;
+  potato: Potato | null;
   players: Player[];
   bombs: Bomb[];
   nextBombId: number;

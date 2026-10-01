@@ -1,12 +1,16 @@
 import {
   DIZZY,
   HEART_HP,
+  HEX,
   HICCUP,
   HICCUP_FIRST,
   MAX_BOMBS,
+  MAX_LIVES,
   MAX_RANGE,
+  MAX_SPECIALS,
   REVERSE,
   SHIELD,
+  SPECIAL_CHARGES,
   SPEED_MAX,
   SPEED_MIN,
   SPEED_SLOW,
@@ -14,14 +18,18 @@ import {
 } from './constants.ts';
 import { nextFloat, nextInt } from './rng.ts';
 import type { RngState } from './rng.ts';
-import type { GoldItem, ItemType, NegativeItem, Player } from './types.ts';
+import type { GoldItem, ItemType, NegativeItem, Player, SpecialKind } from './types.ts';
 
 export const NEGATIVE: readonly NegativeItem[] = ['slow', 'shrink', 'fewer', 'reverse', 'hiccup', 'dizzy'];
 export const GOLD: readonly GoldItem[] = ['maxspeed', 'maxfire', 'maxbomb'];
 export const isNegative = (it: ItemType): it is NegativeItem => (NEGATIVE as readonly string[]).includes(it);
 export const isGold = (it: ItemType): it is GoldItem => (GOLD as readonly string[]).includes(it);
 
-export function applyItem(p: Player, it: ItemType): void {
+export const SPECIALS: readonly SpecialKind[] = ['ice', 'flash', 'poison'];
+export const isSpecial = (it: ItemType): it is SpecialKind => (SPECIALS as readonly string[]).includes(it);
+
+/** Aplică bonusul. `health`: misiunile (inima dă viață, nu o inimă în plus). */
+export function applyItem(p: Player, it: ItemType, health = true): void {
   switch (it) {
     case 'bomb':
       p.bombs = Math.min(MAX_BOMBS, p.bombs + 1);
@@ -76,17 +84,37 @@ export function applyItem(p: Player, it: ItemType): void {
       p.bombs = MAX_BOMBS;
       break;
     case 'heart':
-      p.hp = Math.min(100, p.hp + HEART_HP);
+      if (health) p.hp = Math.min(100, p.hp + HEART_HP);
+      else p.lives = Math.min(MAX_LIVES, p.lives + 1);
+      break;
+    case 'ice':
+    case 'flash':
+    case 'poison':
+      for (let i = 0; i < SPECIAL_CHARGES && p.specials.length < MAX_SPECIALS; i++) p.specials.push(it);
+      break;
+    case 'hex':
+      p.hexT = HEX;
       break;
     case 'crystal':
       break;
   }
 }
 
-/** Ce cade dintr-o ladă obișnuită (tabelul din prototip): 42% șansă de drop, din care 17% negative. */
-export function rollDrop(rng: RngState, hearts = false): ItemType | null {
-  if (nextFloat(rng) >= 0.42) return null;
+/**
+ * Ce cade dintr-o ladă obișnuită (tabelul din prototip): 42% șansă de drop, din care 17% negative.
+ * `extras` (Faza 4): 12% din drop-uri sunt bonusurile noi — bombe speciale și Blestem (de control, rare) și Inimă.
+ */
+export function rollDrop(rng: RngState, hearts = false, extras = false, dropPct = 100): ItemType | null {
+  if (nextFloat(rng) >= (dropPct === 100 ? 0.42 : (42 * dropPct) / 10000)) return null;
   if (hearts && nextFloat(rng) < 0.14) return 'heart';
+  if (extras && nextFloat(rng) < 0.12) {
+    const r = nextFloat(rng);
+    if (r < 0.3) return 'heart';
+    if (r < 0.5) return 'ice';
+    if (r < 0.65) return 'poison';
+    if (r < 0.82) return 'flash';
+    return 'hex';
+  }
   if (nextFloat(rng) < 0.17) return NEGATIVE[nextInt(rng, NEGATIVE.length)]!;
   const r = nextFloat(rng);
   if (r < 0.2) return 'bomb';

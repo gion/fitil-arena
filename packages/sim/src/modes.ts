@@ -1,10 +1,22 @@
-import { FLAG_RETURN, GRACE, ROT_FLIP, SHIFT_STEP, SHIFT_WARN, TICK_HZ } from './constants.ts';
-import { kill, shieldSave } from './effects.ts';
-import { bombAt, idx, tileX, tileY } from './grid.ts';
+import {
+  FLAG_RETURN,
+  GRACE,
+  POTATO_MIN,
+  POTATO_NEXT,
+  POTATO_PASS,
+  POTATO_RANGE,
+  POTATO_VAR,
+  ROT_FLIP,
+  SHIFT_STEP,
+  SHIFT_WARN,
+  TICK_HZ,
+} from './constants.ts';
+import { addFlame, kill, shieldSave } from './effects.ts';
+import { bombAt, idx, tileAt, tileX, tileY } from './grid.ts';
 import { applyItem } from './items.ts';
 import { nextFloat, nextInt } from './rng.ts';
-import { makePlayer } from './setup.ts';
-import { DIRS, DX, DY, EMPTY, SOFT, U, opposite } from './types.ts';
+import { applyHero, makePlayer } from './setup.ts';
+import { DIRS, DX, DY, EMPTY, HARD, SOFT, U, opposite } from './types.ts';
 import type { Dir, Flag, GameState, Player, Shift } from './types.ts';
 
 /* ---------- Rânduri mobile ---------- */
@@ -199,9 +211,14 @@ export function updateCtf(s: GameState): void {
 
 export function respawn(s: GameState, p: Player): void {
   const fresh = makePlayer(p.id, p.team, p.bot, p.sx, p.sy);
+  applyHero(fresh, p.hero, s.rules);
+  // se păstrează pe tot meciul: Super-ul încărcat, scutul pasiv folosit, timpul cu coroana
+  fresh.charge = p.charge;
+  fresh.guard = p.guard;
+  fresh.crownT = p.crownT;
   const open = DIRS.find((d: Dir) => s.grid[idx(s, p.sx + DX[d]!, p.sy + DY[d]!)] === EMPTY);
   if (open !== undefined) fresh.face = open;
-  for (const it of s.rules.startItems) applyItem(fresh, it);
+  for (const it of s.rules.startItems) applyItem(fresh, it, s.rules.health);
   fresh.shieldT = s.rules.respawnShield;
   Object.assign(p, fresh);
   s.events.push({ type: 'respawn', player: p.id });
@@ -211,4 +228,94 @@ export function updateRespawn(s: GameState): void {
   const R = s.rules.respawnTicks;
   if (!R || s.result) return;
   for (const p of s.players) if (!p.alive && s.tick - p.deathTick >= R) respawn(s, p);
+}
+
+/* ---------- Coroana ---------- */
+
+export function updateCrown(s: GameState): void {
+  const c = s.crown;
+  if (!c || s.result) return;
+  if (c.holder !== null) {
+    const h = s.players[c.holder]!;
+    c.x = tileX(h);
+    c.y = tileY(h);
+    if (!h.alive) {
+      c.holder = null;
+      s.events.push({ type: 'crownDrop', x: c.x, y: c.y });
+    } else if (++h.crownT >= c.need) {
+      s.result = { winner: h.id, team: null, tick: s.tick };
+      s.events.push({ type: 'roundEnd', winner: h.id, team: null });
+      return;
+    }
+  } else {
+    const p = s.players.find((q) => q.alive && tileX(q) === c.x && tileY(q) === c.y);
+    if (p) {
+      c.holder = p.id;
+      s.events.push({ type: 'crownTake', player: p.id });
+    }
+  }
+  if (s.rules.timeLimit > 0 && s.tick >= s.rules.timeLimit) {
+    const best = Math.max(...s.players.map((p) => p.crownT));
+    const top = s.players.filter((p) => p.crownT === best);
+    const winner = best > 0 && top.length === 1 ? top[0]!.id : null;
+    s.result = { winner, team: null, tick: s.tick };
+    s.events.push({ type: 'roundEnd', winner, team: null });
+  }
+}
+
+/* ---------- Cartoful fierbinte ---------- */
+
+function potatoBoom(s: GameState, h: Player): void {
+  const x = tileX(h);
+  const y = tileY(h);
+  s.events.push({ type: 'potatoBoom', player: h.id, x, y });
+  addFlame(s, x, y, -1);
+  for (const d of DIRS)
+    for (let i = 1; i <= POTATO_RANGE; i++) {
+      const g = tileAt(s, x + DX[d]! * i, y + DY[d]! * i);
+      if (g === HARD || g === SOFT) break;
+      addFlame(s, x + DX[d]! * i, y + DY[d]! * i, -1);
+    }
+  kill(s, h, null, 'potato');
+}
+
+export function updatePotato(s: GameState): void {
+  const t = s.potato;
+  if (!t || s.result) return;
+  if (t.holder === null) {
+    if (--t.cd > 0) return;
+    const alive = s.players.filter((p) => p.alive);
+    if (alive.length < 2) return;
+    const p = alive[nextInt(s.rng, alive.length)]!;
+    t.holder = p.id;
+    t.fuse = POTATO_MIN + nextInt(s.rng, POTATO_VAR + 1);
+    t.cd = POTATO_PASS;
+    s.events.push({ type: 'potatoGive', player: p.id, from: null });
+    return;
+  }
+  const h = s.players[t.holder]!;
+  if (!h.alive) {
+    t.holder = null;
+    t.cd = POTATO_NEXT;
+    return;
+  }
+  if (t.cd > 0) t.cd--;
+  else {
+    const hx = tileX(h);
+    const hy = tileY(h);
+    const q = s.players.find(
+      (o) => o !== h && o.alive && Math.abs(tileX(o) - hx) + Math.abs(tileY(o) - hy) <= 1,
+    );
+    if (q) {
+      t.holder = q.id;
+      t.cd = POTATO_PASS;
+      s.events.push({ type: 'potatoGive', player: q.id, from: h.id });
+      return;
+    }
+  }
+  if (--t.fuse <= 0) {
+    t.holder = null;
+    t.cd = POTATO_NEXT;
+    potatoBoom(s, h);
+  }
 }

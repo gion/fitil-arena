@@ -134,3 +134,14 @@
 - Fluiditatea „manual la 150 ms” e verificată în browser pe desktop, nu încă pe telefon real.
 - Informația ascunsă (tufișuri, Faza 4) nu e compatibilă cu sincronizarea prin input-uri fără filtrare (D-030).
 - Fără matchmaking public (doar camere private, cum cere faza); fără spectatori.
+
+## Faza 4 — Personaje, Super, moduri
+
+**Mini-plan** (milestone-uri, fiecare cu `lint + typecheck + test` verde și commit):
+
+1. **sim — reguli**: personaje ca date (`HeroSpec`: Super, pasiv, statistici deja ajustate cu afinitățile), bara de Super (lăzi, eliminări, timp), cele 7 Super-uri și pasivele cu reguli (ricoșeu, scut o dată pe meci, capcană la moarte); inimi (`rules.lives`, Inima +1, max 3); bombe speciale cu 3 încărcături (gheață, flashbang, otravă) și Blestem; tufișuri cu `canSee` (boții respectă vizibilitatea); reguli pentru evenimentele de arenă (drop-uri, viteza șutului, aruncare mai lungă, fitil); modurile Coroana și Cartoful fierbinte; boți care folosesc Super-ul și joacă modurile noi.
+2. **content**: cele 7 personaje (raritate, statistici, pasiv, Super), afinitățile personaj × temă, evenimentele de arenă trase din seed, `heroSpec(hero, temă)` care le combină, modurile noi și textele — validate cu zod.
+3. **balans**: bench cu personaje și arene aleatoare (FFA de 4), raport în `docs/balance.md`; țintă 18–32% pe personaj și 15–35% pe arenă.
+4. **net + server**: personajul ales în lobby (per loc), modurile noi, matchmaking public pe mod (camere publice care pornesc când se umplu sau după un timp, cu boți).
+5. **client**: ecran de selecție personaj (cu afinitățile temei curente), buton Super cu bară, iconița bombei următoare pe buton și glisare pentru schimbare, inimi în HUD, anunțul evenimentului de arenă, randare 2D/3D pentru tot ce e nou.
+6. **acceptare**: teste sim pentru fiecare abilitate și modificator, bench de balans, Playwright pentru selecție + modurile noi.
