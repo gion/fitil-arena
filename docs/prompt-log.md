@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-01 — Claude Code (Opus 5.5) — Demo jucabil pe GitHub Pages
+
+- **Cerut:** un demo jucabil online (HTML); dacă merge pe GitHub Pages sau e nevoie de Vercel. Apoi Faza 4.
+- **Făcut:** `.github/workflows/pages.yml` (build client cu `VITE_OFFLINE_ONLY=1` → deploy Pages la push pe `main`); în `apps/client/src/app.ts` meniul Online și reluarea camerei sunt ascunse în build-ul demo; `.env.example` și D-034.
+- **Verificat:** `pnpm lint`, `format:check`, `typecheck`, `test` (sim 81, content 6, net 6, server 4). Build-ul demo servit sub `/fitil-arena/`: meniul pornește fără butonul Online, un meci cu boți rulează, 0 erori în consolă.
+- **Notă operațională:** Pages se activează o dată manual: Settings → Pages → Source: „GitHub Actions”. Pe repo privat, Pages cere GitHub Pro.
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Faza 3: multiplayer online (camere private)
 
 - **Cerut:** începerea Fazei 3 după handover (după repararea Prettier pe PR-ul fazei 2).

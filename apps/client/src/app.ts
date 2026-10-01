@@ -54,6 +54,9 @@ import { $, h, show } from './ui/dom.ts';
 import { maxHumans } from '@fitil/net';
 import { OnlineSession } from './online/session.ts';
 
+/** Build-ul demo (GitHub Pages) n-are server de joc: fără meniul Online (`VITE_OFFLINE_ONLY=1`). */
+const OFFLINE_ONLY = import.meta.env.VITE_OFFLINE_ONLY === '1';
+
 type Phase = 'menu' | 'play' | 'paused' | 'over';
 const VIEWS: View[] = ['2d', 'fps', 'chase'];
 const VIEW_LBL: Record<View, string> = { '2d': '2D view', fps: '1P view', chase: '3P view' };
@@ -138,7 +141,7 @@ export class App {
     });
     this.showScreen(() => this.mainMenu());
     this.setView(settings.view, false);
-    void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
+    if (!OFFLINE_ONLY) void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
   }
 
   /* ---------- DOM ---------- */
@@ -254,11 +257,12 @@ export class App {
         { class: 'btn', 'data-test': 'play', onclick: () => this.showScreen(() => this.playMenu()) },
         'Play',
       ),
-      h(
-        'button',
-        { class: 'btn', 'data-test': 'online', onclick: () => this.showScreen(() => this.onlineMenu()) },
-        'Online',
-      ),
+      !OFFLINE_ONLY &&
+        h(
+          'button',
+          { class: 'btn', 'data-test': 'online', onclick: () => this.showScreen(() => this.onlineMenu()) },
+          'Online',
+        ),
       h(
         'div',
         { class: 'grid four' },
