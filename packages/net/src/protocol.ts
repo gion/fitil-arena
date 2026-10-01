@@ -1,20 +1,23 @@
 import type { BotKind, BotLevel, Dir, Input } from '@fitil/sim';
-import type { ModeId } from '@fitil/content';
+import type { HeroId, ModeId } from '@fitil/content';
 
 /** Configurația camerei, aleasă de gazdă în lobby. */
 export interface RoomCfg {
   mode: ModeId;
   theme: string;
   bots: BotLevel;
+  /** Evenimente de arenă și bonusurile noi (Faza 4); gazda le poate opri. */
+  extras: boolean;
 }
 
-export const DEFAULT_CFG: RoomCfg = { mode: 'ffa', theme: 'clasic', bots: 'normal' };
+export const DEFAULT_CFG: RoomCfg = { mode: 'ffa', theme: 'clasic', bots: 'normal', extras: true };
 
 /** Un loc ocupat de un om în cameră (în ordinea intrării; primul e gazda). */
 export interface Seat {
   sid: string;
   name: string;
   connected: boolean;
+  hero: HeroId;
 }
 
 export type RoomPhase = 'lobby' | 'play';
@@ -28,6 +31,10 @@ export interface LobbyMsg {
   seats: Seat[];
   /** Câți oameni încap în modul ales. */
   max: number;
+  /** Cameră publică (joc rapid): fără gazdă care configurează, pornește singură. */
+  quick: boolean;
+  /** Joc rapid: secunde până la pornire (null = așteaptă jucători). */
+  startIn: number | null;
 }
 
 /** Numele, culoarea și vocea unui jucător din meci (ca `Slot` din client). */
@@ -36,10 +43,11 @@ export interface SlotInfo {
   color: string;
   bot: boolean;
   voice: number;
+  hero?: HeroId;
 }
 
-/** Input compact pe fir: [dir, bomb, detonate, face], -1 = lipsă. */
-export type WireInput = [number, number, number, number];
+/** Input compact pe fir: [dir, bomb, detonate, face, super, swap], -1 = lipsă. */
+export type WireInput = [number, number, number, number, number, number];
 
 /** Server → client: starea completă (start, reconectare, desync). */
 export interface SnapMsg {
@@ -91,7 +99,14 @@ export const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 export const NO_INPUT: Input = { dir: null };
 
 export function encodeInput(inp: Input): WireInput {
-  return [inp.dir ?? -1, inp.bomb ?? 0, inp.detonate ? 1 : 0, inp.face ?? -1];
+  return [
+    inp.dir ?? -1,
+    inp.bomb ?? 0,
+    inp.detonate ? 1 : 0,
+    inp.face ?? -1,
+    inp.super ? 1 : 0,
+    inp.swap ? 1 : 0,
+  ];
 }
 
 const asDir = (v: number): Dir | null => (v >= 0 && v <= 3 ? (v as Dir) : null);
@@ -99,11 +114,13 @@ const asDir = (v: number): Dir | null => (v >= 0 && v <= 3 ? (v as Dir) : null);
 /** Decodează (și validează) un input venit de pe fir. */
 export function decodeInput(w: unknown): Input {
   if (!Array.isArray(w)) return { dir: null };
-  const [d, b, x, f] = w as unknown[];
+  const [d, b, x, f, su, sw] = w as unknown[];
   const inp: Input = { dir: asDir(Number(d)) };
   const bomb = Number(b);
   if (bomb === 1 || bomb === 2) inp.bomb = bomb;
   if (x === 1) inp.detonate = true;
+  if (su === 1) inp.super = true;
+  if (sw === 1) inp.swap = true;
   const face = asDir(Number(f));
   if (face !== null) inp.face = face;
   return inp;

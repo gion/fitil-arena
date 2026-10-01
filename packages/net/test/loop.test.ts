@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { TICK_MS, createRng, hashState, nextFloat, nextInt } from '@fitil/sim';
 import type { Dir, Input } from '@fitil/sim';
-import { ArenaHost, NetClient, buildOnline, humanId, maxHumans } from '../src/index.ts';
+import {
+  ArenaHost,
+  NetClient,
+  buildOnline,
+  decodeInput,
+  encodeInput,
+  humanId,
+  maxHumans,
+} from '../src/index.ts';
 import type { Link, RoomCfg } from '../src/index.ts';
 
 /** Buclă în memorie cu ceas virtual: mesaje întârziate aleator, ordinea păstrată pe fiecare sens. */
@@ -86,18 +94,59 @@ function playLoop(cfg: RoomCfg, humans: number, seed: number) {
 describe('net: construcția meciului online', () => {
   it('oamenii se împart alternativ pe echipe, restul sunt boți', () => {
     expect([0, 1, 2, 3].map((k) => humanId('team3', k))).toEqual([0, 3, 1, 4]);
-    const b = buildOnline({ mode: 'ctf', theme: 'clasic', bots: 'hard' }, 3, 1.6, ['A', 'B', 'C']);
+    const people = (['A', 'B', 'C'] as const).map((name, i) => ({
+      name,
+      hero: (['zuzu', 'veta', 'robo'] as const)[i]!,
+    }));
+    const b = buildOnline({ mode: 'ctf', theme: 'clasic', bots: 'hard', extras: true }, 3, 1.6, people);
     expect(b.humans).toEqual([0, 3, 1]);
     expect(b.state.players.map((p) => p.bot)).toEqual([null, null, 'hard', null, 'hard', 'hard']);
-    expect(b.slots.map((s) => s.name)).toEqual(['A', 'C', 'Titi', 'B', 'Zuzu', 'Gogu']);
+    expect(b.slots.map((s) => s.name).slice(0, 2)).toEqual(['A', 'C']);
+    expect(b.slots[3]!.name).toBe('B');
+    // personajele alese de oameni; boții primesc altele (cu numele personajului)
+    expect([0, 3, 1].map((id) => b.state.players[id]!.hero?.id)).toEqual(['zuzu', 'veta', 'robo']);
+    for (const id of [2, 4, 5]) expect(['zuzu', 'veta', 'robo']).not.toContain(b.slots[id]!.hero);
     expect(maxHumans('vs')).toBe(2);
+  });
+
+  it('online: evenimentul de arenă din seed, fără tufișuri (Q-004); extras se pot opri', () => {
+    const one = [{ name: 'A', hero: 'bubu' as const }];
+    const b = buildOnline({ mode: 'ffa', theme: 'jungla', bots: 'normal', extras: true }, 9, 1.6, one);
+    expect(b.state.rules.event).not.toBeNull();
+    expect(b.state.bush.every((v) => v === 0)).toBe(true);
+    const off = buildOnline({ mode: 'ffa', theme: 'jungla', bots: 'normal', extras: false }, 9, 1.6, one);
+    expect(off.state.rules.extras).toBe(false);
+    expect(off.state.rules.event).toBeNull();
+  });
+
+  it('input-ul pe fir păstrează Super-ul și schimbarea bombei', () => {
+    const w = encodeInput({ dir: 2, bomb: 1, super: true, swap: true, face: 3 });
+    expect(decodeInput(w)).toEqual({ dir: 2, bomb: 1, super: true, swap: true, face: 3 });
+    // fire vechi (4 câmpuri) încă se decodează
+    expect(decodeInput([1, 0, 0, -1])).toEqual({ dir: 1 });
+  });
+});
+
+describe('net: joc rapid (cameră publică)', () => {
+  it('gazda nu configurează; pornește singur; fiecare om își alege personajul', () => {
+    const h = new ArenaHost('QUIK', { mode: 'crown', theme: 'neon' });
+    expect(h.join('a', 'Ana', 'fifi')).toBeNull();
+    expect(h.join('b', 'Bob', 'nope')).toBeNull();
+    expect(h.seats[1]!.hero).toBe('bubu');
+    expect(h.setHero('b', 'maestro')).toBe(true);
+    expect(h.setCfg('a', { mode: 'ffa' })).toBe(false);
+    expect(h.start('a', 1, 1.6)).toBe(false);
+    expect(h.lobby()).toMatchObject({ quick: true, cfg: { mode: 'crown', theme: 'neon' } });
+    expect(h.startAuto(5, 1.6)).toBe(true);
+    expect(h.s!.rules.mode).toBe('crown');
+    expect([0, 1].map((i) => h.s!.players[i]!.hero?.id)).toEqual(['fifi', 'maestro']);
   });
 });
 
 describe('net: host + clienți în memorie, cu latență și jitter', () => {
-  for (const mode of ['ffa', 'team2', 'ctf'] as const)
+  for (const mode of ['ffa', 'team2', 'ctf', 'crown', 'potato'] as const)
     it(`${mode}: meci complet, toți clienții ajung la același hash ca serverul`, () => {
-      const { conns, end } = playLoop({ mode, theme: 'clasic', bots: 'normal' }, 4, 11);
+      const { conns, end } = playLoop({ mode, theme: 'clasic', bots: 'normal', extras: true }, 4, 11);
       expect(end).not.toBeNull();
       for (const { client } of conns) {
         expect(client.desyncs).toBe(0);

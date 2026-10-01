@@ -113,6 +113,40 @@ describe('online: 4 clienți headless pe serverul local', () => {
     await Promise.all(bots.map((b) => b.room.leave()));
   });
 
+  it(
+    'joc rapid: doi jucători în aceeași cameră publică, pornire automată, personajele alese',
+    { timeout: 60_000 },
+    async () => {
+      const url = `ws://localhost:${PORT}`;
+      const opts = { mode: 'potato', tickMs: 4, waitMs: 300 };
+      const a = await new Client(url).joinOrCreate('quick', { ...opts, name: 'Ana', hero: 'zuzu' });
+      const b = await new Client(url).joinOrCreate('quick', { ...opts, name: 'Bob', hero: 'robo' });
+      expect(b.roomId).toBe(a.roomId);
+      // alt mod → altă cameră
+      const c = await new Client(url).joinOrCreate('quick', {
+        mode: 'crown',
+        tickMs: 4,
+        waitMs: 60_000,
+        name: 'Cip',
+      });
+      expect(c.roomId).not.toBe(a.roomId);
+      await c.leave();
+      const bots = [headless(a), headless(b)];
+      a.send('hello');
+      b.send('hello');
+      await waitFor(() => bots.every((x) => x.frames > 0), 10_000);
+      const lobby = bots[0]!.net.lobby as LobbyMsg;
+      expect(lobby.quick).toBe(true);
+      expect(lobby.cfg.mode).toBe('potato');
+      const s = bots[0]!.net.auth!;
+      expect([0, 1].map((i) => s.players[i]!.hero?.id)).toEqual(['zuzu', 'robo']);
+      const ends = await Promise.all(bots.map((x) => x.end));
+      expect(new Set(ends.map((e) => e.h)).size).toBe(1);
+      for (const x of bots) expect(x.net.desyncs).toBe(0);
+      await Promise.all(bots.map((x) => x.room.leave()));
+    },
+  );
+
   it('cod greșit → refuz', async () => {
     await expect(new Client(`ws://localhost:${PORT}`).joinById('ZZZZ', {})).rejects.toThrow();
   });
