@@ -21,12 +21,19 @@ export interface ControlEls {
   knob: HTMLElement;
   bomb3: HTMLElement;
   det: HTMLElement;
+  /** Butonul Super (cu inelul de încărcare) și butonul bombei speciale următoare. */
+  sup: HTMLElement;
+  spec: HTMLElement;
 }
+
+/** Glisarea în sus pe butonul BOMB (3D) schimbă bomba specială. */
+const SWIPE = 36;
 
 /**
  * Controalele de pe ecran (după GAME_DESIGN „Interfață & controale”):
  * stânga = joystick care apare sub deget și îl urmează; dreapta = tap oriunde pune bomba (2D)
- * sau glisare pentru rotirea camerei (3D, cu buton BOMBĂ separat). Plus tastatură.
+ * sau glisare pentru rotirea camerei (3D, cu buton BOMBĂ separat). Plus tastatură:
+ * Space bombă, E detonator, Q Super, R schimbă bomba specială.
  */
 export class Controls {
   view: View = '2d';
@@ -46,11 +53,13 @@ export class Controls {
   lookDX = 0;
   onTap: (x: number, y: number) => boolean = () => false;
   onDetonate: () => void = () => {};
+  onSuper: () => void = () => {};
+  onSwap: () => void = () => {};
   onFirstTouch: () => void = () => {};
   onKey: (code: string) => void = () => {};
 
   constructor(private el: ControlEls) {
-    const { left, right, bomb3, det } = el;
+    const { left, right, bomb3, det, sup, spec } = el;
     left.addEventListener('pointerdown', (e) => {
       // orice atingere nouă preia joystick-ul (evită blocarea când se pierde un pointerup)
       this.joyId = e.pointerId;
@@ -115,15 +124,45 @@ export class Controls {
     right.addEventListener('pointercancel', lookEnd);
     right.addEventListener('lostpointercapture', lookEnd);
 
+    // BOMB (3D): bomba se pune la ridicarea degetului, ca glisarea în sus să poată schimba tipul
+    let bombY: number | null = null;
     bomb3.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       e.stopPropagation();
       if (!this.enabled) return;
       bomb3.classList.add('down');
+      bombY = e.clientY;
+      try {
+        bomb3.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignorat */
+      }
+    });
+    bomb3.addEventListener('pointermove', (e) => {
+      if (bombY === null || bombY - e.clientY < SWIPE) return;
+      bombY = null;
+      bomb3.classList.remove('down');
+      this.onSwap();
+    });
+    bomb3.addEventListener('pointerup', (e) => {
+      bomb3.classList.remove('down');
+      if (bombY === null || !this.enabled) return;
+      bombY = null;
       this.onTap(e.clientX, e.clientY);
     });
-    for (const t of ['pointerup', 'pointercancel', 'pointerleave'])
-      bomb3.addEventListener(t, () => bomb3.classList.remove('down'));
+    for (const t of ['pointercancel', 'lostpointercapture'])
+      bomb3.addEventListener(t, () => {
+        bombY = null;
+        bomb3.classList.remove('down');
+      });
+    const button = (b: HTMLElement, fn: () => void) =>
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.enabled) fn();
+      });
+    button(sup, () => this.onSuper());
+    button(spec, () => this.onSwap());
     det.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -142,6 +181,8 @@ export class Controls {
         if (!e.repeat && this.enabled) this.onTap(-1, -1);
       }
       if (e.code === 'KeyE' && this.enabled) this.onDetonate();
+      if (e.code === 'KeyQ' && !e.repeat && this.enabled) this.onSuper();
+      if (e.code === 'KeyR' && !e.repeat && this.enabled) this.onSwap();
       this.onKey(e.code);
     });
     addEventListener('keyup', (e) => {

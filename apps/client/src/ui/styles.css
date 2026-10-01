@@ -753,3 +753,155 @@ button {
   cursor: default;
   opacity: 0.75;
 }
+
+/* ---------- Faza 4: Super, bombe speciale, personaje ---------- */
+.sup {
+  position: absolute;
+  z-index: 3;
+  right: calc(18px + var(--sr));
+  bottom: calc(140px + var(--sb));
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  color: #fff;
+  font: 400 11px var(--display);
+  background:
+    radial-gradient(circle, rgba(20, 23, 38, 0.92) 56%, transparent 58%),
+    conic-gradient(var(--hc, #ffd23f) var(--c, 0%), rgba(255, 255, 255, 0.14) 0);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45);
+  touch-action: none;
+  cursor: pointer;
+}
+.sup.ready {
+  background:
+    radial-gradient(circle, var(--hc, #ffd23f) 56%, transparent 58%), conic-gradient(#fff 100%, #fff 0);
+  color: #141726;
+  animation: detp 0.8s ease-in-out infinite;
+}
+.spec {
+  position: absolute;
+  z-index: 3;
+  right: calc(96px + var(--sr));
+  bottom: calc(150px + var(--sb));
+  min-width: 52px;
+  height: 40px;
+  border-radius: 20px;
+  border: 2px solid var(--k, #fff);
+  background: rgba(20, 23, 38, 0.88);
+  color: var(--k, #fff);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  font:
+    700 13px system-ui,
+    sans-serif;
+  touch-action: none;
+  cursor: pointer;
+}
+.spec i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #10121c;
+  box-shadow: 0 0 0 3px var(--k, #fff) inset;
+}
+.spec.more::after {
+  content: '⇅';
+  opacity: 0.8;
+}
+.spec[data-kind='ice'],
+.bomb3[data-kind='ice'] {
+  --k: #9fe8ff;
+}
+.spec[data-kind='flash'],
+.bomb3[data-kind='flash'] {
+  --k: #fff27a;
+}
+.spec[data-kind='poison'],
+.bomb3[data-kind='poison'] {
+  --k: #8dff5a;
+}
+.bomb3[data-kind='ice'],
+.bomb3[data-kind='flash'],
+.bomb3[data-kind='poison'] {
+  box-shadow:
+    0 6px 0 var(--hot-dark),
+    0 0 0 4px var(--k) inset;
+}
+.heroes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.hero-card {
+  text-align: left;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.hero-card[aria-pressed='true'] {
+  border-color: var(--hc);
+  background: rgba(255, 255, 255, 0.1);
+}
+.hero-card .av {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--hc);
+  vertical-align: middle;
+  margin-right: 6px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35) inset;
+}
+.hero-card b {
+  font-size: 15px;
+}
+.hero-card small {
+  display: block;
+  opacity: 0.75;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 2px 0 6px;
+}
+.hero-card p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.hero-card .aff {
+  color: #7dffb0;
+}
+.hero-card .aff.minus {
+  color: #ff8a7a;
+}
+.hero-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-pick .av {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--hc);
+  display: inline-block;
+}
+.hearts {
+  color: #ff5f93;
+  letter-spacing: 1px;
+}
+.dark3 {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 62%, transparent 14%, #05060c 46%);
+}

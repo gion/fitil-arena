@@ -1,6 +1,6 @@
 import type { BotLevel } from '@fitil/sim';
-import { seasonalTheme, themeById } from '@fitil/content';
-import type { ModeId } from '@fitil/content';
+import { isHeroId, seasonalTheme, themeById } from '@fitil/content';
+import type { HeroId, ModeId } from '@fitil/content';
 
 export type View = '2d' | 'fps' | 'chase';
 export type Quality = 'low' | 'medium' | 'high';
@@ -24,6 +24,8 @@ export interface Settings {
   stars: Record<string, number>;
   /** Numele din camerele online. */
   name: string;
+  /** Personajul ales (Faza 4). */
+  hero: HeroId;
 }
 
 const KEY = 'fitil-settings';
@@ -51,10 +53,13 @@ function load(): Settings {
     challenges: [],
     stars: {},
     name: '',
+    hero: 'bubu',
   };
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? { ...def, ...(JSON.parse(raw) as Partial<Settings>) } : def;
+    const st = raw ? { ...def, ...(JSON.parse(raw) as Partial<Settings>) } : def;
+    if (!isHeroId(st.hero)) st.hero = def.hero;
+    return st;
   } catch {
     return def;
   }

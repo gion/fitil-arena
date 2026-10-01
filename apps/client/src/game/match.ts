@@ -80,6 +80,8 @@ export class Match {
   private koShown = false;
   private taps: (1 | 2)[] = [];
   private detonateReq = false;
+  private superReq = false;
+  private swapReq = false;
   private listeners: ((e: MatchEvent) => void)[] = [];
   private tutDone = false;
   /** Online: poziția prezisă a jucătorului local, înainte și după ultimul tick. */
@@ -137,6 +139,14 @@ export class Match {
 
   detonate(): void {
     this.detonateReq = true;
+  }
+
+  useSuper(): void {
+    this.superReq = true;
+  }
+
+  swapSpecial(): void {
+    this.swapReq = true;
   }
 
   /** Are jucătorul bombe cu detonator pe hartă? (arată butonul BUM!) */
@@ -227,9 +237,13 @@ export class Match {
     const inp: Input = this.paused
       ? { dir: null }
       : { dir: this.control.dir(), bomb, detonate: this.detonateReq };
+    if (!this.paused && this.superReq) inp.super = true;
+    if (!this.paused && this.swapReq) inp.swap = true;
     const face = this.control.face();
     if (face !== undefined && !this.paused) inp.face = face;
     this.detonateReq = false;
+    this.superReq = false;
+    this.swapReq = false;
     return inp;
   }
 
