@@ -351,3 +351,23 @@ Ambele: 20.0 cadre/s primite de fiecare client, o singură instanță, RSS ~190 
 - Emote-urile și fatalitățile nu se sincronizează în Infinit online (fatalitatea se alege din ținuta ucigașului, care e în roster, deci merge; emote-urile nu).
 - Shard-urile sunt per proces: la mai multe procese trebuie Redis presence (Q-003).
 - Testele server cu Postgres s-au sărit (fără `TEST_DATABASE_URL` aici); codul de conturi nu s-a schimbat.
+
+## Performanță — înghețări la efecte noi (2026-10-06)
+
+Raportat: jocul merge mai greu și se blochează uneori când se întâmplă multe simultan.
+
+**Găsit (măsurat cadru cu cadru, M1 Max; pe telefon duratele sunt de câteva ori mai mari):**
+
+| Unde                                      | Cauză                                                                     | Înainte                                              | După                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------- |
+| 2D, „amețit”                              | `DizzyFX` creat / distrus la fiecare amețeală (shader + țintă de randare) | 107 ms prima dată, 40 ms apoi                        | fără cadru lung                        |
+| 3D, prima flacără / primul nor / păianjen | shadere compilate la prima apariție                                       | 20–50 ms                                             | 0.7 ms (0 compilări după primul cadru) |
+| 3D, flăcări / lăzi / bonusuri             | sfera de încadrare a mesh-urilor instanțiate calculată o dată, goală      | flăcări invizibile dacă originea lumii nu e în cadru | desenate mereu                         |
+
+**Făcut:** `ArenaScene` creează `DizzyFX` o dată și îl pornește / oprește; `Renderer3D.build()` pregătește ascuns păianjen, nor, fulgere și desenează un cadru de încălzire (`warm()`); mesh-urile instanțiate au `frustumCulled = false`.
+
+**Rămas / cunoscut:**
+
+- Încetinirea constantă nu s-a reprodus pe desktop (2D: 10 000 de cadre fără niciun cadru > 4 ms; 12 meciuri la rând fără creșteri de memorie). De măsurat pe telefon: 3D are 4 lumini punctiforme mereu active și umbre 2048 pe calitate mare; canvas-ul 2D e la rezoluția fizică (DPR 3).
+- Texturile 2D se generează tot la prima folosire (sub 1 ms fiecare pe desktop; nemăsurat pe telefon).
+- După un cadru lung, simularea recuperează până la 5 tick-uri într-un singur cadru (`Match.update`).
