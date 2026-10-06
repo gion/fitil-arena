@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Direcția vizuală a interfeței („Comic”)
+
+- **Cerut:** 2–3 iterații de design pentru ecranele jocului (login, setări, personaje etc.), mai „de joc” și mai amuzante; pe parcurs: doar landscape, texte în engleză, ecrane de joc, tranziții cu fitil și explozie, impactul numelui „Fuse Arena”; la final, direcția C aleasă și adusă în proiect.
+- **Făcut:** canvas de design cu două direcții („Toy” și „Comic”) pe aceleași ecrane; aleasă „Comic”. În repo: `docs/design/ui.md` (tokeni, componente, ecrane, HUD, tranziții), `reference/ui/` (18 machete + README), o linie în `CLAUDE.md`, Faza 3b în `PLAN.md`, deciziile D-034–D-036, Q-002 închisă, Q-004 (numele) deschisă, mini-plan în `docs/progress.md`. Fără schimbări de cod.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (vezi commit-ul). Machetele nu au fost verificate vizual după export.
+- **Notă operațională:** `CLAUDE.md` și `PLAN.md` au fost modificate aici; copiile din proiectul claude.ai trebuie actualizate manual ca să rămână identice. Machetele `.dc.html` nu se deschid singure în browser; se văd în canvas (link în `reference/ui/README.md`).
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Faza 3: multiplayer online (camere private)
 
 - **Cerut:** începerea Fazei 3 după handover (după repararea Prettier pe PR-ul fazei 2).

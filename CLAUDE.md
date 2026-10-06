@@ -8,6 +8,7 @@ Documente de citit înainte de orice task:
 - `GAME_DESIGN.md` — regulile jocului, modurile, personajele, fatalitățile.
 - `BUSINESS.md` — mărci/copyright, monetizare, costuri, ținte de retenție, viralitate. Respectă regulile de acolo (fără nume/asset-uri din alte jocuri, fără cutii plătite aleatoare).
 - `reference/prototype.html` — prototipul jucabil actual (single file, canvas 2D + Three.js). Sursa de adevăr pentru „cum se simte” jocul: viteze, timer bombă (2.4s), flacără (0.55s), mănușă, picior, detonator, linie, portaluri, teme, sunete sintetizate, AI boți, controale touch, vederile 3D. Three.js se încarcă de pe cdnjs.
+- `docs/design/ui.md` + `reference/ui/*.dc.html` — direcția vizuală a interfeței („Comic”) și machetele ecranelor. Sursa de adevăr pentru „cum arată” meniurile, HUD-ul și tranzițiile. Orice ecran nou sau modificat le urmează.
 
 ## Stack (nu schimba fără aprobare)
 - Monorepo **pnpm workspaces**, TypeScript strict peste tot, Node 22 LTS.

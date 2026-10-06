@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Match results (C)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#111111}a:hover{color:#B3151A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background-color: #FFD60A; background-image: radial-gradient(#F2B600 24%, transparent 25%); background-size: 14px 14px; color: #111111; font-family: 'Rubik', sans-serif; display: flex; gap: 20px; padding: 20px 56px 22px">
+  <div style="position: relative; width: 320px; flex-shrink: 0; box-sizing: border-box; overflow: hidden; background: #19B5E8; border: 4px solid #111111; box-shadow: 7px 7px 0 #111111; transform: rotate(-1.500deg)">
+    <div style="position: absolute; left: -240px; top: -200px; width: 800px; height: 800px; border-radius: 50%; background: repeating-conic-gradient(#5CCBF0 0deg 9deg, #19B5E8 9deg 18deg)"></div>
+    <svg viewBox="0 0 200 200" style="position: absolute; left: 20px; top: -30px; width: 280px; height: 200px" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M100 0 L120 45 L165 20 L150 68 L200 80 L158 108 L190 150 L140 142 L135 195 L100 155 L62 195 L60 142 L8 150 L42 108 L0 80 L50 68 L35 20 L80 45 Z" style="fill: #FFD60A; stroke: #111111; stroke-width: 5; stroke-linejoin: round"/>
+    </svg>
+    <h1 style="position: absolute; left: 0; right: 0; top: 36px; margin: 0; text-align: center; font-family: 'Bangers', sans-serif; font-weight: 400; font-size: 62px; line-height: 1; letter-spacing: 2px; color: #E5262B; -webkit-text-stroke: 7px #111111; paint-order: stroke fill; transform: rotate(-5deg)">YOU WIN!</h1>
+    <svg viewBox="0 -30 100 140" style="position: absolute; left: 34px; bottom: -4px; width: 124px; height: 174px" aria-hidden="true">
+      <path d="M28 14 l-4 -26 14 12 12 -18 12 18 14 -12 -4 26z" style="fill: #FFD60A; stroke: #12131C; stroke-width: 4; stroke-linejoin: round"/>
+      <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+      <circle cx="50" cy="58" r="38" style="fill: #FFD23F; stroke: #12131C; stroke-width: 5"/>
+      <path d="M28 56 q8 -11 16 0M56 56 q8 -11 16 0" style="fill: none; stroke: #12131C; stroke-width: 4.500; stroke-linecap: round"/>
+      <path d="M40 68 a10 10 0 0 0 20 0z" style="fill: #12131C"/>
+      <path d="M45 74 a5 4 0 0 0 10 0z" style="fill: #FF6B8A"/>
+    </svg>
+    <div style="position: absolute; right: 14px; bottom: 60px; width: 120px; box-sizing: border-box; background: #FFFFFF; border: 3px solid #111111; border-radius: 50% 50% 50% 8px; padding: 12px 10px; font-weight: 800; font-size: 15px; line-height: 1.2; text-align: center">Applause,<br>please!</div>
+  </div>
+
+  <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+    <div style="align-self: flex-start; font-family: 'Bangers', sans-serif; font-size: 20px; letter-spacing: 1px; color: #FFD60A; background: #111111; padding: 1px 12px; transform: skewX(-8deg)">HOW IT ENDED</div>
+    <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+        <li style="display: flex; align-items: center; gap: 10px; height: 44px; box-sizing: border-box; padding: 0 10px 0 0; background: #FFFFFF; border: 3px solid #111111; box-shadow: {{r.shadow}}">
+          <span style="align-self: stretch; width: 40px; display: flex; align-items: center; justify-content: center; font-family: 'Bangers', sans-serif; font-size: 24px; background: #111111; color: #FFFFFF">{{r.rank}}</span>
+          <span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; background: {{r.color}}; border: 3px solid #111111"></span>
+          <span style="font-family: 'Bangers', sans-serif; font-size: 20px; letter-spacing: 1px">{{r.name}}</span>
+          <span style="margin-left: auto; font-weight: 500; font-size: 12px; text-align: right">{{r.note}}</span>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="margin-top: auto; background: #FFF3B0; border: 3px solid #111111; padding: 6px 12px; font-size: 14px; line-height: 1.35"><span style="font-weight: 800">You got:</span> +24 trophies · +60 coins · +120 season XP</div>
+  </div>
+
+  <div style="width: 200px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 16px">
+    <div style="background: #FFFFFF; border: 3px solid #111111; padding: 8px 12px; transform: rotate(2deg)">
+      <div style="font-weight: 800; font-size: 11px; letter-spacing: 1px">YOUR ROUND</div>
+      <div style="font-family: 'Bangers', sans-serif; font-size: 26px; line-height: 1.1; letter-spacing: 1px">3 knockouts</div>
+      <div style="font-weight: 500; font-size: 13px">1 bomb chain · 1:42</div>
+    </div>
+    <a href="C-Game.dc.html" style="height: 72px; display: flex; align-items: center; justify-content: center; text-decoration: none; text-align: center; font-family: 'Bangers', sans-serif; font-size: 30px; line-height: 1; letter-spacing: 2px; color: #FFFFFF; background: #E5262B; border: 4px solid #111111; box-shadow: 6px 6px 0 #111111; transform: skewX(-6deg)">ONE MORE!</a>
+    <a href="C-Home.dc.html" style="height: 50px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Bangers', sans-serif; font-size: 22px; letter-spacing: 1px; color: #111111; background: #FFFFFF; border: 3px solid #111111; box-shadow: 4px 4px 0 #111111; transform: skewX(-6deg)">HOME</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const rows = [
+  { rank: '1', name: 'Gion (you)', color: '#FFD23F', note: 'last one standing', shadow: '4px 4px 0 #E5262B' },
+  { rank: '2', name: 'Mara', color: '#FF5F93', note: 'caught in a chain', shadow: 'none' },
+  { rank: '3', name: 'Vlad', color: '#4FC3FF', note: 'own bomb', shadow: 'none' },
+  { rank: '4', name: 'Bot Nelu', color: '#7DFFB0', note: 'zapped by lightning', shadow: 'none' }
+];
+return { rows };
+}
+}
+</script>
+</body>
+</html>

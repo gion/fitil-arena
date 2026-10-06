@@ -134,3 +134,18 @@
 - Fluiditatea „manual la 150 ms” e verificată în browser pe desktop, nu încă pe telefon real.
 - Informația ascunsă (tufișuri, Faza 4) nu e compatibilă cu sincronizarea prin input-uri fără filtrare (D-030).
 - Fără matchmaking public (doar camere private, cum cere faza); fără spectatori.
+
+## Faza 3b — Interfața „Comic”
+
+**Mini-plan:** (1) tokeni CSS + fonturi locale; (2) componentele de bază din `docs/design/ui.md`; (3) ecranele existente din `apps/client/src/ui`, pe rând, începând cu startul și pauza; (4) HUD-ul din joc; (5) tranzițiile. Fiecare pas cu smoke Playwright și captură în `docs/screens/`.
+
+**Făcut:**
+
+- Direcția aleasă și documentată: `docs/design/ui.md`, machete în `reference/ui/` (18 ecrane), deciziile D-034–D-036, faza adăugată în `PLAN.md`.
+
+**Rămas / cunoscut:**
+
+- Nimic implementat în client încă.
+- Machetele nu au fost verificate vizual ecran cu ecran după export; pot exista suprapuneri sau texte tăiate de corectat la implementare.
+- Numele final (Q-004) blochează doar wordmark-ul de pe login.
+- Nedesenate încă: misiuni, provocarea zilei, prieteni, profil, magazin, tutorial, splash, momentele „bye bye” / glorie, stările butoanelor.

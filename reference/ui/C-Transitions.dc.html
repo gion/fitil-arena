@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Transitions (C)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik:ital,wght@0,500;0,700;0,800;1,500&display=swap">
+<style>
+body{margin:0}
+a{color:#111111}a:hover{color:#B3151A}
+@keyframes fz-wipe{from{transform:translateX(-130%) skewX(-12deg)}to{transform:translateX(130%) skewX(-12deg)}}
+@keyframes fz-burn{from{width:420px}to{width:0}}
+@keyframes fz-count{0%{transform:scale(0.2) rotate(-12deg);opacity:0}20%{transform:scale(1.15) rotate(4deg);opacity:1}70%{transform:scale(1) rotate(0deg);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes fz-boom{0%{transform:scale(0) rotate(0deg);opacity:1}50%{transform:scale(14) rotate(25deg);opacity:1}100%{transform:scale(16) rotate(30deg);opacity:0}}
+@keyframes fz-pop{0%{transform:scale(0) rotate(-20deg);opacity:1}40%{transform:scale(1.25) rotate(6deg);opacity:1}75%{transform:scale(1) rotate(-4deg);opacity:1}100%{transform:scale(1.1) rotate(-4deg);opacity:0}}
+@keyframes fz-spark{from{transform:scale(0.7) rotate(0deg)}to{transform:scale(1.25) rotate(90deg)}}
+@keyframes fz-shake{0%,100%{transform:translate(0,0) rotate(0deg)}25%{transform:translate(-2px,1px) rotate(-3deg)}75%{transform:translate(2px,-1px) rotate(3deg)}}
+@keyframes fz-dim{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:1ms !important;animation-delay:0s !important}}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background-color: #FFD60A; background-image: radial-gradient(#F2B600 24%, transparent 25%); background-size: 14px 14px; color: #111111; font-family: 'Rubik', sans-serif">
+
+  <sc-if value="{{pageHome}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; box-sizing: border-box; padding: 18px 56px 22px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-family: 'Bangers', sans-serif; font-weight: 400; font-size: 32px; letter-spacing: 2px; color: #FFD60A; background: #111111; padding: 2px 18px; transform: skewX(-8deg)">HOME</h1>
+        <div style="font-style: italic; font-weight: 500; font-size: 14px; background: #FFF3B0; border: 3px solid #111111; padding: 4px 12px">Tap a panel to see how the page changes…</div>
+      </div>
+      <div style="flex-grow: 1; display: flex; gap: 18px; min-height: 0">
+        <button type="button" onClick="{{startMatch}}" style="flex-grow: 1; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #E5262B; border: 4px solid #111111; box-shadow: 7px 7px 0 #111111; cursor: pointer; transform: rotate(-1deg)">
+          <span style="font-family: 'Bangers', sans-serif; font-size: 96px; line-height: 1; letter-spacing: 4px; color: #FFD60A; -webkit-text-stroke: 8px #111111; paint-order: stroke fill; text-shadow: 6px 6px 0 #111111">PLAY!</span>
+          <span style="font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 13px; color: #FFFFFF">match start · fuse countdown, then boom</span>
+        </button>
+        <button type="button" onClick="{{openRankings}}" style="width: 250px; flex-shrink: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #FFFFFF; border: 4px solid #111111; box-shadow: 7px 7px 0 #111111; cursor: pointer; transform: rotate(1.500deg)">
+          <span style="font-family: 'Bangers', sans-serif; font-size: 44px; line-height: 1; letter-spacing: 2px; color: #111111">RANKINGS</span>
+          <span style="font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 13px; color: #111111">everyday page · quick ink wipe</span>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{pageGame}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background-color: #679D48; background-image: linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%), linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%); background-size: 96px 96px; background-position: 0 0, 48px 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px">
+      <div style="font-family: 'Bangers', sans-serif; font-size: 30px; letter-spacing: 3px; color: #FFD60A; background: #111111; padding: 2px 20px; transform: skewX(-8deg)">ROUND 1</div>
+      <div style="font-family: 'Bangers', sans-serif; font-size: 110px; line-height: 1; letter-spacing: 4px; color: #FFFFFF; -webkit-text-stroke: 10px #111111; paint-order: stroke fill; text-shadow: 7px 7px 0 #111111; transform: rotate(-3deg)">FIGHT!</div>
+      <button type="button" onClick="{{goHome}}" style="height: 48px; padding: 0 18px; font-family: 'Bangers', sans-serif; font-size: 22px; letter-spacing: 1px; color: #111111; background: #FFFFFF; border: 3px solid #111111; box-shadow: 4px 4px 0 #111111; transform: skewX(-6deg); cursor: pointer">BACK TO HOME</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{pageRank}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; box-sizing: border-box; padding: 18px 56px 22px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <button type="button" onClick="{{goHome}}" aria-label="Back" style="width: 46px; height: 46px; padding: 0; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 3px solid #111111; box-shadow: 3px 3px 0 #111111; cursor: pointer">
+          <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: #111111; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <h1 style="margin: 0; font-family: 'Bangers', sans-serif; font-weight: 400; font-size: 32px; letter-spacing: 2px; color: #FFD60A; background: #111111; padding: 2px 18px; transform: skewX(-8deg)">RANKINGS</h1>
+      </div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #FFFFFF; border: 3px solid #111111; font-family: 'Bangers', sans-serif; font-size: 21px; letter-spacing: 1px">1 · BoomBoom_King</div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #FFFFFF; border: 3px solid #111111; font-family: 'Bangers', sans-serif; font-size: 21px; letter-spacing: 1px">2 · TantiVetaFan</div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #FFFFFF; border: 3px solid #111111; font-family: 'Bangers', sans-serif; font-size: 21px; letter-spacing: 1px">3 · Sparky</div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #FFFFFF; border: 3px solid #111111; font-family: 'Bangers', sans-serif; font-size: 21px; letter-spacing: 1px">4 · NoBrakes</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isWipe}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 0; top: -20px; width: 844px; height: 430px; background: #111111; border-right: 26px solid #E5262B; box-sizing: border-box; animation: fz-wipe 0.520s cubic-bezier(0.6, 0, 0.4, 1) both"></div>
+  </sc-if>
+
+  <sc-if value="{{isFuse}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background-color: rgba(17,17,17,0.78); background-image: radial-gradient(rgba(255,214,10,0.22) 24%, transparent 25%); background-size: 14px 14px; animation: fz-dim 0.200s both"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 40px; height: 180px; display: flex; align-items: center; justify-content: center">
+      <span style="position: absolute; font-family: 'Bangers', sans-serif; font-size: 170px; line-height: 1; color: #FFD60A; -webkit-text-stroke: 12px #111111; paint-order: stroke fill; opacity: 0; animation: fz-count 0.700s 0s both">3</span>
+      <span style="position: absolute; font-family: 'Bangers', sans-serif; font-size: 170px; line-height: 1; color: #FFD60A; -webkit-text-stroke: 12px #111111; paint-order: stroke fill; opacity: 0; animation: fz-count 0.700s 0.700s both">2</span>
+      <span style="position: absolute; font-family: 'Bangers', sans-serif; font-size: 170px; line-height: 1; color: #E5262B; -webkit-text-stroke: 12px #111111; paint-order: stroke fill; opacity: 0; animation: fz-count 0.700s 1.400s both">1</span>
+    </div>
+    <div style="position: absolute; left: 150px; bottom: 44px; width: 560px; height: 90px; display: flex; align-items: center; justify-content: flex-end">
+      <div style="position: relative; height: 10px; box-sizing: border-box; background: #C98A4B; border: 3px solid #111111; border-right: 0; animation: fz-burn 2.100s linear both">
+        <div style="position: absolute; left: -18px; top: -17px; width: 36px; height: 36px; animation: fz-spark 0.180s linear infinite alternate">
+          <svg viewBox="0 0 200 200" style="width: 36px; height: 36px" aria-hidden="true"><path d="M100 0 L120 45 L165 20 L150 68 L200 80 L158 108 L190 150 L140 142 L135 195 L100 155 L62 195 L60 142 L8 150 L42 108 L0 80 L50 68 L35 20 L80 45 Z" style="fill: #FFD60A; stroke: #111111; stroke-width: 14; stroke-linejoin: round"/></svg>
+        </div>
+      </div>
+      <div style="position: relative; width: 84px; height: 84px; flex-shrink: 0; animation: fz-shake 0.160s linear infinite">
+        <div style="position: absolute; left: -6px; top: 32px; width: 16px; height: 22px; background: #111111"></div>
+        <div style="position: absolute; left: 4px; top: 4px; width: 76px; height: 76px; box-sizing: border-box; border-radius: 50%; background: #1B1C26; border: 4px solid #111111; box-shadow: inset 8px 8px 0 rgba(255,255,255,0.18)"></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isBoom}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 568px; top: 204px; width: 200px; height: 200px; animation: fz-boom 0.900s ease-out both">
+      <svg viewBox="0 0 200 200" style="width: 200px; height: 200px" aria-hidden="true"><path d="M100 0 L120 45 L165 20 L150 68 L200 80 L158 108 L190 150 L140 142 L135 195 L100 155 L62 195 L60 142 L8 150 L42 108 L0 80 L50 68 L35 20 L80 45 Z" style="fill: #FFD60A; stroke: #111111; stroke-width: 3; stroke-linejoin: round"/></svg>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; top: 110px; text-align: center; font-family: 'Bangers', sans-serif; font-size: 170px; line-height: 1; letter-spacing: 6px; color: #E5262B; -webkit-text-stroke: 12px #111111; paint-order: stroke fill; animation: fz-pop 0.900s ease-out both">BOOM!</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const page = st.page || 'home';
+const phase = st.phase || 'idle';
+const busy = phase !== 'idle';
+const later = (ms, patch) => setTimeout(() => this.setState(patch), ms);
+const wipeTo = (target) => () => {
+  if (busy) return;
+  this.setState({ phase: 'wipe' });
+  later(260, { page: target });
+  later(540, { phase: 'idle' });
+};
+const startMatch = () => {
+  if (busy) return;
+  this.setState({ phase: 'fuse' });
+  later(2100, { phase: 'boom' });
+  later(2500, { page: 'game' });
+  later(3000, { phase: 'idle' });
+};
+return {
+  pageHome: page === 'home',
+  pageGame: page === 'game',
+  pageRank: page === 'rank',
+  isWipe: phase === 'wipe',
+  isFuse: phase === 'fuse',
+  isBoom: phase === 'boom',
+  startMatch,
+  openRankings: wipeTo('rank'),
+  goHome: wipeTo('home')
+};
+}
+}
+</script>
+</body>
+</html>
