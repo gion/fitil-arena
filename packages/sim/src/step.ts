@@ -28,6 +28,7 @@ import { addCharge, addFlame, damage, kill, shieldSave } from './effects.ts';
 import { useSuper } from './heroes.ts';
 import { collectCrystal, hitTarget, updateMission } from './missions.ts';
 import { updateWorld } from './world.ts';
+import { noteGot, updateInfinite } from './infinite.ts';
 import {
   blast,
   bombAt,
@@ -79,6 +80,7 @@ export function step(s: GameState, inputs: readonly (Input | undefined)[]): Game
   updateCtf(s);
   updateCrown(s);
   updateTraps(s);
+  updateInfinite(s);
   updateRespawn(s);
   updatePortals(s);
   updateBoxRespawn(s);
@@ -202,7 +204,7 @@ function updateBombs(s: GameState): void {
   if (ts && --ts.t <= 0) s.timeStop = null;
 }
 
-function openPortals(s: GameState): void {
+function openPortals(s: GameState, cx: number, cy: number): void {
   if (s.pads.length) {
     s.portalT = PORTAL;
     return;
@@ -215,10 +217,10 @@ function openPortals(s: GameState): void {
     s.flame[idx(s, x, y)]! <= 0;
   const w = s.inf;
   const minD = w ? 8 : Math.max(5, Math.floor(Math.max(s.W, s.H) / 2));
-  // în lumea infinită portalurile apar în jurul jucătorului
+  // în lumea infinită portalurile apar în jurul lanțului
   const rnd = (): [number, number] =>
     w
-      ? [w.cx - 10 + nextInt(s.rng, 21), w.cy - 7 + nextInt(s.rng, 15)]
+      ? [cx - 10 + nextInt(s.rng, 21), cy - 7 + nextInt(s.rng, 15)]
       : [1 + nextInt(s.rng, s.W - 2), 1 + nextInt(s.rng, s.H - 2)];
   for (let t = 0; t < 300; t++) {
     const a = rnd();
@@ -236,7 +238,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
   if (!b.chain) b.chain = ++s.chainSeq;
   const cc = (s.chainCount[b.chain] ?? 0) + 1;
   s.chainCount[b.chain] = cc;
-  if (cc === 4) openPortals(s);
+  if (cc === 4) openPortals(s, b.x, b.y);
   const owner = s.players[b.owner];
   if (owner && !b.free) owner.active = Math.max(0, owner.active - 1);
   const fk = FLAME_KIND[b.kind];
@@ -278,6 +280,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
         s.grid[k] = EMPTY;
         fire(nx, ny);
         addCharge(owner, CHARGE_BOX);
+        if (owner) owner.boxes++;
         const gold = s.gold[k] === 1;
         const cursed = s.cursed[k] === 1;
         s.gold[k] = 0;
@@ -396,6 +399,7 @@ function pickup(s: GameState, p: Player, x: number, y: number): void {
     return;
   }
   if (it === 'crystal') collectCrystal(s, x, y);
+  noteGot(s, p, it);
   s.events.push({ type: 'pickup', player: p.id, item: it, x, y });
   if (p.speed >= SPEED_MAX && pre.speed < SPEED_MAX)
     s.events.push({ type: 'maxed', player: p.id, stat: 'speed' });

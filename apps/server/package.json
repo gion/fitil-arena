@@ -8,10 +8,11 @@
     "build": "tsup",
     "start": "node dist/main.js",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.scripts.json",
     "serve": "tsx src/main.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts"
+    "db:migrate": "tsx src/db/migrate.ts",
+    "load:inf": "tsx scripts/load-infinite.ts"
   },
   "dependencies": {
     "@colyseus/core": "^0.18.18",

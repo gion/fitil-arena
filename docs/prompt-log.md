@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code — Faza 7: Modul Infinit
+
+- **Cerut:** „începem faza 7” (PLAN.md: modul Infinit offline în sim, lume pe chunk-uri, instanțe de 30–80 de jucători cu interest management, respawn, scor, bonusuri la moarte, clasament live, minimapă, shard-uri; test de încărcare cu 80 de boți-client).
+- **Făcut:** sim — lumea pe chunk-uri 32×32 și modul Infinit (`world.ts`, `infinite.ts`); net — protocol de stare filtrată per client (`InfHost` / `InfView`); server — camera `infinite` (80 de oameni, shard-uri automate) și `pnpm --filter @fitil/server load:inf`; client — Infinit offline în Play și online în Online, HUD cu scor, clasament, minimapă, coroana liderului. Decizii D-070 – D-072, raport în `docs/progress.md`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 148, content 39, net 22, client 18, server 7 + 11 sărite fără Postgres), `pnpm sim:bench` (0 excepții, 0 desync), e2e `infinite`, `missions`, `online`, `ui`, `characters` (22 trec), testul de încărcare cu 80 de boți (20.0 tick/s, tick mediu 5.8 ms, trafic max 5.6 KB/s per client).
+- **Notă operațională:** e2e în container: `PW_CHROMIUM=/opt/pw-browsers/chromium`. Testul de încărcare pornește singur serverul într-un proces separat; cu `--url ws://…` se poate îndrepta spre un server existent.
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Numele „Fuse Arena” și iconițe cu bombă
 
 - **Cerut:** numele aplicației „Fuse Arena” și iconițe noi, „ceva cu bombe”; apoi un PR de testat pe telefon.

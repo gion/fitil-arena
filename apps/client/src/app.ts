@@ -11,6 +11,7 @@ import {
   TICK_HZ,
   TUTORIAL_STEPS,
   U,
+  infScore,
   isGold,
   isNegative,
   missionGoal,
@@ -90,6 +91,7 @@ import { $, h, show } from './ui/dom.ts';
 import { account } from './online/account.ts';
 import type { Op } from './online/account.ts';
 import { OnlineSession } from './online/session.ts';
+import { InfiniteSession } from './online/infinite.ts';
 import { store, today } from './profile.ts';
 import { DEV_TOOLS, now } from './clock.ts';
 import { Portraits, lookColor } from './ui/portrait.ts';
@@ -136,6 +138,8 @@ export class App {
   theme: Theme = this.allowedTheme();
   match: Match | null = null;
   online: OnlineSession | null = null;
+  /** Lumea Infinit online (D-070). */
+  inf: InfiniteSession | null = null;
   private onlineErr = '';
   private portraits = new Portraits();
   private fatPreviews = new FatPreviews();
@@ -174,6 +178,11 @@ export class App {
   private chips!: HTMLElement;
   private clock!: HTMLElement;
   private stats!: HTMLElement;
+  /** Infinit: clasamentul (online) și minimapa. */
+  private side!: HTMLElement;
+  private board!: HTMLElement;
+  private mini!: HTMLCanvasElement;
+  private miniT = 0;
   private frameEl!: HTMLElement;
   private conn!: HTMLElement;
   private fx!: HTMLElement;
@@ -295,6 +304,15 @@ export class App {
       this.menuBtn,
     );
     this.frameEl = h('div', { class: 'frame hidden', 'aria-hidden': 'true' });
+    this.board = h('ol', { class: 'lb', 'aria-label': 'Top 10', 'data-test': 'board' });
+    this.mini = h('canvas', {
+      class: 'minimap',
+      width: 132,
+      height: 132,
+      'aria-label': 'Map',
+      'data-test': 'minimap',
+    });
+    this.side = h('div', { class: 'infside hidden' }, this.board, this.mini);
     const left = h(
       'div',
       { class: 'zone left' },
@@ -327,6 +345,7 @@ export class App {
     this.ui.append(
       this.frameEl,
       bar,
+      this.side,
       left,
       right,
       this.det,
@@ -766,6 +785,10 @@ export class App {
             }),
           ),
           h('div', { class: 'grow' }),
+          btn('cyan', 'INFINITE WORLD', () => this.start({ type: 'infinite' }), {
+            'data-test': 'infinite',
+            title: 'Endless map, bots everywhere, they get tougher the farther you go',
+          }),
           btn('main', 'START!', () => this.start({ type: 'mode', mode }), {
             class: 'huge',
             'data-test': 'start',
@@ -851,13 +874,22 @@ export class App {
             ),
           ),
           h('div', { class: 'grow' }),
-          btn(
-            'main',
-            'QUICK PLAY!',
-            () => go(() => OnlineSession.quick(quickMode, this.meMsg(name.value), this.aspect())),
-            {
-              'data-test': 'quick',
-            },
+          h(
+            'div',
+            { style: 'display:flex;gap:10px' },
+            btn(
+              'main',
+              'QUICK PLAY!',
+              () => go(() => OnlineSession.quick(quickMode, this.meMsg(name.value), this.aspect())),
+              {
+                'data-test': 'quick',
+                class: 'grow',
+              },
+            ),
+            btn('cyan', 'INFINITE WORLD', () => void this.goInfinite(name.value), {
+              'data-test': 'inf-online',
+              title: 'One endless map for up to 80 players. Drop in, drop out.',
+            }),
           ),
         ),
         panel(
@@ -924,6 +956,182 @@ export class App {
       }
     };
     this.go(() => this.lobbyScreen());
+  }
+
+  /* ---------- Infinit online ---------- */
+
+  private async goInfinite(name: string): Promise<void> {
+    settings.name = name.trim().slice(0, 12);
+    save();
+    this.onlineErr = '';
+    try {
+      this.enterInfinite(await InfiniteSession.join(this.meMsg(settings.name)));
+    } catch (e) {
+      this.onlineErr = e instanceof Error && e.message ? e.message : 'Could not connect to the server.';
+      this.react('sad');
+      this.showScreen(() => this.onlineMenu());
+    }
+  }
+
+  private enterInfinite(o: InfiniteSession): void {
+    if (this.online) this.leaveOnline();
+    this.inf = o;
+    // bun venit (și după reconectare): oglinda e nouă, meciul o citește prin `net.view`
+    o.view.onWelcome = () => {
+      if (this.inf === o && this.match?.net !== o.view) this.startInfinite(o);
+    };
+    o.view.onBoard = (b) => {
+      if (this.inf !== o) return;
+      const s = o.view.view;
+      // liderul poartă coroana (doar în oglindă, ca să se vadă: cine e sus e ținta tuturor)
+      const lead = b.top[0];
+      if (s) s.crown = b.n > 1 && lead && lead[1] > 0 ? { x: 0, y: 0, holder: lead[0], need: 1 } : null;
+      this.renderBoard();
+    };
+    o.onStatus = (st, reason) => {
+      if (this.inf !== o) return;
+      if (st === 'reconnecting') this.connLost();
+      if (st === 'online') {
+        this.connBack();
+        this.showBanner('Reconnected', 1400);
+      }
+      if (st === 'closed') {
+        this.inf = null;
+        this.onlineErr = reason && !/consent/i.test(reason) ? reason : 'Disconnected from the world.';
+        const inMatch = this.match !== null;
+        this.toMenu();
+        if (inMatch) this.connFailed();
+        else this.showScreen(() => this.onlineMenu());
+      }
+    };
+  }
+
+  private startInfinite(o: InfiniteSession): void {
+    const v = o.view;
+    if (!v.view || v.me < 0) return;
+    this.setTheme(v.theme, false);
+    this.beginPlay();
+    const kind: PlayKind = { type: 'infinite' };
+    this.kind = kind;
+    const m = new Match(
+      kind,
+      'normal',
+      { s: v.view, slots: v.slots, tutorial: null },
+      this.control(),
+      v.me,
+      v,
+    );
+    this.scores = [];
+    this.attach(m);
+    this.boom();
+    this.showBanner('Infinite world · go far, break boxes, stay alive!', 2600, 'gold');
+  }
+
+  private leaveInf(): void {
+    const o = this.inf;
+    this.inf = null;
+    o?.leave();
+    if (this.theme.id !== currentTheme().id) this.setTheme(currentTheme().id, false);
+  }
+
+  /** Clasamentul top 10 (online): tu evidențiat, iar dacă nu ești în top, pe ultimul rând. */
+  private renderBoard(): void {
+    const b = this.inf?.view.board;
+    const m = this.match;
+    if (!b || !m) {
+      this.board.replaceChildren();
+      return;
+    }
+    const row = (rank: number, id: number, score: number, cls = '') =>
+      h(
+        'li',
+        { class: cls || undefined },
+        h('b', {}, rank === 1 ? '♛' : String(rank)),
+        h('i', { style: `background:${m.slots[id]?.color ?? '#fff'}` }),
+        h('span', {}, id === m.meId ? 'YOU' : (m.slots[id]?.name ?? '?')),
+        h('em', {}, String(score)),
+      );
+    const rows = b.top.map(([id, score], i) => row(i + 1, id, score, id === m.meId ? 'me' : ''));
+    if (!b.top.some(([id]) => id === m.meId)) rows.push(row(b.you[0], m.meId, b.you[1], 'me sep'));
+    this.board.replaceChildren(...rows);
+  }
+
+  /** Minimapa: tu în centru; online liderii (♛) și cine e în jur, offline boții. Scara se adaptează. */
+  private drawMini(): void {
+    const m = this.match;
+    const c = this.mini.getContext('2d');
+    if (!m || !c) return;
+    const s = m.s;
+    const me = m.me;
+    const mx = me.px / U;
+    const my = me.py / U;
+    const pts: { x: number; y: number; col: string; lead: boolean }[] = [];
+    const b = this.inf?.view.board;
+    const seen = new Set<number>();
+    for (const [id, x, y] of b?.map ?? [])
+      if (id !== m.meId) {
+        seen.add(id);
+        pts.push({ x, y, col: m.slots[id]?.color ?? '#fff', lead: b!.top[0]?.[0] === id });
+      }
+    for (const p of s.players)
+      if (p.id !== m.meId && p.alive && !p.out && !seen.has(p.id))
+        pts.push({
+          x: p.px / U,
+          y: p.py / U,
+          col: p.bot !== null ? '#e5262b' : (m.slots[p.id]?.color ?? '#fff'),
+          lead: false,
+        });
+    const far = Math.max(0, ...pts.map((p) => Math.hypot(p.x - mx, p.y - my)));
+    const R = Math.min(600, Math.max(24, far * 1.15));
+    const W = this.mini.width;
+    const k = W / 2 / R;
+    const at = (x: number, y: number): [number, number] => [W / 2 + (x - mx) * k, W / 2 + (y - my) * k];
+    c.clearRect(0, 0, W, W);
+    c.strokeStyle = 'rgba(17,17,17,0.25)';
+    c.lineWidth = 1;
+    for (const r of [0.5, 1]) {
+      c.beginPath();
+      c.arc(W / 2, W / 2, (W / 2) * r - 2, 0, Math.PI * 2);
+      c.stroke();
+    }
+    // centrul lumii
+    const [ox, oy] = at(1, 1);
+    if (ox > 0 && oy > 0 && ox < W && oy < W) {
+      c.strokeStyle = '#111';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(ox - 4, oy - 4);
+      c.lineTo(ox + 4, oy + 4);
+      c.moveTo(ox + 4, oy - 4);
+      c.lineTo(ox - 4, oy + 4);
+      c.stroke();
+    }
+    for (const p of pts) {
+      const [x, y] = at(p.x, p.y);
+      if (x < 0 || y < 0 || x > W || y > W) continue;
+      c.fillStyle = p.col;
+      c.strokeStyle = '#111';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.arc(x, y, p.lead ? 5 : 3.5, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      if (p.lead) {
+        c.fillStyle = '#111';
+        c.font = '12px sans-serif';
+        c.fillText('♛', x - 6, y - 7);
+      }
+    }
+    c.fillStyle = '#ffd60a';
+    c.strokeStyle = '#111';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.arc(W / 2, W / 2, 5, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.fillStyle = '#111';
+    c.font = '10px sans-serif';
+    c.fillText(`${Math.round(R)} m`, 4, W - 5);
   }
 
   /** Ecranul „Connection lost” (panoul cade în ecran, notă coborâtoare); meciul merge mai departe. */
@@ -2275,7 +2483,7 @@ export class App {
       );
       this.drawer.append(sheet);
     };
-    if (this.online)
+    if (this.online || this.inf)
       return h(
         'div',
         { class: 'modal' },
@@ -2536,6 +2744,7 @@ export class App {
 
   start(kind: PlayKind): void {
     if (this.online) this.leaveOnline();
+    if (this.inf) this.leaveInf();
     // momentul mare: startul unui meci din meniu (fitil + explozie); restul pornesc direct
     const big = kind.type === 'mode' && this.phase === 'menu';
     this.beginPlay();
@@ -2589,7 +2798,7 @@ export class App {
   }
 
   restart(): void {
-    if (this.online) return;
+    if (this.online || this.inf) return;
     this.start(this.kind);
   }
 
@@ -2609,6 +2818,9 @@ export class App {
 
   toMenu(): void {
     if (this.online) this.leaveOnline();
+    if (this.inf) this.leaveInf();
+    show(this.side, false);
+    this.board.replaceChildren();
     this.match = null;
     this.scene.setMatch(null);
     this.r3?.setMatch(null);
@@ -3598,6 +3810,18 @@ export class App {
       const c = m.challenge;
       return `<div class="chip me">${esc(CHALLENGE_TEXT[c.id].name)} <em>${c.count}/${c.need}</em></div>`;
     }
+    if (m.kind.type === 'infinite') {
+      const b = this.inf?.view.board;
+      const me = m.me;
+      // online scorul vine de la server (o dată pe secundă); offline se calculează local
+      const score = b ? b.you[1] : infScore(me);
+      return (
+        `<div class="chip me" data-test="score">${dot(m.slots[m.meId]!.color)}SCORE <em>${score}</em></div>` +
+        `<div class="chip">KO <em>${me.kills}</em></div>` +
+        `<div class="chip">FAR <em>${me.far}</em></div>` +
+        (b ? `<div class="chip" data-test="rank">#<em>${b.you[0]}</em> of ${b.n}</div>` : '')
+      );
+    }
     if (m.kind.type === 'dummies')
       return `<div class="chip me">${dot(m.slots[0]!.color)}Eliminations <em>${this.scores[0] ?? 0}</em></div>`;
     if (s.ctf) {
@@ -3645,6 +3869,7 @@ export class App {
   /** Cronometrul din mijlocul barei: timpul rămas (dacă modul are limită), altfel timpul scurs. */
   private clockText(): string {
     const s = this.match!.s;
+    if (this.match!.kind.type === 'infinite') return '∞';
     const mi = s.mission;
     const left =
       mi && mi.def.kind === 'race'
@@ -3697,6 +3922,12 @@ export class App {
       me.alive && (me.lives > 1 || s.rules.lives > 1 || s.rules.extras) && !s.mission
         ? `<span class="hearts" data-test="hearts" aria-label="${me.lives} lives" data-lives="${me.lives}">${heart.repeat(me.lives)}</span>`
         : '';
+    const inf = m.kind.type === 'infinite';
+    if (this.side.classList.contains('hidden') === inf) show(this.side, inf);
+    if (inf && performance.now() - this.miniT > 200) {
+      this.miniT = performance.now();
+      this.drawMini();
+    }
     const chips = this.chipsHtml();
     const clock = this.clockText();
     if (this.clock.textContent !== clock) this.clock.textContent = clock;

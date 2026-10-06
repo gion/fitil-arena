@@ -19,7 +19,7 @@ import {
 } from './constants.ts';
 import { countSoft, idx, inBounds } from './grid.ts';
 import { applyItem } from './items.ts';
-import { INF_S, ensureWindow } from './world.ts';
+import { CHUNK, ensureWindow, newInfWorld } from './world.ts';
 import { createRng, nextFloat, shuffle } from './rng.ts';
 import type { RngState } from './rng.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
@@ -40,6 +40,8 @@ export const DEFAULT_RULES: Rules = {
   shift: false,
   rotate: false,
   infinite: false,
+  infBots: 0,
+  infDrop: 0,
   health: false,
   hearts: false,
   hurryUpTick: sec(90),
@@ -263,6 +265,12 @@ export function makePlayer(id: number, team: number, bot: BotKind | null, x: num
     hexT: 0,
     crownT: 0,
     hiddenT: 0,
+    out: false,
+    kills: 0,
+    boxes: 0,
+    far: 0,
+    lived: 0,
+    got: [],
   };
 }
 
@@ -302,9 +310,9 @@ function spiralOrder(W: number, H: number): number[] {
 export function createGame(setup: GameSetup): GameState {
   const rules: Rules = { ...DEFAULT_RULES, ...setup.rules };
   const inf = rules.infinite;
-  // lumea infinită: stocare circulară INF_S×INF_S (nu o hartă cu margini)
-  const W = inf ? INF_S : rules.width;
-  const H = inf ? INF_S : rules.height;
+  // lumea infinită: stocare pe chunk-uri, la început doar vidul (crește la încărcare)
+  const W = inf ? CHUNK : rules.width;
+  const H = inf ? CHUNK : rules.height;
   if (!inf && (W % 2 === 0 || H % 2 === 0 || W < 7 || H < 7))
     throw new Error(`dimensiuni invalide ${W}×${H} (impare, ≥ 7)`);
   const rng = createRng(setup.seed);
@@ -316,7 +324,7 @@ export function createGame(setup: GameSetup): GameState {
     rules,
     W,
     H,
-    grid: new Array<number>(N).fill(EMPTY),
+    grid: new Array<number>(N).fill(inf ? HARD : EMPTY),
     flame: new Array<number>(N).fill(0),
     flameOwner: new Array<number>(N).fill(-1),
     items: new Array<ItemType | null>(N).fill(null),
@@ -353,15 +361,7 @@ export function createGame(setup: GameSetup): GameState {
     shiftNext: SHIFT_FIRST,
     rot: rules.rotate ? { a: 0, v: 0 } : null,
     ctf: null,
-    inf: inf
-      ? {
-          S: INF_S,
-          ownX: new Array<number>(N).fill(0x7fffffff),
-          ownY: new Array<number>(N).fill(0x7fffffff),
-          cx: 1,
-          cy: 1,
-        }
-      : null,
+    inf: inf ? newInfWorld() : null,
     mission: null,
     result: null,
     events: [],
@@ -370,13 +370,13 @@ export function createGame(setup: GameSetup): GameState {
   const spawns: [number, number][] = inf
     ? setup.players.map(() => [1, 1])
     : spawnPoints(W, H, setup.players, rules.mode);
+  if (inf) for (const [x, y] of spawns) ensureWindow(s, x, y);
   const safe = new Set<number>();
   for (const [x, y] of spawns) {
     safe.add(idx(s, x, y));
     for (const d of DIRS) if (inBounds(s, x + DX[d]!, y + DY[d]!)) safe.add(idx(s, x + DX[d]!, y + DY[d]!));
   }
-  if (inf) ensureWindow(s, 1, 1);
-  else
+  if (!inf)
     for (let y = 0; y < H; y++)
       for (let x = 0; x < W; x++) {
         const k = idx(s, x, y);

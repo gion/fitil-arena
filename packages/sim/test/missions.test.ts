@@ -104,7 +104,7 @@ describe('lumea infinită', () => {
     run(s, 200, [{ dir: 2 }]); // spre stânga, prin x negativ
     expect(tileX(s.players[0]!)).toBeLessThan(-5);
     expect(cell(s, 3, 3)).toBe(SOFT); // încă în rază → păstrată
-    teleport(s, 60, 1);
+    teleport(s, 200, 1);
     expect(inBounds(s, 3, 3)).toBe(false); // ieșită din fereastră
     teleport(s, 1, 1);
     expect(cell(s, 3, 3)).toBe(EMPTY); // regenerată din hash
@@ -155,7 +155,7 @@ describe('misiuni: ținte', () => {
     expect(s.items[idx(s, open!.x, open!.y)]).toBe('crystal');
     s.grid[idx(s, closed!.x, closed!.y)] = EMPTY; // o modificare fără să atingă ținta (ex. altă cale)
     // pleacă departe (celulele țintelor sunt suprascrise în stocare), apoi revine
-    teleport(s, open!.x + 45, open!.y + 45);
+    teleport(s, open!.x + 120, open!.y + 120);
     expect(inBounds(s, open!.x, open!.y)).toBe(false);
     teleport(s, open!.x - 1, open!.y);
     expect(cell(s, open!.x, open!.y)).toBe(EMPTY);

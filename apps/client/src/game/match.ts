@@ -1,5 +1,6 @@
 import {
   SLIDE_SPEED,
+  TICK_HZ,
   TICK_MS,
   U,
   botInput,
@@ -15,7 +16,7 @@ import {
 import type { ChallengeProgress, Dir, GameEvent, GameState, Input, MaxStat, Tutorial } from '@fitil/sim';
 import { DEATH_MSG, HERO_LINES, emoteById, fatalityById, shopItem } from '@fitil/content';
 import { DAILY_MAX_TICKS, encodeInput } from '@fitil/net';
-import type { NetClient, WireInput } from '@fitil/net';
+import type { WireInput } from '@fitil/net';
 import { build, isTeamKind } from './setup.ts';
 import type { Built, Me, PlayKind, Slot } from './setup.ts';
 import type { BotLevel } from '@fitil/sim';
@@ -63,6 +64,17 @@ export type MatchEvent =
   | { type: 'tutorialDone' }
   | { type: 'tutorialFail' }
   | { type: 'challenge'; progress: ChallengeProgress };
+
+/**
+ * Sursa stării online: `NetClient` (meciuri cu input-uri, D-030) sau `InfView` (Infinit, stare filtrată, D-070).
+ */
+export interface NetSource {
+  readonly view: GameState | null;
+  readonly buffered: number;
+  send(inp: Input): void;
+  stepView(): boolean;
+  predict(): GameState | null;
+}
 
 export interface HumanControl {
   /** Direcția dorită în tick-ul curent (deja convertită din joystick/tastatură/cameră). */
@@ -120,7 +132,7 @@ export class Match {
     private control: HumanControl,
     /** Id-ul jucătorului local în simulare. */
     readonly meId = 0,
-    readonly net: NetClient | null = null,
+    readonly net: NetSource | null = null,
   ) {
     this.state = b.s;
     this.slots = b.slots;
@@ -280,7 +292,7 @@ export class Match {
    * Un tick online: trimite input-ul local, avansează starea afișată cu un cadru (două dacă
    * bufferul a crescut) și recalculează predicția jucătorului local.
    */
-  private netTick(net: NetClient): void {
+  private netTick(net: NetSource): void {
     net.send(this.localInput());
     const n = net.buffered >= 4 ? 2 : 1;
     for (let i = 0; i < n; i++) {
@@ -326,10 +338,15 @@ export class Match {
       if (this.team && !s.result) msg += ' Your team is still fighting.';
       if (!s.result || !this.won()) this.emit({ type: 'ko', msg });
     }
-    if (e.type === 'death' && e.player === this.meId && s.rules.mode === 'ctf') {
+    if (
+      e.type === 'death' &&
+      e.player === this.meId &&
+      (s.rules.mode === 'ctf' || s.inf) &&
+      s.rules.respawnTicks
+    ) {
       const k = e.killerId;
       const who = k !== null && k !== this.meId ? `Toasted by ${this.slots[k]?.name ?? '?'}! ` : '';
-      this.emit({ type: 'ko', msg: `${who}Back in 3s…` });
+      this.emit({ type: 'ko', msg: `${who}Back in ${Math.round(s.rules.respawnTicks / TICK_HZ)}s…` });
     }
   }
 

@@ -15,6 +15,7 @@ import { addFlame, kill, shieldSave } from './effects.ts';
 import { bombAt, idx, tileAt, tileX, tileY } from './grid.ts';
 import { applyItem } from './items.ts';
 import { nextFloat, nextInt } from './rng.ts';
+import { infRespawnPos } from './infinite.ts';
 import { applyHero, applyKit, makePlayer } from './setup.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U, opposite } from './types.ts';
 import type { Dir, Flag, GameState, Player, Shift } from './types.ts';
@@ -210,12 +211,18 @@ export function updateCtf(s: GameState): void {
 /* ---------- Revenire în joc ---------- */
 
 export function respawn(s: GameState, p: Player): void {
+  // în lumea infinită revii lângă locul morții, nu la start
+  if (s.inf) [p.sx, p.sy] = infRespawnPos(s, p);
   const fresh = makePlayer(p.id, p.team, p.bot, p.sx, p.sy);
   applyHero(fresh, p.hero, s.rules);
   // se păstrează pe tot meciul: Super-ul încărcat, scutul pasiv folosit, timpul cu coroana
   fresh.charge = p.charge;
   fresh.guard = p.guard;
   fresh.crownT = p.crownT;
+  fresh.kills = p.kills;
+  fresh.boxes = p.boxes;
+  fresh.far = p.far;
+  fresh.lived = p.lived;
   const open = DIRS.find((d: Dir) => s.grid[idx(s, p.sx + DX[d]!, p.sy + DY[d]!)] === EMPTY);
   if (open !== undefined) fresh.face = open;
   if (p.kit) applyKit(fresh, p.kit, p.ch);
@@ -228,7 +235,11 @@ export function respawn(s: GameState, p: Player): void {
 export function updateRespawn(s: GameState): void {
   const R = s.rules.respawnTicks;
   if (!R || s.result) return;
-  for (const p of s.players) if (!p.alive && s.tick - p.deathTick >= R) respawn(s, p);
+  for (const p of s.players) {
+    // în Infinit boții nu revin (apar alții, în jurul oamenilor)
+    if (p.alive || p.out || (s.inf && p.bot !== null)) continue;
+    if (s.tick - p.deathTick >= R) respawn(s, p);
+  }
 }
 
 /* ---------- Coroana ---------- */

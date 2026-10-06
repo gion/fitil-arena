@@ -81,10 +81,12 @@ for (const def of MISSIONS)
       p.graceT = 0;
       p.shieldT = 0;
       // o flacără sub jucător
-      const w = (s as unknown as { inf: { S: number } }).inf.S;
+      // stocarea lumii infinite: chunk-uri 32×32 (slot × 1024 + poziția în chunk), ca `idx` din sim
+      const w = (s as unknown as { inf: { slots: Record<number, number> } }).inf;
       const x = Math.round(p.px / 1000);
       const y = Math.round(p.py / 1000);
-      s.flame[(y & (w - 1)) * w + (x & (w - 1))] = 5;
+      const slot = w.slots[((x >> 5) + 0x8000) * 0x10000 + ((y >> 5) + 0x8000)]!;
+      s.flame[(slot << 10) | ((y & 31) << 5) | (x & 31)] = 5;
     });
     await expect(page.locator('.mpanel .ptitle')).toHaveText('MISSION FAILED', { timeout: 8000 });
     expect(errors).toEqual([]);

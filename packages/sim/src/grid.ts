@@ -1,16 +1,22 @@
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
 import type { Bomb, GameState, Player } from './types.ts';
 
-/** Indexul unui pătrățel în stocare (în lumea infinită: circular, cu mască). */
-export const idx = (s: GameState, x: number, y: number): number =>
-  s.inf ? (y & (s.inf.S - 1)) * s.inf.S + (x & (s.inf.S - 1)) : y * s.W + x;
+/**
+ * Indexul unui pătrățel în stocare. În lumea infinită stocarea e un șir de chunk-uri 32×32
+ * (`world.ts`): slotul chunk-ului × 1024 + poziția în chunk; ce nu e încărcat cade în slotul 0 (vid, perete).
+ */
+export function idx(s: GameState, x: number, y: number): number {
+  const w = s.inf;
+  if (!w) return y * s.W + x;
+  const slot = w.slots[((x >> 5) + 0x8000) * 0x10000 + ((y >> 5) + 0x8000)] ?? 0;
+  return (slot << 10) | ((y & 31) << 5) | (x & 31);
+}
 
-/** Pătrățelul există (în lumea infinită: e generat acum în stocare). */
+/** Pătrățelul există (în lumea infinită: chunk-ul lui e încărcat). */
 export function inBounds(s: GameState, x: number, y: number): boolean {
   const w = s.inf;
   if (!w) return x >= 0 && y >= 0 && x < s.W && y < s.H;
-  const k = idx(s, x, y);
-  return w.ownX[k] === x && w.ownY[k] === y;
+  return w.slots[((x >> 5) + 0x8000) * 0x10000 + ((y >> 5) + 0x8000)] !== undefined;
 }
 export const tileAt = (s: GameState, x: number, y: number): number =>
   inBounds(s, x, y) ? s.grid[idx(s, x, y)]! : HARD;
