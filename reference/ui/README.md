@@ -1,6 +1,6 @@
 # Machetele interfeței (direcția „Comic”)
 
-Un fișier `.dc.html` per ecran, la 844×390 (telefon în landscape), exportate din canvasul de design pe 2026-10-06. Sunt referință de citit, nu cod de rulat: au nevoie de runtime-ul canvasului (`support.js`) ca să se randeze, dar markup-ul și stilurile inline arată exact dimensiunile, culorile și textele.
+Un fișier `.dc.html` per ecran, la 844×390 (telefon în landscape), exportate din canvasul de design pe 2026-10-06 (aduse la zi cu meniurile din Faza 4). Sunt referință de citit, nu cod de rulat: au nevoie de runtime-ul canvasului (`support.js`) ca să se randeze, dar markup-ul și stilurile inline arată exact dimensiunile, culorile și textele.
 
 Specificația (tokeni, componente, lista de ecrane, tranziții) e în `docs/design/ui.md`.
 

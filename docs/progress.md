@@ -242,10 +242,12 @@
 **Făcut:**
 
 - Direcția aleasă și documentată: `docs/design/ui.md`, machete în `reference/ui/` (18 ecrane), deciziile D-051–D-053, faza adăugată în `PLAN.md`.
+- Machetele refăcute după meniurile reale de pe `main` (Play, Online, personaje cu stări, pagina de personaj, magazin, HUD cu inimi, SUPER și bombă specială, recompense în Fitile și XP); acum sunt 21. Decizia D-054 (doar landscape).
 
 **Rămas / cunoscut:**
 
 - Nimic implementat în client încă.
 - Machetele nu au fost verificate vizual ecran cu ecran după export; pot exista suprapuneri sau texte tăiate de corectat la implementare.
 - Numele final (Q-010) blochează doar wordmark-ul de pe login.
-- Nedesenate încă: misiuni, provocarea zilei, prieteni, profil, magazin, tutorial, splash, momentele „bye bye” / glorie, stările butoanelor.
+- Nedesenate încă: Missions, Practice, Themes, panoul DEV, ecranul „Rotate your phone”, splash, momentele „bye bye” / glorie, HUD-ul pentru Crown și Hot potato, stările butoanelor.
+- Blocarea pe landscape (D-054) nu e implementată; `GAME_DESIGN.md` mai descrie varianta de portrait.

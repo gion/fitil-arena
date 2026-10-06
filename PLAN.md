@@ -97,11 +97,13 @@ Nu trece la faza următoare până nu trec criteriile. Progresul se ține în `d
 ## Faza 4b — Interfața „Comic”
 **Scop:** meniurile, HUD-ul și tranzițiile arată ca în `docs/design/ui.md` și `reference/ui/`, doar landscape. Fără schimbări de gameplay.
 - Tokeni CSS și fonturile Bangers + Rubik împachetate local (notate în `assets/CREDITS.md`).
+- **Doar landscape** (D-054): orientarea blocată în iOS și Android, ecran „Rotate your phone” în browser pe telefon în portrait, scoasă adaptarea de portrait din client.
 - Componentele de bază din specificație (butoane, panou, casete, balon, ștampilă ON/OFF, selector segmentat, titlu de pagină).
-- Ecranele existente refăcute pe rând: acasă/start, alegerea modului, selecția și pagina de personaj, magazinul, camera privată și jocul rapid, pauza, setările, finalul de meci, bannerele de conexiune.
+- Ecranele existente refăcute pe rând: meniul principal, Play, Online, camera privată și jocul rapid, personajele și pagina de personaj, magazinul, pauza, setările, finalul de meci, bannerele de conexiune; apoi Missions, Practice și Themes, care nu au machetă.
 - HUD-ul din joc (bară de 44px, variante FFA / echipe / steag) și controalele din 3D.
 - Tranzițiile: fitil + explozie la start de meci, bandă de cerneală la navigare; reduse la `prefers-reduced-motion`.
-- Ecranele fără funcționalitate încă (login cu cont, clasament) se fac în fazele lor, după aceleași machete. Magazinul nu are machetă: se construiește din componentele din specificație.
+- HUD-ul primește și butoanele de acțiune din machetă (SUPER, bomba specială, BOOM!).
+- Ecranele fără funcționalitate încă (login cu cont, clasament) se fac în fazele lor, după aceleași machete.
 
 **Acceptare:** `pnpm lint && pnpm typecheck && pnpm test` trec; smoke Playwright pe fiecare ecran refăcut (se deschide, 0 erori în consolă, niciun element interactiv sub 44px); capturi în `docs/screens/` comparate manual cu machetele; tema arenei se poate schimba fără ca interfața să se modifice.
 

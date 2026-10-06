@@ -49,7 +49,14 @@ a{color:#111111}a:hover{color:#B3151A}
         <span>RED</span>
       </div>
     </sc-if>
-    <div style="font-weight: 800; font-size: 12px; letter-spacing: 0.500px">BOMBS <span style="font-family: 'Bangers', sans-serif; font-size: 18px; color: #FFD60A">2</span> · RANGE <span style="font-family: 'Bangers', sans-serif; font-size: 18px; color: #FFD60A">3</span> · SPEED <span style="font-family: 'Bangers', sans-serif; font-size: 18px; color: #FFD60A">1</span></div>
+    <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 12px; letter-spacing: 0.500px">
+      <span aria-label="2 lives" style="display: flex; gap: 3px">
+        <svg viewBox="0 0 24 22" style="width: 18px; height: 16px" aria-hidden="true"><path d="M12 21 L2 10 a5.500 5.500 0 0 1 10 -5 a5.500 5.500 0 0 1 10 5z" style="fill: #E5262B; stroke: #FFFFFF; stroke-width: 2; stroke-linejoin: round"/></svg>
+        <svg viewBox="0 0 24 22" style="width: 18px; height: 16px" aria-hidden="true"><path d="M12 21 L2 10 a5.500 5.500 0 0 1 10 -5 a5.500 5.500 0 0 1 10 5z" style="fill: #E5262B; stroke: #FFFFFF; stroke-width: 2; stroke-linejoin: round"/></svg>
+      </span>
+      <span>BOMBS <span style="font-family: 'Bangers', sans-serif; font-size: 18px; color: #FFD60A">1/2</span></span>
+      <span style="height: 24px; display: flex; align-items: center; padding: 0 6px; border: 2px solid #FFFFFF">KICK ×2</span>
+    </div>
     <sc-if value="{{isFfa}}" hint-placeholder-val="{{true}}">
       <div style="height: 28px; display: flex; align-items: center; padding: 0 8px; background: #19B5E8; color: #111111; border: 2px solid #FFFFFF; font-weight: 800; font-size: 12px">SHIELD 6s</div>
     </sc-if>
@@ -71,7 +78,7 @@ a{color:#111111}a:hover{color:#B3151A}
       <svg viewBox="0 0 24 30" style="position: absolute; left: 14px; top: 178px; width: 26px; height: 32px" aria-hidden="true"><path d="M4 2v27" style="stroke: #111111; stroke-width: 3; stroke-linecap: round"/><path d="M5 3h16l-5 6 5 6H5z" style="fill: #19B5E8; stroke: #111111; stroke-width: 2.500; stroke-linejoin: round"/></svg>
       <div style="position: absolute; left: 676px; top: 196px; width: 40px; height: 40px; box-sizing: border-box; border-radius: 50%; border: 4px dashed #E5262B; box-shadow: 0 0 0 2px #111111"></div>
       <svg viewBox="0 0 24 30" style="position: absolute; left: 222px; top: 164px; width: 26px; height: 32px" aria-hidden="true"><path d="M4 2v27" style="stroke: #111111; stroke-width: 3; stroke-linecap: round"/><path d="M5 3h16l-5 6 5 6H5z" style="fill: #E5262B; stroke: #111111; stroke-width: 2.500; stroke-linejoin: round"/></svg>
-      <div style="position: absolute; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center">
+      <div style="position: absolute; left: 0; right: 190px; bottom: 12px; display: flex; justify-content: center">
         <div style="font-family: 'Bangers', sans-serif; font-size: 24px; letter-spacing: 1px; color: #111111; background: #FFD60A; border: 3px solid #111111; box-shadow: 4px 4px 0 #111111; padding: 0 16px; transform: rotate(-2deg)">YOU STOLE THE RED FLAG! RUN HOME!</div>
       </div>
     </sc-if>
@@ -111,11 +118,19 @@ a{color:#111111}a:hover{color:#B3151A}
     </sc-for>
     <div style="position: absolute; left: 566px; top: 58px; background: #FFFFFF; border: 3px solid #111111; border-radius: 16px 16px 16px 4px; padding: 3px 10px; font-weight: 800; font-size: 13px">Uh-oh.</div>
 
+    <button type="button" aria-label="Detonate" style="position: absolute; right: 16px; bottom: 118px; width: 88px; height: 44px; padding: 0; font-family: 'Bangers', sans-serif; font-size: 24px; letter-spacing: 1px; color: #FFFFFF; background: #E5262B; border: 3px solid #111111; box-shadow: 3px 3px 0 #111111; transform: skewX(-6deg); cursor: pointer">BOOM!</button>
+    <button type="button" aria-label="Next special bomb: ice, 3 left. Swipe up to switch." style="position: absolute; right: 116px; bottom: 16px; width: 62px; height: 62px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; font-family: 'Bangers', sans-serif; color: #111111; background: #19B5E8; border: 3px solid #111111; border-radius: 50%; box-shadow: 3px 3px 0 #111111; cursor: pointer">
+      <span style="font-size: 20px; letter-spacing: 1px">ICE</span>
+      <span style="font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 12px">×3</span>
+    </button>
+    <button type="button" aria-label="Super, ready" style="position: absolute; right: 14px; bottom: 14px; width: 90px; height: 90px; padding: 0; font-family: 'Bangers', sans-serif; font-size: 26px; letter-spacing: 1px; color: #111111; background: #FFD60A; border: 4px solid #111111; border-radius: 50%; box-shadow: 4px 4px 0 #111111, 0 0 0 5px #E5262B; cursor: pointer; transform: rotate(-6deg)">SUPER</button>
+    <div style="position: absolute; right: 8px; bottom: 96px; font-family: 'Bangers', sans-serif; font-size: 15px; letter-spacing: 1px; color: #FFFFFF; background: #E5262B; border: 2px solid #111111; padding: 0 6px; transform: rotate(8deg)">READY!</div>
+
     <sc-if value="{{showHints}}" hint-placeholder-val="{{true}}">
       <div style="position: absolute; left: 36px; bottom: 26px; width: 100px; height: 100px; box-sizing: border-box; border-radius: 50%; background: rgba(255,255,255,0.3); border: 3px solid #111111"></div>
       <div style="position: absolute; left: 82px; bottom: 66px; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; background: #FFFFFF; border: 3px solid #111111; box-shadow: 3px 3px 0 #111111"></div>
-      <div style="position: absolute; right: 70px; bottom: 60px; width: 60px; height: 60px; box-sizing: border-box; border-radius: 50%; border: 4px dashed #FFFFFF; box-shadow: 0 0 0 2px #111111"></div>
-      <div style="position: absolute; right: 12px; bottom: 12px; font-style: italic; font-weight: 500; font-size: 13px; background: #FFF3B0; border: 3px solid #111111; padding: 2px 10px">Tap anywhere on this side to drop a bomb</div>
+      <div style="position: absolute; right: 250px; bottom: 76px; width: 60px; height: 60px; box-sizing: border-box; border-radius: 50%; border: 4px dashed #FFFFFF; box-shadow: 0 0 0 2px #111111"></div>
+      <div style="position: absolute; right: 196px; bottom: 12px; font-style: italic; font-weight: 500; font-size: 13px; background: #FFF3B0; border: 3px solid #111111; padding: 2px 10px">Tap anywhere on this side to drop a bomb</div>
     </sc-if>
   </div>
 </div>

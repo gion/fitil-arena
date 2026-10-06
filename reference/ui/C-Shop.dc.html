@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Shop (C)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik:wght@500;700;800&display=swap">
+<style>
+body{margin:0}
+a{color:#111111}a:hover{color:#B3151A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background-color: #FFD60A; background-image: radial-gradient(#F2B600 24%, transparent 25%); background-size: 14px 14px; color: #111111; font-family: 'Rubik', sans-serif; display: flex; flex-direction: column; gap: 12px; padding: 14px 56px 20px">
+  <div style="display: flex; align-items: center; gap: 14px">
+    <a href="C-Home.dc.html" aria-label="Back" style="width: 46px; height: 46px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 3px solid #111111; box-shadow: 3px 3px 0 #111111">
+      <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: #111111; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <h1 style="margin: 0; font-family: 'Bangers', sans-serif; font-weight: 400; font-size: 32px; letter-spacing: 2px; color: #FFD60A; background: #111111; padding: 2px 18px; transform: skewX(-8deg)">SHOP</h1>
+    <div role="group" aria-label="Shop category" style="margin-left: 6px; display: flex; border: 3px solid #111111; box-shadow: 3px 3px 0 #111111">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="6">
+        <button type="button" aria-pressed="{{t.on}}" onClick="{{t.pick}}" style="height: 44px; padding: 0 11px; font-family: 'Bangers', sans-serif; font-size: 18px; letter-spacing: 0.500px; color: {{t.fg}}; background: {{t.bg}}; border: 0; cursor: pointer">{{t.label}}</button>
+      </sc-for>
+    </div>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; background: #FFFFFF; border: 3px solid #111111; font-family: 'Bangers', sans-serif; font-size: 20px; letter-spacing: 1px">
+      <span style="width: 20px; height: 20px; border-radius: 50%; background: #FFD60A; border: 3px solid #111111; box-sizing: border-box"></span>850
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; gap: 18px; min-height: 0">
+    <div style="position: relative; width: 200px; flex-shrink: 0; overflow: hidden; background: #19B5E8; border: 4px solid #111111; box-shadow: 6px 6px 0 #111111; transform: rotate(-1.500deg); display: flex; flex-direction: column; align-items: center; justify-content: flex-end">
+      <div style="position: absolute; left: -300px; top: -260px; width: 800px; height: 800px; border-radius: 50%; background: repeating-conic-gradient(#5CCBF0 0deg 9deg, #19B5E8 9deg 18deg)"></div>
+      <div style="position: absolute; left: 10px; top: 10px; background: #FFFFFF; border: 3px solid #111111; padding: 1px 8px; font-weight: 800; font-size: 11px; letter-spacing: 1px">TRYING ON</div>
+      <svg viewBox="0 -8 100 118" style="position: relative; width: 150px; height: 177px" aria-hidden="true">
+        <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+        <path d="M50 20 Q60 -4 72 3" style="fill: none; stroke: #12131C; stroke-width: 4; stroke-linecap: round"/>
+        <circle cx="72" cy="4" r="6" fill="{{sel.col}}" style="stroke: #12131C; stroke-width: 3"/>
+        <circle cx="50" cy="58" r="38" fill="{{sel.col}}" style="stroke: #12131C; stroke-width: 5"/>
+        <ellipse cx="36" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/><ellipse cx="64" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/>
+        <circle cx="38" cy="55" r="4" style="fill: #12131C"/><circle cx="66" cy="55" r="4" style="fill: #12131C"/>
+      </svg>
+      <div style="position: relative; align-self: stretch; text-align: center; background: #111111; color: #FFFFFF; font-family: 'Bangers', sans-serif; font-size: 20px; letter-spacing: 1px; padding: 2px 0">{{sel.name}}</div>
+    </div>
+
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="6">
+          <button type="button" aria-pressed="{{it.on}}" onClick="{{it.pick}}" style="position: relative; height: 84px; padding: 0 10px; display: flex; align-items: center; gap: 10px; text-align: left; font-family: 'Rubik', sans-serif; color: #111111; background: {{it.bg}}; border: 3px solid #111111; box-shadow: {{it.shadow}}; cursor: pointer">
+            <span style="width: 40px; height: 40px; flex-shrink: 0; box-sizing: border-box; border-radius: 50%; background: {{it.swatch}}; border: 4px solid #111111"></span>
+            <span style="display: flex; flex-direction: column; line-height: 1.2; min-width: 0">
+              <span style="font-family: 'Bangers', sans-serif; font-size: 20px; letter-spacing: 0.500px">{{it.name}}</span>
+              <span style="font-weight: 800; font-size: 12px; color: {{it.stateColor}}">{{it.state}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-top: auto; display: flex; align-items: center; gap: 14px">
+        <div style="flex-grow: 1; background: #FFF3B0; border: 3px solid #111111; padding: 6px 12px; font-size: 13px; line-height: 1.3">Everything here is cosmetic. Nothing in the shop makes you stronger.</div>
+        <button type="button" style="flex-shrink: 0; min-width: 210px; height: 56px; padding: 0 14px; font-family: 'Bangers', sans-serif; font-size: 24px; letter-spacing: 1px; color: {{sel.ctaFg}}; background: {{sel.ctaBg}}; border: 4px solid #111111; box-shadow: 5px 5px 0 #111111; transform: skewX(-6deg); cursor: pointer">{{sel.cta}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const tab = st.tab || 'Colors';
+const tabs = ['Colors', 'Hats', 'Accessories', 'Bombs', 'Trails', 'Voices'].map((label) => ({
+  label,
+  on: label === tab,
+  bg: label === tab ? '#111111' : '#FFFFFF',
+  fg: label === tab ? '#FFD60A' : '#111111',
+  pick: () => this.setState({ tab: label })
+}));
+const data = [
+  { id: 'green', name: 'Green', col: '#5AD15A', state: 'Wearing', kind: 'wearing' },
+  { id: 'red', name: 'Hot red', col: '#FF4A3D', state: 'Owned', kind: 'owned' },
+  { id: 'purple', name: 'Purple', col: '#A45CFF', state: '40 Fitile', kind: 'buy', price: 40 },
+  { id: 'black', name: 'Black', col: '#2C2C38', state: '80 Fitile', kind: 'buy', price: 80 },
+  { id: 'gold', name: 'Gold', col: '#FFC933', state: '120 Fitile', kind: 'buy', price: 120 },
+  { id: 'pink', name: 'Ballet pink', col: '#FF9AD0', state: 'Locked · Fifi Lv 5', kind: 'locked' }
+];
+const picked = st.item || 'purple';
+const items = data.map((it) => ({
+  ...it,
+  on: it.id === picked,
+  swatch: it.col,
+  bg: it.id === picked ? '#FFF3B0' : '#FFFFFF',
+  shadow: it.id === picked ? '5px 5px 0 #E5262B' : '4px 4px 0 #111111',
+  stateColor: it.kind === 'locked' ? '#B3151A' : '#111111',
+  pick: () => this.setState({ item: it.id })
+}));
+const s = data.find((it) => it.id === picked);
+const cta = { wearing: 'WEARING', owned: 'WEAR IT', buy: 'BUY FOR ' + s.price + ' FITILE', locked: 'LOCKED' }[s.kind];
+const red = s.kind === 'buy';
+return { tabs, items, sel: { ...s, cta, ctaBg: red ? '#E5262B' : '#FFFFFF', ctaFg: red ? '#FFFFFF' : '#111111' } };
+}
+}
+</script>
+</body>
+</html>

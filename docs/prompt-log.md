@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Machetele aduse la zi cu Faza 4; doar landscape
+
+- **Cerut:** încă o iterație de design înainte de merge, cu contextul de pe `main`; în plus, jocul să fie doar landscape, fără rotire în portrait.
+- **Făcut:** machetele „Comic” refăcute după meniurile reale din `apps/client/src/app.ts` și textele din `packages/content`: meniu principal, Play, Online (nou), cameră privată, joc rapid, personaje (11, cu stări), pagina de personaj (nouă), magazin (nou), setări, pauză, final de meci, HUD (inimi, SUPER, bombă specială, BOOM!). `reference/ui/` recopiat (21 de fișiere), `docs/design/ui.md` actualizat (tabel ecran ↔ funcție din client, HUD, orientare), decizia D-054, task-ul de landscape în Faza 4b. Fără schimbări de cod.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`. Machetele nu au fost verificate vizual după export.
+- **Notă operațională:** login-ul și clasamentul rămân pe canvas ca ecrane de viitor (Faza 6, respectiv neplanificat). `GAME_DESIGN.md` nu a fost modificat, deși mai descrie portrait și bara de 30px.
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Direcția vizuală a interfeței („Comic”)
 
 - **Cerut:** 2–3 iterații de design pentru ecranele jocului (login, setări, personaje etc.), mai „de joc” și mai amuzante; pe parcurs: doar landscape, texte în engleză, ecrane de joc, tranziții cu fitil și explozie, impactul numelui „Fuse Arena”; la final, direcția C aleasă și adusă în proiect.
