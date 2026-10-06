@@ -77,6 +77,7 @@ Machetele urmează meniurile care există în client (`apps/client/src/app.ts`),
 | `C-Final.dc.html`                              | Final de meci: câștigător, clasare, Fitile și XP primite, nivel nou                                  | `roundOver`, `grantRewards` |
 | `C-Setari.dc.html`                             | Setări: Sound, Music, Vibration, Motion effects, 3D graphics quality, View                           | `settingsMenu`              |
 | `C-Transitions.dc.html`                        | Prototipul de tranziții                                                                              | —                           |
+| `C-Motion.dc.html`                             | Demo: răspuns la apăsare, mișcare ambientală, reacțiile personajului                                 | —                           |
 | `C-Login.dc.html`, `C-Login-FuseArena.dc.html` | Login cu cont — **pentru Faza 6**, nu există încă în joc                                             | —                           |
 | `C-Clasament.dc.html`                          | Clasament — **nu e în plan încă**, păstrat ca idee                                                   | —                           |
 
@@ -97,6 +98,57 @@ Jocul e **doar landscape** (D-054): aplicația nu se rotește în portrait. În 
 - **Navigare obișnuită:** o bandă neagră cu margine roșie trece peste ecran în ~0,5s; pagina se schimbă la jumătate.
 - La `prefers-reduced-motion` (și la setarea echivalentă din joc) ambele se reduc la o schimbare instantanee.
 - Timpii exacți și curbele sunt în `C-Transitions.dc.html` (blocul `@keyframes` și funcțiile `startMatch` / `wipeTo`).
+
+## Interacțiune: apăsare, sunet, vibrație
+
+Fiecare acțiune are trei răspunsuri simultane: vizual, sonor și tactil. Demo interactiv: `C-Motion.dc.html`. Vibrația trece prin `vibrate(ms)` din `apps/client/src/haptics.ts` (sub 25 ms = ușoară, 25–59 = medie, de la 60 = puternică) și respectă `settings.vibration`; sunetele sunt sintetizate în `audio/sfx.ts` și respectă `settings.sound`.
+
+| Acțiune                                  | Vizual                                                      | Sunet                                | Vibrație                                  |
+| ---------------------------------------- | ----------------------------------------------------------- | ------------------------------------ | ----------------------------------------- |
+| Buton principal                          | intră 6px în propria umbră (80 ms), revine în 120 ms        | „pop” grav                           | 12 ms                                     |
+| Buton secundar, „Back”, panou            | intră 3–4px în umbră                                        | „tick” scurt                         | 8 ms                                      |
+| Ștampilă ON/OFF                          | ștampila cade de la 1,5× la 1× în 180 ms                    | „stamp”; mai grav la OFF             | 15 ms                                     |
+| Alegere în grilă (mod, personaj, obiect) | cartea se ridică 3px, umbra devine roșie, apare „PICKED!”   | două note urcătoare                  | 10 ms                                     |
+| Element blocat                           | se scutură stânga-dreapta 240 ms; personajul se întristează | bâzâit scurt „nope”                  | 20 · pauză 40 · 20 ms                     |
+| Cumpărare                                | apare ștampila „YOURS!”, Fitile numără în jos               | `tada`                               | 30 ms                                     |
+| Nivel nou, recompensă                    | explozie („burst”) + cifrele numără în sus                  | `tada`                               | 30 · 60 · 30 ms                           |
+| Schimbare de ecran (bandă)               | banda de cerneală, 520 ms                                   | `whoosh`                             | —                                         |
+| Start de meci (fitil)                    | numărătoare 3-2-1, apoi „BOOM!”                             | `sizzle` cât arde, explozie la final | 10 ms la fiecare cifră, 80 ms la explozie |
+| Conexiune pierdută                       | panoul cade în ecran                                        | notă coborâtoare                     | 40 · 80 · 40 ms                           |
+
+Reguli:
+
+- Răspunsul vizual pornește la **apăsare** (`pointerdown`), nu la ridicarea degetului; acțiunea se execută la ridicare.
+- Fără vibrație la derulare, la glisare sau la schimbările pe care nu le-a provocat jucătorul.
+- Sunetele din meniuri sunt mai încete decât cele din meci și nu se suprapun: cel mult unul la 60 ms.
+- Nimic nu depinde doar de sunet sau doar de vibrație; ambele pot fi oprite din setări.
+
+## Mișcare ambientală
+
+- **Razele** din spatele personajelor se rotesc foarte lent (o tură la 90 s).
+- **Ștampilele de atenție** („NEW!”, „READY!”) pulsează o dată la 3 s. **Semnele de întrebare** din locurile goale se leagănă (±7°, 1,2 s).
+- **Rasterul galben stă pe loc**, iar panourile își păstrează înclinarea fixă: fundalul nu concurează cu conținutul.
+- Cel mult **două** animații în buclă pe ecran, în afara personajului. În timpul meciului, interfața nu are nicio animație în buclă în afara celor legate de joc (SUPER încărcat, steag plecat).
+- Toate buclele se opresc când `settings.motion` e oprit (implicit la `prefers-reduced-motion`) și când aplicația e în fundal.
+
+## Personajele din meniuri
+
+Personajele din meniuri sunt cele din joc, desenate de `Portraits` (`apps/client/src/ui/portrait.ts`) cu expresiile din `paint.ts`.
+
+- **În repaus:** se leagănă ușor (4px, 1,6 s) și clipesc la 3–5 s. Privesc spre ultimul element atins (parametrul `face`).
+- **Reacții**, 0,8–1,4 s, apoi înapoi în repaus:
+
+| Moment                                              | Expresie                                                     | Balon                   |
+| --------------------------------------------------- | ------------------------------------------------------------ | ----------------------- |
+| Apeși PLAY!, START!                                 | încruntat, hotărât (expresie nouă, de adăugat în `paint.ts`) | replică de luptă        |
+| Îl alegi, cumperi ceva, câștigi                     | `happy`                                                      | replică de bucurie      |
+| Apeși ceva blocat, pierzi conexiunea, pierzi meciul | `doom` (trist, cu strop de transpirație)                     | replică scurtă de necaz |
+| Oprești sunetul                                     | `doom`, scurt                                                | „Fine. I’ll whisper.”   |
+| Nimic de 20 s                                       | cască sau se uită în jur                                     | —                       |
+
+- Replicile din baloane vin din `packages/content` (aceleași `quips` ca în meci), câte una la o reacție, fără să se repete imediat.
+- Pe un ecran reacționează **un singur** personaj: cel mare. Cele mici din grile doar clipesc.
+- Cu `settings.motion` oprit, personajele stau pe loc, dar își schimbă în continuare expresia.
 
 ## Ce nu e desenat încă
 

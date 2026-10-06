@@ -102,6 +102,7 @@ Nu trece la faza următoare până nu trec criteriile. Progresul se ține în `d
 - Ecranele existente refăcute pe rând: meniul principal, Play, Online, camera privată și jocul rapid, personajele și pagina de personaj, magazinul, pauza, setările, finalul de meci, bannerele de conexiune; apoi Missions, Practice și Themes, care nu au machetă.
 - HUD-ul din joc (bară de 44px, variante FFA / echipe / steag) și controalele din 3D.
 - Tranzițiile: fitil + explozie la start de meci, bandă de cerneală la navigare; reduse la `prefers-reduced-motion`.
+- Răspunsul la apăsare (vizual + sunet + vibrație), mișcarea ambientală și reacțiile personajelor din meniuri, după tabelele din `docs/design/ui.md`; sunete noi de interfață în `audio/sfx.ts`, expresia „încruntat” în `paint.ts`.
 - HUD-ul primește și butoanele de acțiune din machetă (SUPER, bomba specială, BOOM!).
 - Ecranele fără funcționalitate încă (login cu cont, clasament) se fac în fazele lor, după aceleași machete.
 

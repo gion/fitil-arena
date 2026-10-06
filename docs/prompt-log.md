@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Ghid de interacțiune: sunet, vibrație, mișcare
+
+- **Cerut:** îndrumări pentru interacțiunea cu interfața: feedback tactil și sunete la apăsare și la schimbarea ecranului, animații de fundal, reacții ale personajelor din meniuri.
+- **Făcut:** trei secțiuni noi în `docs/design/ui.md` (tabel acțiune → vizual / sunet / vibrație, reguli de mișcare ambientală, expresii și reacții ale personajelor), macheta interactivă `reference/ui/C-Motion.dc.html`, un task în Faza 4b. Fără schimbări de cod.
+- **Verificat:** `pnpm lint`. Demo-ul nu a fost rulat după export.
+- **Notă operațională:** duratele de vibrație sunt propuneri, de reglat pe telefon real. Expresia „încruntat” și sunetele de interfață („pop”, „tick”, „stamp”, „nope”) nu există încă în cod.
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Machetele aduse la zi cu Faza 4; doar landscape
 
 - **Cerut:** încă o iterație de design înainte de merge, cu contextul de pe `main`; în plus, jocul să fie doar landscape, fără rotire în portrait.
