@@ -27,6 +27,10 @@ export interface Settings {
   name: string;
   /** Jocul clasic: fără personaje și fără încărcări (Q-005). */
   classic: boolean;
+  /** Arena se înregistrează în meci, pentru „Save clip” (ultimele 10–20s). */
+  clips: boolean;
+  /** Statistici anonime (PostHog) și rapoarte de erori (Sentry); doar dacă build-ul are chei. */
+  stats: boolean;
 }
 
 const KEY = 'fitil-settings';
@@ -55,6 +59,8 @@ function load(): Settings {
     stars: {},
     name: '',
     classic: false,
+    clips: true,
+    stats: true,
   };
   try {
     const raw = localStorage.getItem(KEY);

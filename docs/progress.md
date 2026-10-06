@@ -351,3 +351,33 @@ Ambele: 20.0 cadre/s primite de fiecare client, o singură instanță, RSS ~190 
 - Emote-urile și fatalitățile nu se sincronizează în Infinit online (fatalitatea se alege din ținuta ucigașului, care e în roster, deci merge; emote-urile nu).
 - Shard-urile sunt per proces: la mai multe procese trebuie Redis presence (Q-003).
 - Testele server cu Postgres s-au sărit (fără `TEST_DATABASE_URL` aici); codul de conturi nu s-a schimbat.
+
+## Faza 8 — Mobil & store readiness (2026-10-06)
+
+**Mini-plan:**
+
+1. **Nativ (Capacitor)**: splash până e gata jocul, bara de stare ascunsă, ecranul ținut aprins în meci, pauză + sunet oprit când aplicația trece în fundal, butonul „înapoi” pe Android (pauză / ecranul anterior).
+2. **Deep links**: `fusearena://join/ABCD` și link web `…/?join=ABCD` → intri direct în camera privată; butonul SHARE din cameră trimite linkul.
+3. **„Save clip”**: ultimele 10–20s din arenă (canvas) înregistrate continuu în meci, salvate / partajate la cerere (buton în pauză și pe ecranul de final).
+4. **Analytics (PostHog) și crash reporting (Sentry)**: clienți mici proprii peste API-urile lor HTTP (fără SDK-uri grele), activi doar cu chei în `.env`; evenimente pentru retenție D1/D7, durata sesiunii, funnel-ul tutorialului; comutator în Setări.
+5. **Web din link**: același build; pe web (nu în aplicație) apare îndemnul la instalare (linkuri de store provizorii).
+6. **Build-uri**: workflow GitHub Actions `mobile.yml` — Android debug APK + pornire pe emulator cu captură; iOS build pentru simulator + pornire (doar manual, macOS costă minute).
+7. **Store**: `docs/store-checklist.md`; capturi și clipuri pentru store / devlog generate din Playwright (`pnpm --filter @fitil/client store:shots`).
+
+**Făcut:**
+
+- **Nativ** (`apps/client/src/native.ts`, D-073): splash până e gata jocul (plasă de siguranță 5s), bara de stare ascunsă, ecran ținut aprins doar în meci (`keep-awake` / Screen Wake Lock pe web), pauză + `AudioContext.suspend()` în fundal, butonul „înapoi” pe Android (pauză → reluare → ecranul anterior / foaia deschisă → aplicația în fundal din meniul principal).
+- **Deep links**: `fusearena://join/ABCD` (Android `intent-filter`, iOS `CFBundleURLTypes`; `SceneDelegate` le trimitea deja către Capacitor) și `…/?join=ABCD` pe web; parametrul se scoate din adresă după intrare. SHARE din cameră trimite linkul (`inviteUrl`: `VITE_WEB_URL`, altfel pagina curentă, altfel schema proprie).
+- **„Save clip”** (`clip.ts`, D-074): copie micșorată a arenei (max 960px lățime, 30 fps) înregistrată de două `MediaRecorder` decalate; butonul cu cameră în pauză (offline și online) și pe ecranul de final; în aplicație prin foaia de partajare (`@capacitor/filesystem` + `@capacitor/share`), pe web Share sau descărcare; comutator „Record clips”.
+- **Telemetrie** (`telemetry.ts`, D-075): PostHog (retenție, sesiuni, funnel tutorial, meciuri, clipuri, invitații) și Sentry (erori JS neprinse) prin clienți proprii, activi doar cu chei; comutator „Anonymous stats”.
+- **Web din link**: butonul „GET THE APP” pe web când există `VITE_STORE_IOS` / `VITE_STORE_ANDROID` (linkul potrivit telefonului).
+- **CI** (`.github/workflows/mobile.yml`, D-076): Android debug APK + pornire pe emulator (Android 14) cu capturi la start și după deep link, fără crash în logcat; iOS build pentru simulator + pornire, doar manual.
+- **Store**: `docs/store-checklist.md`; `pnpm --filter @fitil/client store:shots` → capturi 1920×1080 (Google Play) și 2796×1290 (iPhone 6.7"), plus un clip de devlog de 20s, în `apps/client/store-shots/` (în afara git-ului).
+- **Teste**: client 24 (6 noi: linkuri, dispozitiv, stive și cererea Sentry), e2e `mobile.spec.ts` (intrare în cameră prin `?join=`, „Save clip” produce un video din arenă).
+
+**Rămas / cunoscut:**
+
+- Build-urile native nu se pot face în containerul de lucru (Android SDK / Xcode nedisponibile): le verifică workflow-ul `Mobile` pe PR (Android) și la cerere (iOS).
+- Checkpoint uman: conturile Apple / Google, nume + `appId` final, iconița finală, capturile alese, domeniul pentru App Links / Universal Links (Q-016), consimțământul pentru statistici (Q-014), build-urile iOS în CI (Q-015), politica de confidențialitate (Q-011).
+- Înregistrarea din vederea 3D e verificată în Chromium; în WebView-ul iOS rămâne de verificat pe dispozitiv (dacă iese neagră, copia se face imediat după randare).
+- Erorile native (Swift/Kotlin) nu ajung în Sentry; doar cele JS.

@@ -7,6 +7,10 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   ios: { contentInset: 'never', backgroundColor: '#141726' },
   android: { backgroundColor: '#141726' },
+  plugins: {
+    // ecranul de pornire stă până e gata jocul (`hideSplash` în main.ts)
+    SplashScreen: { launchAutoHide: false, backgroundColor: '#141726', showSpinner: false },
+  },
 };
 
 export default config;

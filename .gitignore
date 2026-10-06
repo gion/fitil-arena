@@ -27,3 +27,4 @@ xcuserdata
 tools/voice/**/.venv
 tools/voice/out
 __pycache__
+store-shots

@@ -30,6 +30,9 @@ export const icon = {
       '<circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
     ),
   pause: () => svg('0 0 24 24', '<path d="M8 5v14M16 5v14"/>', 'ico pause'),
+  /** Cameră video („Save clip”). */
+  clip: () =>
+    svg('0 0 24 24', '<rect x="3" y="7" width="12" height="10" rx="1"/><path d="M15 11l6-3v8l-6-3z"/>'),
   heart: () =>
     svg('0 0 24 22', '<path d="M12 21 L2 10 a5.5 5.5 0 0 1 10 -5 a5.5 5.5 0 0 1 10 5z"/>', 'heart'),
 };

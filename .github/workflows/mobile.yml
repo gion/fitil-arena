@@ -1,0 +1,104 @@
+# Build-uri native (Faza 8): Android debug APK pornit pe emulator, iOS pentru simulator.
+# Android rulează pe PR-urile care ating clientul; iOS doar manual (runner-ele macOS consumă minute de ~10× mai mult).
+name: Mobile
+on:
+  pull_request:
+    paths: ['apps/client/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/mobile.yml']
+  workflow_dispatch:
+    inputs:
+      ios:
+        description: 'Și build-ul iOS (macOS)'
+        type: boolean
+        default: false
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21, cache: gradle }
+      - run: pnpm install --frozen-lockfile
+      - name: Web build + cap sync
+        working-directory: apps/client
+        run: pnpm build && npx cap sync android
+      - name: APK debug
+        working-directory: apps/client/android
+        run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fuse-arena-debug-apk
+          path: apps/client/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: KVM pentru emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Pornire pe emulator (Android 14)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: |
+            adb install -r apps/client/android/app/build/outputs/apk/debug/app-debug.apk
+            adb logcat -c
+            adb shell am start -W -n ro.fitil.arena/.MainActivity
+            sleep 30
+            adb shell pidof ro.fitil.arena
+            adb exec-out screencap -p > android-start.png
+            adb shell am start -W -a android.intent.action.VIEW -d fusearena://join/ABCD ro.fitil.arena
+            sleep 8
+            adb shell pidof ro.fitil.arena
+            adb exec-out screencap -p > android-deeplink.png
+            adb logcat -d > android-logcat.txt
+            ! grep -E "FATAL EXCEPTION|AndroidRuntime: Process: ro.fitil.arena" android-logcat.txt
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-emulator
+          path: |
+            android-*.png
+            android-logcat.txt
+
+  ios:
+    if: github.event_name == 'workflow_dispatch' && inputs.ios
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Web build + cap sync
+        working-directory: apps/client
+        run: pnpm build && npx cap sync ios
+      - name: Build pentru simulator (fără semnare)
+        working-directory: apps/client/ios/App
+        run: >-
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Pornire pe simulator
+        run: |
+          DEV=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$DEV"
+          xcrun simctl install "$DEV" apps/client/ios/App/build/Build/Products/Debug-iphonesimulator/App.app
+          xcrun simctl launch "$DEV" ro.fitil.arena
+          sleep 30
+          xcrun simctl io "$DEV" screenshot ios-start.png
+          xcrun simctl openurl "$DEV" fusearena://join/ABCD
+          sleep 8
+          xcrun simctl io "$DEV" screenshot ios-deeplink.png
+          xcrun simctl spawn "$DEV" launchctl list | grep -q ro.fitil.arena
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator
+          path: ios-*.png
