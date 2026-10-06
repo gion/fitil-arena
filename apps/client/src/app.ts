@@ -756,7 +756,8 @@ export class App {
 
   /** Panoul DEV (doar în build-urile interne; modulul lipsește din build-ul public). */
   private async openDev(): Promise<void> {
-    if (!DEV_TOOLS) return;
+    // condiția e constantă la compilare: în build-ul public importul (și modulul) dispar
+    if (!__DEV_TOOLS__) return;
     const { devScreen } = await import('./dev/panel.ts');
     const open = (): HTMLElement =>
       devScreen({

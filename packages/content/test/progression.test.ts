@@ -72,7 +72,9 @@ describe('personaje: nivel + Fitile, calendar, rotație', () => {
       expect(selectChar(defaultProfile(), id, at(1, '2026-10-05')).ok).toBe(true);
     }
     // în câteva săptămâni rotația se schimbă
-    const weeks = new Set(['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26'].map((d) => weeklyRotation(d).join()));
+    const weeks = new Set(
+      ['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26'].map((d) => weeklyRotation(d).join()),
+    );
     expect(weeks.size).toBeGreaterThan(1);
   });
 });
@@ -83,7 +85,10 @@ describe('teme', () => {
     expect(themeState(p, 'clasic', at(1)).kind).toBe('open');
     expect(themeState(p, 'jungla', at(1))).toEqual({ kind: 'level', level: 8 });
     expect(themeState(p, 'halloween', at(1, '2026-10-20')).kind).toBe('event');
-    expect(themeState(p, 'halloween', at(1, '2026-12-20'))).toEqual({ kind: 'buy', price: EVENT_THEME_PRICE });
+    expect(themeState(p, 'halloween', at(1, '2026-12-20'))).toEqual({
+      kind: 'buy',
+      price: EVENT_THEME_PRICE,
+    });
     const b = buyTheme(p, 'halloween', at(1, '2026-12-20'));
     expect(b.ok && b.profile.themes).toContain('halloween');
   });
@@ -108,7 +113,11 @@ describe('teme', () => {
   it('un jucător nou vede puțin: FFA, 3 personaje, 2 teme (+ tema de eveniment activă)', () => {
     const keys = openKeys(defaultProfile(), at(1, '2026-10-05'));
     expect(keys.filter((k) => k.startsWith('mode:'))).toEqual(['mode:ffa']);
-    expect(keys.filter((k) => k.startsWith('theme:')).sort()).toEqual(['theme:clasic', 'theme:halloween', 'theme:neon']);
+    expect(keys.filter((k) => k.startsWith('theme:')).sort()).toEqual([
+      'theme:clasic',
+      'theme:halloween',
+      'theme:neon',
+    ]);
     // 3 comuni + 2 din rotație
     expect(keys.filter((k) => k.startsWith('char:'))).toHaveLength(5);
   });

@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Deblocări treptate, calendar, panou DEV
+
+- **Cerut:** un mod de admin/test în care proprietarul vede tot, în timp ce jucătorul normal primește conținutul puțin câte puțin (nivel, monede), cu previzualizări și conținut nou periodic (teme de eveniment, personaje). Sugestii, apoi implementare; alese variantele recomandate: panou DEV în build-uri interne, nivel + Fitile, personaj lunar + teme de eveniment.
+- **Făcut:** `progression.ts` și gating în economie (content), ceas și profiluri de test (client), lacăte/teasere/„NEW” în meniuri, panoul DEV, deciziile D-039 – D-041. Branch `feat/deblocari-dev-panel`, PR peste #3.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 96, content 27, net 6, server 4), Playwright 18/18; build-ul public nu conține panoul (niciun chunk, verificat în `dist`), build-ul cu `VITE_DEV_TOOLS=1` îl conține; manual în browser: profil „New player”, data mutată pe 25 octombrie (Halloween, Ghost lansat și în rotație), +1 nivel deschide 1 vs 1.
+- **Notă operațională:** build intern: `VITE_DEV_TOOLS=1 pnpm build`. Calendarul se editează în `packages/content/src/progression.ts` (`CHAR_RELEASE`). Prima variantă a steagului (`import.meta.env` citit în alt modul) lăsa chunk-ul panoului în build-ul public; acum e o constantă `define`.
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Personaje, progresie, magazin (implementare)
 
 - **Cerut:** „continuă cu implementarea lucrurilor noi, fă acțiunile recomandate și împinge codul în PR-ul acela” (PR #3).

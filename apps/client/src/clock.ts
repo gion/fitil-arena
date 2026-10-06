@@ -1,5 +1,5 @@
 /** Uneltele de dezvoltare (panoul DEV): doar în `pnpm dev` și în build-urile interne (`VITE_DEV_TOOLS=1`). */
-export const DEV_TOOLS = import.meta.env.DEV || import.meta.env.VITE_DEV_TOOLS === '1';
+export const DEV_TOOLS: boolean = __DEV_TOOLS__;
 
 const KEY = 'fitil-dev-date';
 

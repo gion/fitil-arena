@@ -59,7 +59,13 @@ export const MODE_LEVEL: Record<ModeId, number> = {
 };
 
 /** Nivelul de jucător cerut pentru a cumpăra un personaj de fiecare raritate. */
-export const RARITY_LEVEL: Record<Rarity, number> = { common: 1, rare: 3, epic: 6, legendary: 10, mythic: 15 };
+export const RARITY_LEVEL: Record<Rarity, number> = {
+  common: 1,
+  rare: 3,
+  epic: 6,
+  legendary: 10,
+  mythic: 15,
+};
 
 /**
  * Calendarul personajelor noi (provizoriu, editabil aici; din Faza 6 vine de pe server).
@@ -73,7 +79,14 @@ export const CHAR_RELEASE: Record<string, string> = {
 };
 
 /** Temele de bază și nivelul la care se deschid; cele de eveniment sunt gratuite în perioada lor. */
-export const THEME_LEVEL: Record<string, number> = { clasic: 1, neon: 1, pixel: 2, cosmos: 4, cuburi: 6, jungla: 8 };
+export const THEME_LEVEL: Record<string, number> = {
+  clasic: 1,
+  neon: 1,
+  pixel: 2,
+  cosmos: 4,
+  cuburi: 6,
+  jungla: 8,
+};
 /** O temă de eveniment în afara perioadei: o păstrezi dacă ai jucat în timpul evenimentului, altfel o cumperi. */
 export const EVENT_THEME_PRICE = 300;
 
@@ -141,10 +154,7 @@ const inSeason = (id: string, date: string): boolean => {
 };
 
 export type ThemeState =
-  | { kind: 'open' }
-  | { kind: 'event' }
-  | { kind: 'level'; level: number }
-  | { kind: 'buy'; price: number };
+  { kind: 'open' } | { kind: 'event' } | { kind: 'level'; level: number } | { kind: 'buy'; price: number };
 
 export function themeState(p: Profile, id: string, a: Access): ThemeState {
   if (a.admin || p.themes.includes(id)) return { kind: 'open' };
@@ -158,13 +168,15 @@ export const themeOpen = (p: Profile, id: string, a: Access): boolean =>
   ['open', 'event'].includes(themeState(p, id, a).kind);
 
 /** Temele de eveniment active la o dată (le păstrezi dacă joci un meci atunci). */
-export const eventThemes = (date: string): string[] => THEMES.filter((t) => inSeason(t.id, date)).map((t) => t.id);
+export const eventThemes = (date: string): string[] =>
+  THEMES.filter((t) => inSeason(t.id, date)).map((t) => t.id);
 
 /** Ce se deschide exact la un nivel de jucător (pentru banner și insignele „NEW”). */
 export function unlocksAt(level: number): string[] {
   const out: string[] = [];
   for (const m of MODE_IDS) if (MODE_LEVEL[m] === level && level > 1) out.push(MODES[m].name);
-  for (const [id, lv] of Object.entries(THEME_LEVEL)) if (lv === level && level > 1) out.push(`${themeById(id).name} theme`);
+  for (const [id, lv] of Object.entries(THEME_LEVEL))
+    if (lv === level && level > 1) out.push(`${themeById(id).name} theme`);
   for (const [r, lv] of Object.entries(RARITY_LEVEL) as [Rarity, number][])
     if (lv === level && level > 1) out.push(`${RARITY[r].name} characters`);
   return out;
