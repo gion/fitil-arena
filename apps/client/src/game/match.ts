@@ -39,6 +39,9 @@ export interface Finale {
 /** Cât ține momentul final (s, timp real). */
 export const FINALE_S = 1;
 
+/** Cât ține încetinirea „bye bye” (s, timp real). */
+export const DOOM_S = 1.3;
+
 export interface Doom {
   t: number;
   bomb: number | null;
@@ -88,6 +91,8 @@ export class Match {
   doom: Doom | null = null;
   hero: Hero | null = null;
   finale: Finale | null = null;
+  /** Bomba pentru care „bye bye” a rulat deja (nu se reia pentru aceeași). */
+  private lastDoom: number | null = null;
   /** Fatalitatea jucată pe fiecare victimă (aleasă din ținuta ucigașului). */
   readonly fats = new Map<number, string>();
   /** Emote-urile de pe ecran (id + secunde scurse). */
@@ -174,9 +179,9 @@ export class Match {
   /** Viteza timpului: 40% la „bye bye”, 30% la maxime, 100% altfel. */
   private get scale(): number {
     if (this.net) return 1; // online simularea nu se încetinește (D-017)
-    if (this.doom) return this.me.alive ? 0.4 : 0.7;
+    if (this.doom) return this.me.alive ? 0.55 : 0.7;
     if (this.finale) return 0.35;
-    if (this.hero && this.hero.kind !== 'win' && this.hero.kind !== 'team') return 0.3;
+    if (this.hero && this.hero.kind !== 'win' && this.hero.kind !== 'team') return 0.5;
     return 1;
   }
 
@@ -339,7 +344,7 @@ export class Match {
     if (s.players.length > 1 && sides.size <= 1) this.finale = { t: 0, player: e.player };
   }
 
-  private startHero(kind: HeroKind, player: number, dur = 1.7): void {
+  private startHero(kind: HeroKind, player: number, dur = 1): void {
     const p = this.s.players[player];
     if (!p || !p.alive || this.doom) return;
     const lines = HERO_LINES[kind];
@@ -356,6 +361,8 @@ export class Match {
     if (this.s.mission && me.hp > 35) return;
     const b = doomBomb(this.s, me);
     if (b === null) return;
+    if (b === this.lastDoom) return;
+    this.lastDoom = b;
     this.doom = { t: 0, bomb: b, said: false };
     this.hero = null;
     this.emit({ type: 'doomStart' });
@@ -373,14 +380,16 @@ export class Match {
     this.emit({ type: 'emote', player: this.meId, id });
   }
 
-  private updateCinematics(dt: number): void {
+  private updateCinematics(scaled: number): void {
     const me = this.me;
+    // momentele cinematice se măsoară în timp real, ca încetinirea să nu le lungească
+    const dt = scaled / (this.net ? 1 : this.scale);
     for (const [k, e] of this.emotes) {
       e.t += dt;
       if (e.t > (emoteById(e.id)?.dur ?? 0)) this.emotes.delete(k);
     }
     if (this.finale) {
-      this.finale.t += dt / (this.net ? 1 : this.scale);
+      this.finale.t += dt;
       if (this.finale.t >= FINALE_S) this.finale = null;
     }
     const d = this.doom;
@@ -391,7 +400,10 @@ export class Match {
         d.said = true;
         this.emit({ type: 'bye' });
       }
-      if ((me.alive && d.t > 0.1 && !inDoomDanger(this.s, me)) || (!me.alive && deadFor >= 1.3)) {
+      if (
+        (me.alive && (d.t > DOOM_S || (d.t > 0.1 && !inDoomDanger(this.s, me)))) ||
+        (!me.alive && deadFor >= 1)
+      ) {
         this.doom = null;
         this.emit({ type: 'doomEnd' });
       }
