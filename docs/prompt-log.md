@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Zone sigure pe iPhone cu notch
+
+- **Cerut:** pe iPhone cu notch, în full screen, monedele din dreapta-sus nu se văd complet, iar notch-ul și colțurile rotunjite mușcă din marginea hărții; un padding interior puțin mai mare.
+- **Făcut:** `safeInsets()` în `apps/client/src/display.ts` (citește `env(safe-area-inset-*)`); `ArenaScene.area()` ține arena (și minimapa 3D) în zona sigură stânga/dreapta + 8px și jumătate din zona barei „home” jos; în CSS, marginile paginilor devin zona sigură + 24px (+16px pe ecrane mici), iar bara HUD primește +16px peste zona sigură. Pe ecranele fără zonă sigură nu se schimbă nimic.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `smoke` + `ui`: 10 trecute, testul de FPS pică și fără schimbare (container fără GPU). Pe iPhone neverificat.
+- **Notă operațională:** Playwright local are nevoie de `PW_CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` în containerul cloud.
+
 ## 2026-10-06 — Claude Code (Sonnet 5.5) — Faza 6: completări (server-first, daily, legal)
 
 - **Cerut:** „adaugă și ce lipsește”; răspunsuri: textele legale sau pagini cu lorem ipsum, serverul sursa de adevăr.
