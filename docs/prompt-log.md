@@ -3,6 +3,27 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Ghid de interacțiune: sunet, vibrație, mișcare
+
+- **Cerut:** îndrumări pentru interacțiunea cu interfața: feedback tactil și sunete la apăsare și la schimbarea ecranului, animații de fundal, reacții ale personajelor din meniuri.
+- **Făcut:** trei secțiuni noi în `docs/design/ui.md` (tabel acțiune → vizual / sunet / vibrație, reguli de mișcare ambientală, expresii și reacții ale personajelor), macheta interactivă `reference/ui/C-Motion.dc.html`, un task în Faza 4b. Fără schimbări de cod.
+- **Verificat:** `pnpm lint`. Demo-ul nu a fost rulat după export.
+- **Notă operațională:** duratele de vibrație sunt propuneri, de reglat pe telefon real. Expresia „încruntat” și sunetele de interfață („pop”, „tick”, „stamp”, „nope”) nu există încă în cod.
+
+## 2026-10-06 — Claude Code (Opus 5.5) — Machetele aduse la zi cu Faza 4; doar landscape
+
+- **Cerut:** încă o iterație de design înainte de merge, cu contextul de pe `main`; în plus, jocul să fie doar landscape, fără rotire în portrait.
+- **Făcut:** machetele „Comic” refăcute după meniurile reale din `apps/client/src/app.ts` și textele din `packages/content`: meniu principal, Play, Online (nou), cameră privată, joc rapid, personaje (11, cu stări), pagina de personaj (nouă), magazin (nou), setări, pauză, final de meci, HUD (inimi, SUPER, bombă specială, BOOM!). `reference/ui/` recopiat (21 de fișiere), `docs/design/ui.md` actualizat (tabel ecran ↔ funcție din client, HUD, orientare), decizia D-054, task-ul de landscape în Faza 4b. Fără schimbări de cod.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`. Machetele nu au fost verificate vizual după export.
+- **Notă operațională:** login-ul și clasamentul rămân pe canvas ca ecrane de viitor (Faza 6, respectiv neplanificat). `GAME_DESIGN.md` nu a fost modificat, deși mai descrie portrait și bara de 30px.
+
+## 2026-10-06 — Claude Code (Opus 5.5) — Direcția vizuală a interfeței („Comic”)
+
+- **Cerut:** 2–3 iterații de design pentru ecranele jocului (login, setări, personaje etc.), mai „de joc” și mai amuzante; pe parcurs: doar landscape, texte în engleză, ecrane de joc, tranziții cu fitil și explozie, impactul numelui „Fuse Arena”; la final, direcția C aleasă și adusă în proiect.
+- **Făcut:** canvas de design cu două direcții („Toy” și „Comic”) pe aceleași ecrane; aleasă „Comic”. În repo: `docs/design/ui.md` (tokeni, componente, ecrane, HUD, tranziții), `reference/ui/` (18 machete + README), o linie în `CLAUDE.md`, Faza 4b în `PLAN.md`, deciziile D-051–D-053, Q-002 închisă, Q-010 (numele) deschisă, mini-plan în `docs/progress.md`. Fără schimbări de cod.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (vezi commit-ul). Machetele nu au fost verificate vizual după export.
+- **Notă operațională:** `CLAUDE.md` și `PLAN.md` au fost modificate aici; copiile din proiectul claude.ai trebuie actualizate manual ca să rămână identice. Machetele `.dc.html` nu se deschid singure în browser; se văd în canvas (link în `reference/ui/README.md`).
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Faza 4: integrarea ramurii existente
 
 - **Cerut:** „continuă cu Faza 4” după merge-ul PR-ului #5. Exista deja ramura `feat/faza-4-personaje` (altă sesiune, 2026-10-01) cu Faza 4 completă, dar cu alt sistem de personaje; userul a ales integrarea ei, cu semnăturile din `main` și Super-urile din ramură.
