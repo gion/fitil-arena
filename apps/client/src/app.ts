@@ -16,7 +16,7 @@ import {
   missionGoal,
   missionStars,
 } from '@fitil/sim';
-import type { BotLevel, Dir, GameState, TutorialStep } from '@fitil/sim';
+import type { BotLevel, ChallengeId, Dir, GameState, TutorialStep } from '@fitil/sim';
 import {
   BOT_NAMES,
   CHAPTERS,
@@ -41,6 +41,9 @@ import {
   seasonalTheme,
   themeById,
   CAT_NAMES,
+  defaultProfile,
+  LEGAL,
+  LEGAL_PLACEHOLDER,
   emoteById,
   fatalityById,
   CHARACTERS,
@@ -84,6 +87,8 @@ import type { Renderer3D } from './render3d/Renderer3D.ts';
 import { currentTheme, save, settings } from './settings.ts';
 import type { Quality, View } from './settings.ts';
 import { $, h, show } from './ui/dom.ts';
+import { account } from './online/account.ts';
+import type { Op } from './online/account.ts';
 import { OnlineSession } from './online/session.ts';
 import { store, today } from './profile.ts';
 import { DEV_TOOLS, now } from './clock.ts';
@@ -238,6 +243,13 @@ export class App {
     });
     this.showScreen(() => this.mainMenu());
     this.setView(settings.view, false);
+    // cont anonim (în fundal): dacă serverul nu răspunde, jocul rămâne offline
+    if (!OFFLINE_ONLY)
+      void account.bootstrap(store.real).then((p) => {
+        if (!p) return;
+        this.adopt(p);
+        void account.flushClaims((q) => this.adopt(q));
+      });
     if (!OFFLINE_ONLY) void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
   }
 
@@ -886,6 +898,15 @@ export class App {
     o.net.onSnap = () => {
       if (this.online === o && this.match?.net !== o.net) this.startOnline(o);
     };
+    o.onOutcome = (r) => {
+      this.adopt(r.profile);
+      if (r.trophyDelta !== 0)
+        this.showBanner(
+          `${r.trophyDelta > 0 ? '+' : ''}${r.trophyDelta} trophies · ${r.trophies} with ${charById(r.ch ?? 'bubu').name}`,
+          3200,
+          r.trophyDelta > 0 ? 'gold' : 'bad',
+        );
+    };
     o.onStatus = (st, reason) => {
       if (this.online !== o) return;
       if (st === 'reconnecting') this.connLost();
@@ -1329,9 +1350,26 @@ export class App {
     return { name, ch: this.playCh(), outfit: store.profile.eq };
   }
 
-  private setProfile(p: Profile): void {
+  /**
+   * Profilul de pe server devine cel local (D-067). Insignele „NEW” (`seen`) rămân locale. Profilurile de test
+   * din panoul DEV nu se ating.
+   */
+  private adopt(p: Profile): void {
+    if (store.active) return;
+    store.set({ ...p, seen: store.real.seen });
+    this.online?.setMe({ ch: p.ch, outfit: p.eq });
+  }
+
+  /** Schimbă profilul: imediat pe ecran (optimist), apoi serverul confirmă sau aduce înapoi starea lui. */
+  private commit(p: Profile, ...ops: Op[]): void {
     store.set(p);
     this.online?.setMe({ ch: p.ch, outfit: p.eq });
+    if (!account.linked || store.active || !ops.length) return;
+    account.enqueue(
+      ops,
+      (q) => this.adopt(q),
+      (why) => this.showBanner(why, 3200, 'bad'),
+    );
   }
 
   private rarityChip(r: keyof typeof RARITY): HTMLElement {
@@ -1488,7 +1526,7 @@ export class App {
             st.kind === 'rotation' ? 'PLAY FREE THIS WEEK' : 'SELECT',
             () => {
               const r = selectChar(store.profile, id, store.access());
-              if (r.ok) this.setProfile(r.profile);
+              if (r.ok) this.commit(r.profile, { path: '/chars/select', body: { id } });
               this.sfx.init();
               this.sfx.voiceLine(c.voice);
               this.react('joy');
@@ -1515,7 +1553,11 @@ export class App {
                   const r = buyChar(store.profile, id, store.access());
                   if (!r.ok) return;
                   const sel = selectChar(r.profile, id, store.access());
-                  this.setProfile(sel.ok ? sel.profile : r.profile);
+                  this.commit(
+                    sel.ok ? sel.profile : r.profile,
+                    { path: '/chars/buy', body: { id } },
+                    { path: '/chars/select', body: { id } },
+                  );
                   this.celebrate('buy');
                   refresh();
                   this.react('joy');
@@ -1651,7 +1693,7 @@ export class App {
             'TAKE IT OFF',
             () => {
               const e = equip(store.profile, cat, null);
-              if (e.ok) this.setProfile(e.profile);
+              if (e.ok) this.commit(e.profile, { path: '/shop/equip', body: { cat, id: null } });
               refresh();
             },
             { 'data-test': 'shop-cta', style: ctaStyle },
@@ -1662,7 +1704,7 @@ export class App {
               'WEAR IT',
               () => {
                 const e = equip(store.profile, cat, sel.id);
-                if (e.ok) this.setProfile(e.profile);
+                if (e.ok) this.commit(e.profile, { path: '/shop/equip', body: { cat, id: sel.id } });
                 this.react('joy');
                 refresh();
               },
@@ -1685,7 +1727,11 @@ export class App {
                     const r = buyItem(store.profile, sel.id);
                     if (!r.ok) return;
                     const e = equip(r.profile, cat, sel.id);
-                    this.setProfile(e.ok ? e.profile : r.profile);
+                    this.commit(
+                      e.ok ? e.profile : r.profile,
+                      { path: '/shop/buy', body: { id: sel.id } },
+                      { path: '/shop/equip', body: { cat, id: sel.id } },
+                    );
                     this.celebrate('buy');
                     refresh();
                     this.react('joy');
@@ -1809,6 +1855,9 @@ export class App {
   private grantRewards(won: boolean, team: boolean): { line: HTMLElement; ups: [string, string][] } {
     const r: Rewards = reward(store.profile, { ...this.sum, won, team }, today());
     store.set(r.profile);
+    // cont legat: serverul recalculează recompensa (meciurile online le scrie deja camera)
+    if (account.linked && !store.active && !this.match?.net)
+      account.claim({ ...this.sum, won, team }, (q) => this.adopt(q));
     const ch = charById(r.profile.ch);
     const lv = levelOf(r.profile.xp[ch.id] ?? 0);
     const ups: [string, string][] = [
@@ -1915,6 +1964,25 @@ export class App {
         h(
           'div',
           { class: 'col grow' },
+          OFFLINE_ONLY ? null : h('h2', { class: 'sub-title' }, 'DAILY CHALLENGE'),
+          OFFLINE_ONLY
+            ? null
+            : h(
+                'div',
+                { class: 'cards' },
+                h(
+                  'button',
+                  { class: 'card', 'data-test': 'daily', onclick: () => void this.startDaily() },
+                  h('b', {}, 'Today’s challenge'),
+                  h('small', {}, 'Same for everyone. Fastest time wins.'),
+                ),
+                h(
+                  'button',
+                  { class: 'card', 'data-test': 'daily-board', onclick: () => void this.openDailyBoard() },
+                  h('b', {}, 'Leaderboard'),
+                  h('small', {}, 'Today’s top 20'),
+                ),
+              ),
           h('h2', { class: 'sub-title' }, 'CHALLENGES'),
           h(
             'div',
@@ -1976,7 +2044,7 @@ export class App {
                 if (st.kind === 'buy') {
                   const r = buyTheme(store.profile, t.id, store.access());
                   if (!r.ok) return;
-                  store.set(r.profile);
+                  this.commit(r.profile, { path: '/themes/buy', body: { id: t.id } });
                   this.celebrate('buy');
                 }
                 onPick(t.id);
@@ -2111,11 +2179,82 @@ export class App {
           h('div', { class: 'grow' }),
           h(
             'div',
+            { class: 'row', style: 'display:flex;gap:8px;flex-wrap:wrap' },
+            btn('sec', 'PRIVACY', () => this.go(() => this.legalScreen('privacy', self)), {
+              'data-test': 'privacy',
+              style: 'font-size:15px',
+            }),
+            btn('sec', 'TERMS', () => this.go(() => this.legalScreen('terms', self)), {
+              'data-test': 'terms',
+              style: 'font-size:15px',
+            }),
+            account.linked
+              ? btn('sec', 'DELETE ACCOUNT', () => this.go(() => this.deleteAccountScreen(self)), {
+                  'data-test': 'delete-account',
+                  style: 'font-size:15px',
+                })
+              : null,
+          ),
+          h(
+            'div',
             { style: 'font-size:12px;line-height:1.3' },
-            'Your progress is saved on this phone.',
+            account.linked
+              ? 'Your progress is saved on your account.'
+              : 'Your progress is saved on this phone.',
             h('br'),
             'Keys: arrows / WASD, Space bomb, E BOOM!, V view, P pause.',
           ),
+        ),
+      ),
+    );
+  }
+
+  /** Textele legale (provizorii, Q-011). */
+  private legalScreen(kind: 'privacy' | 'terms', onBack: () => HTMLElement): HTMLElement {
+    const page = LEGAL[kind];
+    return this.page(
+      'legal',
+      head(page.title.toUpperCase(), () => this.go(onBack)),
+      h(
+        'div',
+        { class: 'body', style: 'overflow:auto' },
+        panel(
+          'col grow',
+          caption(LEGAL_PLACEHOLDER, undefined, 'info'),
+          ...page.sections.flatMap((s) => [h('h2', { class: 'sub-title' }, s.h), h('p', {}, s.p)]),
+        ),
+      ),
+    );
+  }
+
+  /** Confirmarea ștergerii contului: șterge datele de pe server și resetează profilul local. */
+  private deleteAccountScreen(onBack: () => HTMLElement): HTMLElement {
+    return this.page(
+      'legal',
+      head('DELETE ACCOUNT', () => this.go(onBack)),
+      h(
+        'div',
+        { class: 'body' },
+        panel(
+          'col grow',
+          h(
+            'p',
+            {},
+            'This erases your account and everything saved on the server: characters, items, Fitile, trophies and match history. It cannot be undone.',
+          ),
+          btn(
+            'main',
+            'YES, DELETE EVERYTHING',
+            async () => {
+              if (await account.remove()) {
+                store.set(defaultProfile());
+                this.showBanner('Account deleted.', 2400);
+                this.go(() => this.mainMenu());
+              } else this.showBanner('Could not delete. Check your connection and try again.', 3200, 'bad');
+            },
+            { 'data-test': 'delete-confirm' },
+          ),
+          btn('sec', 'KEEP MY ACCOUNT', () => this.go(onBack)),
         ),
       ),
     );
@@ -3140,16 +3279,66 @@ export class App {
     }, 900);
   }
 
+  /** Provocarea zilei: tipul și seed-ul vin de la server. */
+  private async startDaily(): Promise<void> {
+    const d = await account.api<{ id: ChallengeId; seed: number }>('/daily');
+    if (!d) return this.showBanner('The daily challenge needs a connection.', 2600, 'bad');
+    this.start({ type: 'challenge', id: d.id, seed: d.seed, daily: true });
+  }
+
+  private async openDailyBoard(): Promise<void> {
+    const r = await account.api<{ day: string; top: { rank: number; name: string; ticks: number }[] }>(
+      '/daily/leaderboard',
+    );
+    if (!r) return this.showBanner('The leaderboard needs a connection.', 2600, 'bad');
+    this.go(() => this.dailyBoardScreen(r.day, r.top));
+  }
+
+  private dailyBoardScreen(day: string, top: { rank: number; name: string; ticks: number }[]): HTMLElement {
+    return this.page(
+      'daily-board',
+      head('DAILY TOP 20', () => this.go(() => this.practiceMenu()), caption(day, undefined, 'push')),
+      h(
+        'div',
+        { class: 'body', style: 'overflow:auto' },
+        panel(
+          'col grow',
+          top.length
+            ? h(
+                'ol',
+                { 'data-test': 'daily-top', style: 'margin:0;padding-left:1.5em;font-size:18px' },
+                ...top.map((t) => h('li', {}, `${t.name} · ${(t.ticks / TICK_HZ).toFixed(1)}s`)),
+              )
+            : h('p', {}, 'Nobody yet. Be the first!'),
+        ),
+      ),
+    );
+  }
+
+  /** Trimite rularea la server (care o reia în simulare) și arată timpul verificat. */
+  private async submitDaily(): Promise<string> {
+    const log = this.match?.log;
+    if (!log || !account.linked) return 'Sign-in needed to rank.';
+    const r = await account.post('/daily/score', { inputs: log });
+    const t = (r.data as { ticks?: number } | null)?.ticks;
+    return r.status === 200 && t
+      ? `Verified time: ${(t / TICK_HZ).toFixed(1)}s`
+      : 'Could not submit the score.';
+  }
+
   private challengeOver(ok: boolean): void {
     const k = this.kind;
     if (k.type !== 'challenge') return;
-    if (ok && !settings.challenges.includes(k.id)) {
+    const submit = ok && k.daily ? this.submitDaily() : null;
+    if (ok && !k.daily && !settings.challenges.includes(k.id)) {
       settings.challenges.push(k.id);
       save();
     }
     if (ok) this.sfx.win();
     setTimeout(
-      () => {
+      async () => {
+        if (this.kind !== k) return;
+        const line = submit ? await submit : null;
         if (this.kind !== k) return;
         this.phase = 'over';
         this.controls.enabled = false;
@@ -3157,7 +3346,10 @@ export class App {
           this.result(
             ok ? 'CHALLENGE COMPLETE!' : 'CHALLENGE FAILED',
             ok,
-            [caption(CHALLENGE_TEXT[k.id].desc, `${CHALLENGE_TEXT[k.id].name}:`)],
+            [
+              caption(CHALLENGE_TEXT[k.id].desc, `${CHALLENGE_TEXT[k.id].name}:`),
+              line ? caption(line, undefined, 'info') : null,
+            ],
             [
               btn('main', ok ? 'PLAY AGAIN' : 'TRY AGAIN', () => this.restart(), { 'data-test': 'again' }),
               btn('sec', 'MORE CHALLENGES', () =>

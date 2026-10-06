@@ -3,6 +3,15 @@ on: [push, pull_request]
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: fitil, POSTGRES_PASSWORD: fitil, POSTGRES_DB: fitil_test }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fitil" --health-interval 2s --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://fitil:fitil@localhost:5432/fitil_test
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -2,7 +2,7 @@ import { challengeSetup, createGame, createMission, createTutorial, dummiesSetup
 import type { BotLevel, ChallengeId, GameState, Tutorial, TutorialStep } from '@fitil/sim';
 import { ROSTER, charById, missionById } from '@fitil/content';
 import type { ModeId, Outfit } from '@fitil/content';
-import { buildOnline } from '@fitil/net';
+import { DAILY_ASPECT, buildOnline } from '@fitil/net';
 import type { SlotInfo } from '@fitil/net';
 
 export type PlayKind =
@@ -10,7 +10,8 @@ export type PlayKind =
   | { type: 'tutorial'; step: TutorialStep }
   /** Practice cu manechine; `ch` = încearcă un personaj (pagina personajului). */
   | { type: 'dummies'; ch?: string }
-  | { type: 'challenge'; id: ChallengeId }
+  /** `daily`: provocarea zilei (seed de la server, arenă 16:9 fixă, input-urile se înregistrează pentru verificare). */
+  | { type: 'challenge'; id: ChallengeId; seed?: number; daily?: boolean }
   | { type: 'mission'; id: string };
 
 /** Numele, culoarea, vocea (0–3, pentru țipete), personajul și ținuta unui jucător din meci. */
@@ -62,7 +63,11 @@ export function build(kind: PlayKind, bots: BotLevel, seed: number, aspect: numb
     };
   }
   if (kind.type === 'challenge')
-    return { s: createGame(challengeSetup(kind.id, seed, aspect)), slots: ffaSlots(), tutorial: null };
+    return {
+      s: createGame(challengeSetup(kind.id, kind.seed ?? seed, kind.daily ? DAILY_ASPECT : aspect)),
+      slots: ffaSlots(),
+      tutorial: null,
+    };
   // modurile de joc: aceeași construcție ca online (un om, restul boți; personaje dacă nu e clasic);
   // offline există și tufișuri
   const b = buildOnline(

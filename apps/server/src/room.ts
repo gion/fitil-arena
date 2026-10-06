@@ -1,10 +1,13 @@
 import { Room, ServerError } from '@colyseus/core';
 import type { Client, Delayed } from '@colyseus/core';
 import { TICK_MS } from '@fitil/sim';
-import { MODE_IDS, THEMES, seasonalTheme } from '@fitil/content';
-import type { ModeId } from '@fitil/content';
+import { MODE_IDS, THEMES, accessOf, bracketOf, isRanked, selectChar, seasonalTheme } from '@fitil/content';
+import type { ModeId, Outfit, Profile } from '@fitil/content';
 import { ArenaHost, CODE_LETTERS, RECONNECT_S } from '@fitil/net';
 import type { InputMsg, MeMsg, RoomCfg } from '@fitil/net';
+import { authenticate, getProfile, getTrophies, today } from './accounts.ts';
+import { getDatabase } from './database.ts';
+import { recordMatch } from './results.ts';
 
 /** Joc rapid: cât așteaptă camera alți jucători înainte să pornească cu boți. */
 const QUICK_WAIT_MS = 15_000;
@@ -26,12 +29,34 @@ interface CreateOpts {
   /** Cameră publică de joc rapid (definită ca `quick`, filtrată după `mode`). */
   quick?: boolean;
   mode?: string;
+  /** Treapta de trofee a camerei (joc rapid clasat). */
+  bracket?: number;
   /** Doar în dezvoltare/teste: cât așteaptă jocul rapid înainte să pornească. */
   waitMs?: number;
 }
 
 interface JoinOpts extends MeMsg {
   aspect?: number;
+  /** Tokenul contului (anonim); fără el, intri ca vizitator: joci, dar nu se salvează nimic. */
+  token?: string;
+  /** Treapta de trofee a jucătorului (joc rapid); serverul o verifică. */
+  bracket?: number;
+}
+
+/** Ce știe serverul despre cel care intră (rezultatul lui `onAuth`). */
+interface Auth {
+  accountId: string | null;
+  profile: Profile | null;
+  bracket: number;
+}
+
+const GUEST: Auth = { accountId: null, profile: null, bracket: 0 };
+
+/** Treapta de matchmaking: trofeele personajului ales (doar modurile clasate), altfel 0. */
+async function bracketFor(accountId: string, ch: string, mode: ModeId): Promise<number> {
+  const db = getDatabase();
+  if (!db || !isRanked(mode)) return 0;
+  return bracketOf((await getTrophies(db, accountId))[ch] ?? 0);
 }
 
 /** Tema jocului rapid: cea de sezon, altfel una de bază la întâmplare. */
@@ -40,6 +65,16 @@ function quickTheme(): string {
   if (season) return season.id;
   const base = THEMES.filter((t) => !t.season);
   return base[Math.floor(Math.random() * base.length)]!.id;
+}
+
+/** Personajul și ținuta cerute, restrânse la ce deține contul (profilul de pe server e adevărul). */
+function ownedMe(p: Profile, o: JoinOpts): MeMsg {
+  const r = o.ch ? selectChar(p, o.ch, accessOf(p, today(), false)) : null;
+  const ch = r?.ok ? r.profile.ch : p.ch;
+  const outfit: Partial<Outfit> = {};
+  for (const [cat, id] of Object.entries(o.outfit ?? {}))
+    if (typeof id === 'string' && p.owned.includes(id)) (outfit as Record<string, string>)[cat] = id;
+  return { ...o, ch, outfit };
 }
 
 /**
@@ -55,11 +90,15 @@ export class ArenaRoom extends Room {
   private countdown: Delayed | null = null;
   /** Proporția ecranului primului jucător (jocul rapid n-are o gazdă care apasă Start). */
   private aspect = 16 / 9;
+  /** sid → cont (doar cei autentificați). */
+  private accounts = new Map<string, string>();
+  private bracket = 0;
 
   override onCreate(opts: CreateOpts = {}): void {
     const code = newCode();
     codes.add(code);
     this.roomId = code;
+    this.bracket = Number.isInteger(opts.bracket) ? Math.max(0, opts.bracket!) : 0;
     const dev = process.env.NODE_ENV !== 'production';
     const mode = (MODE_IDS as readonly string[]).includes(opts.mode ?? '') ? (opts.mode as ModeId) : 'ffa';
     this.arena = new ArenaHost(code, opts.quick ? { mode, theme: quickTheme() } : null);
@@ -85,8 +124,24 @@ export class ArenaRoom extends Room {
     this.onMessage('ping', (c, t: number) => c.send('pong', t));
   }
 
-  override onJoin(client: Client, opts: JoinOpts = {}): void {
-    const err = this.arena.join(client.sessionId, opts);
+  /** Token valid → cont; token greșit → refuz; fără token → vizitator. În camerele clasate, treapta trebuie să se potrivească. */
+  override async onAuth(_client: Client, opts: JoinOpts = {}): Promise<Auth> {
+    const db = getDatabase();
+    if (!opts.token || !db) return GUEST;
+    const accountId = await authenticate(db, opts.token);
+    if (!accountId) throw new ServerError(4003, 'Invalid session. Please restart the game.');
+    const profile = await getProfile(db, accountId);
+    const ch = typeof opts.ch === 'string' ? opts.ch : profile.ch;
+    const bracket = await bracketFor(accountId, ch, this.arena.cfg.mode);
+    if (this.arena.quick && bracket !== this.bracket)
+      throw new ServerError(4004, 'Wrong skill bracket for this room.');
+    return { accountId, profile, bracket };
+  }
+
+  override onJoin(client: Client, opts: JoinOpts = {}, auth: Auth = GUEST): void {
+    const me = auth.profile ? ownedMe(auth.profile, opts) : opts;
+    const err = this.arena.join(client.sessionId, me);
+    if (!err && auth.accountId) this.accounts.set(client.sessionId, auth.accountId);
     if (err) throw new ServerError(4001, err);
     if (this.arena.seats.length === 1 && Number.isFinite(opts.aspect)) this.aspect = Number(opts.aspect);
     this.sendLobby();
@@ -144,6 +199,8 @@ export class ArenaRoom extends Room {
 
   override onLeave(client: Client): void {
     this.arena.leave(client.sessionId);
+    // contul rămâne asociat până la final: cine pleacă în timpul meciului primește totuși pierderea
+    if (this.arena.phase === 'lobby') this.accounts.delete(client.sessionId);
     this.sendLobby();
     if (this.arena.phase === 'lobby') void this.unlock();
     this.quickCheck();
@@ -151,6 +208,22 @@ export class ArenaRoom extends Room {
 
   override onDispose(): void {
     codes.delete(this.roomId);
+  }
+
+  /** Scrie rezultatul (trofee + recompense) și trimite fiecărui om cu cont ce a primit. */
+  private saveResult(): void {
+    const db = getDatabase();
+    const r = this.arena.result;
+    if (!db || !r || !this.accounts.size) return;
+    const accounts = new Map(this.accounts);
+    recordMatch(db, r, accounts, today())
+      .then((outcomes) => {
+        for (const c of this.clients) {
+          const o = outcomes.get(c.sessionId);
+          if (o) c.send('outcome', o);
+        }
+      })
+      .catch((e) => console.error('recordMatch', e));
   }
 
   private sendLobby(): void {
@@ -185,6 +258,7 @@ export class ArenaRoom extends Room {
       const end = this.arena.finish();
       if (end) {
         this.broadcast('end', end);
+        this.saveResult();
         this.setSimulationInterval(undefined);
         void this.unlock();
         this.sendLobby();
