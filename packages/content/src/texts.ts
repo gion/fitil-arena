@@ -95,7 +95,7 @@ export const ROSTER = {
     { name: 'You', color: '#5ad15a' },
     { name: 'Bubu', color: '#f3f1ea' },
     { name: 'Zuzu', color: '#9a6436' },
-    { name: 'Gogu', color: '#2fd3c6' },
+    { name: 'Gugu', color: '#2fd3c6' },
   ],
   teams: [
     [
@@ -106,7 +106,7 @@ export const ROSTER = {
     [
       { name: 'Bubu', color: '#ff5a4d' },
       { name: 'Zuzu', color: '#ffa070' },
-      { name: 'Gogu', color: '#b8231a' },
+      { name: 'Gugu', color: '#b8231a' },
     ],
   ],
   dummy: { name: 'Dummy', color: '#d8c7a0' },

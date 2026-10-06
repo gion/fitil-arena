@@ -1,4 +1,4 @@
-import { FLAME, HURT_GRACE } from './constants.ts';
+import { FLAME, HURT_GRACE, LIFE_GRACE } from './constants.ts';
 import { idx, tileX, tileY } from './grid.ts';
 import type { DeathCause, GameState, Player } from './types.ts';
 
@@ -33,6 +33,13 @@ export function damage(
 
 export function kill(s: GameState, p: Player, killerId: number | null, cause: DeathCause, via = 0): void {
   if (!p.alive) return;
+  // o viață în plus (Gugu): supraviețuiește loviturii, clipește invulnerabil (nu și când e strivit)
+  if (p.lives > 1 && cause !== 'hurry' && cause !== 'crush') {
+    p.lives--;
+    p.graceT = LIFE_GRACE;
+    s.events.push({ type: 'lifeLost', player: p.id, lives: p.lives });
+    return;
+  }
   p.alive = false;
   p.deathTick = s.tick;
   p.killerId = killerId;

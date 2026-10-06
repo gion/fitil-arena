@@ -1,5 +1,6 @@
-import { FUSE, LINE_MAX_EXTRA, REMOTE_FUSE } from './constants.ts';
+import { BIG_BOMB_EXTRA, FUSE, LINE_MAX_EXTRA, REMOTE_FUSE } from './constants.ts';
 import { bombAt, getBomb, idx, padIndex, playerAt, tileAt, tileX, tileY, walkable } from './grid.ts';
+import { useCharge } from './items.ts';
 import { DX, DY, EMPTY } from './types.ts';
 import type { Bomb, Dir, GameState, Player } from './types.ts';
 
@@ -7,12 +8,14 @@ export function placeBomb(s: GameState, p: Player, x = tileX(p), y = tileY(p)): 
   if (!p.alive || p.carry !== null || p.active >= p.bombs || bombAt(s, x, y) || s.flame[idx(s, x, y)]! > 0)
     return false;
   const remote = p.remote && p.bot === null;
+  const big = p.bigBomb;
+  p.bigBomb = false;
   const b: Bomb = {
     id: s.nextBombId++,
     x,
     y,
-    fuse: remote ? REMOTE_FUSE : FUSE,
-    range: p.range,
+    fuse: remote ? REMOTE_FUSE : FUSE + (p.kit?.fuseAdd ?? 0),
+    range: big ? p.range + BIG_BOMB_EXTRA : p.range,
     owner: p.id,
     remote,
     slide: null,
@@ -23,6 +26,7 @@ export function placeBomb(s: GameState, p: Player, x = tileX(p), y = tileY(p)): 
     tpLock: padIndex(s, x, y) >= 0 ? idx(s, x, y) : -1,
     via: 0,
   };
+  if (big) b.big = true;
   s.bombs.push(b);
   p.active++;
   s.events.push({ type: 'bombPlaced', bomb: b.id, x, y, owner: p.id });
@@ -43,6 +47,7 @@ export function placeLine(s: GameState, p: Player): boolean {
     placeBomb(s, p, x, y);
     n++;
   }
+  if (n > 0) useCharge(s, p, 'line');
   return n > 0;
 }
 
@@ -53,6 +58,7 @@ export function detonate(s: GameState, p: Player): boolean {
       b.fuse = 0;
       n++;
     }
+  if (n > 0) useCharge(s, p, 'remote');
   return n > 0;
 }
 
@@ -109,6 +115,7 @@ export function throwBomb(s: GameState, p: Player): void {
   b.y = ty;
   b.slide = null;
   s.events.push({ type: 'throw', player: p.id, bomb: b.id });
+  useCharge(s, p, 'glove');
 }
 
 export function tryKick(s: GameState, p: Player, dir: Dir): boolean {
@@ -122,7 +129,9 @@ export function tryKick(s: GameState, p: Player, dir: Dir): boolean {
   b.slide = dir;
   b.via = 1;
   b.prog = 0;
+  if (p.kit?.ricochet) b.bounce = 1;
   s.events.push({ type: 'kick', player: p.id, bomb: b.id });
+  useCharge(s, p, 'kick');
   return true;
 }
 

@@ -86,10 +86,10 @@ function playLoop(cfg: RoomCfg, humans: number, seed: number) {
 describe('net: construcția meciului online', () => {
   it('oamenii se împart alternativ pe echipe, restul sunt boți', () => {
     expect([0, 1, 2, 3].map((k) => humanId('team3', k))).toEqual([0, 3, 1, 4]);
-    const b = buildOnline({ mode: 'ctf', theme: 'clasic', bots: 'hard' }, 3, 1.6, ['A', 'B', 'C']);
+    const b = buildOnline({ mode: 'ctf', bots: 'hard', classic: true }, 3, 1.6, ['A', 'B', 'C']);
     expect(b.humans).toEqual([0, 3, 1]);
     expect(b.state.players.map((p) => p.bot)).toEqual([null, null, 'hard', null, 'hard', 'hard']);
-    expect(b.slots.map((s) => s.name)).toEqual(['A', 'C', 'Titi', 'B', 'Zuzu', 'Gogu']);
+    expect(b.slots.map((s) => s.name)).toEqual(['A', 'C', 'Titi', 'B', 'Zuzu', 'Gugu']);
     expect(maxHumans('vs')).toBe(2);
   });
 });
@@ -97,7 +97,7 @@ describe('net: construcția meciului online', () => {
 describe('net: host + clienți în memorie, cu latență și jitter', () => {
   for (const mode of ['ffa', 'team2', 'ctf'] as const)
     it(`${mode}: meci complet, toți clienții ajung la același hash ca serverul`, () => {
-      const { conns, end } = playLoop({ mode, theme: 'clasic', bots: 'normal' }, 4, 11);
+      const { conns, end } = playLoop({ mode, theme: 'clasic', bots: 'normal', classic: false }, 4, 11);
       expect(end).not.toBeNull();
       for (const { client } of conns) {
         expect(client.desyncs).toBe(0);

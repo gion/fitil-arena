@@ -36,8 +36,71 @@ export interface Input {
   face?: Dir;
 }
 
+/**
+ * Kitul unui personaj: statistici de start și abilități semnătură (datele vin din `packages/content`).
+ * Semnăturile sunt permanente; aceleași abilități luate din arenă pot avea încărcări (`Rules.charges`).
+ */
+export interface CharKit {
+  /** Viteză în unități pe tick (3.3 pătrățele/s = 165). */
+  speed: number;
+  range: number;
+  bombs: number;
+  maxBombs: number;
+  /** Lovituri pe care le poate încasa (Gugu: 2). */
+  lives: number;
+  kick?: boolean;
+  glove?: boolean;
+  /** Nu poate lua Mănușa din arenă (Fotbalistul). */
+  noGlove?: boolean;
+  /** Nu poate lua Scutul din arenă. */
+  noShield?: boolean;
+  /** Scut la start (tick-uri). */
+  shield?: number;
+  /** Scutul luat din arenă durează doar atât la sută. */
+  shieldPct?: number;
+  /** Culege bonusurile pozitive din pătrățelele vecine. */
+  magnet?: boolean;
+  /** Imun la încetinire, inversare, amețeală, sughiț. */
+  immune?: boolean;
+  /** Prima bombă din rundă are +2 rază. */
+  bigFirst?: boolean;
+  /** Vede cronometrul bombelor (doar randare). */
+  timers?: boolean;
+  /** Bombele șutate ricoșează o dată din obstacol. */
+  ricochet?: boolean;
+  /** Flăcările bombelor lui lasă ulei care îi încetinește pe ceilalți. */
+  oil?: boolean;
+  /** Tick-uri în plus la fitilul bombelor. */
+  fuseAdd?: number;
+  /** Trece printr-o ladă, o dată la 20s. */
+  ghost?: boolean;
+  /** O dată pe rundă, bomba unui adversar care l-ar prinde devine porumbel. */
+  pigeon?: boolean;
+}
+
+/** Încărcări pentru abilitățile luate din arenă (0 = nelimitat, dacă abilitatea e activă). */
+export interface Charges {
+  kick: number;
+  glove: number;
+  remote: number;
+  line: number;
+}
+export type ChargeAbility = keyof Charges;
+
 export interface Player {
   id: number;
+  /** Personajul (id din content; doar informativ pentru randare) și kitul lui. */
+  ch: string | null;
+  kit: CharKit | null;
+  maxBombs: number;
+  lives: number;
+  charges: Charges;
+  /** Prima bombă mare încă nefolosită (Bubu). */
+  bigBomb: boolean;
+  /** Tick-uri până poate trece iar printr-o ladă (Fantoma). */
+  ghostT: number;
+  /** Porumbelul a fost folosit în runda asta (Magicianul). */
+  pigeonUsed: boolean;
   team: number;
   bot: BotKind | null;
   /** Punctul de start (pentru revenirea în joc). */
@@ -104,6 +167,10 @@ export interface Bomb {
   tpLock: number;
   /** Cum a ajuns bomba unde e: 0 pusă, 1 șutată, 2 aruncată (pentru provocări și statistici). */
   via: BombVia;
+  /** Bombă mare (prima bombă a lui Bubu). */
+  big?: boolean;
+  /** Ricoșeuri rămase la alunecare (Fotbalistul). */
+  bounce?: number;
 }
 
 export type BombVia = 0 | 1 | 2;
@@ -188,7 +255,7 @@ export type MaxStat = 'speed' | 'bombs' | 'fire';
 export type GameEvent =
   | { type: 'bombPlaced'; bomb: number; x: number; y: number; owner: number }
   | { type: 'explode'; bomb: number; x: number; y: number; range: number; owner: number; chain: number }
-  | { type: 'boxDestroyed'; x: number; y: number; gold: boolean; cursed: boolean }
+  | { type: 'boxDestroyed'; x: number; y: number; gold: boolean; cursed: boolean; owner: number }
   | { type: 'death'; player: number; killerId: number | null; cause: DeathCause; via: number }
   | { type: 'pickup'; player: number; item: ItemType; x: number; y: number }
   | { type: 'maxed'; player: number; stat: MaxStat }
@@ -213,6 +280,11 @@ export type GameEvent =
   | { type: 'friendHome'; id: number }
   | { type: 'missionEnd'; won: boolean; reason: 'done' | 'time' | 'dead' }
   | { type: 'shieldSaved'; player: number }
+  | { type: 'lifeLost'; player: number; lives: number }
+  | { type: 'immune'; player: number; item: ItemType }
+  | { type: 'pigeon'; player: number; bomb: number; x: number; y: number }
+  | { type: 'ghostIn'; player: number; x: number; y: number }
+  | { type: 'chargeOut'; player: number; ability: ChargeAbility }
   | { type: 'kick'; player: number; bomb: number }
   | { type: 'lift'; player: number; bomb: number }
   | { type: 'throw'; player: number; bomb: number }
@@ -263,6 +335,8 @@ export interface Rules {
   hurryEvery: number;
   /** Bonusuri primite de toți la start (1 vs 1). */
   startItems: ItemType[];
+  /** Abilitățile luate din arenă (Picior, Mănușă, Detonator, Linie) vin cu încărcări; semnăturile rămân nelimitate. */
+  charges: boolean;
 }
 
 export interface GameResult {
@@ -286,6 +360,9 @@ export interface GameState {
   gold: number[];
   cursed: number[];
   flameVia: number[];
+  /** Ulei (Bucătarul): tick-uri rămase pe fiecare pătrățel și cine l-a lăsat. */
+  oil: number[];
+  oilOwner: number[];
   players: Player[];
   bombs: Bomb[];
   nextBombId: number;

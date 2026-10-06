@@ -3,6 +3,27 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Deblocări treptate, calendar, panou DEV
+
+- **Cerut:** un mod de admin/test în care proprietarul vede tot, în timp ce jucătorul normal primește conținutul puțin câte puțin (nivel, monede), cu previzualizări și conținut nou periodic (teme de eveniment, personaje). Sugestii, apoi implementare; alese variantele recomandate: panou DEV în build-uri interne, nivel + Fitile, personaj lunar + teme de eveniment.
+- **Făcut:** `progression.ts` și gating în economie (content), ceas și profiluri de test (client), lacăte/teasere/„NEW” în meniuri, panoul DEV, deciziile D-039 – D-041. Branch `feat/deblocari-dev-panel`, PR peste #3.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 96, content 27, net 6, server 4), Playwright 18/18; build-ul public nu conține panoul (niciun chunk, verificat în `dist`), build-ul cu `VITE_DEV_TOOLS=1` îl conține; manual în browser: profil „New player”, data mutată pe 25 octombrie (Halloween, Ghost lansat și în rotație), +1 nivel deschide 1 vs 1.
+- **Notă operațională:** build intern: `VITE_DEV_TOOLS=1 pnpm build`. Calendarul se editează în `packages/content/src/progression.ts` (`CHAR_RELEASE`). Prima variantă a steagului (`import.meta.env` citit în alt modul) lăsa chunk-ul panoului în build-ul public; acum e o constantă `define`.
+
+## 2026-09-30 — Claude Code (Opus 5.5) — Personaje, progresie, magazin (implementare)
+
+- **Cerut:** „continuă cu implementarea lucrurilor noi, fă acțiunile recomandate și împinge codul în PR-ul acela” (PR #3).
+- **Făcut:** deciziile Q-004 – Q-008 pe variantele recomandate (D-034 – D-038); kitul personajelor și încărcările în sim; 11 personaje, magazin și economie în content; lobby cu personaje; client cu randare, voci, ecranele Personaje/pagina personajului/Magazin, recompense și HUD. Detalii în `docs/progress.md` (Faza 2c).
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 96, content 18, net 6, server 4), Playwright 17/17 (FPS 60/60/60); manual în browser: grila de personaje, pagina Magicianului, cumpărarea unei pălării, meci FFA cu personaje.
+- **Notă operațională:** Playwright a găsit un bug real (Back din pagina personajului ducea la meniul principal) — reparat. Profilul local folosește cheia `fitil-profile` (compatibilă cu prototipul).
+
+## 2026-09-30 — Claude Code (Opus 5.5) — Cerințe noi: personaje, progresie, magazin
+
+- **Cerut:** documentele actualizate în alt chat (`PLAN.md` cu Faza 2c, `GAME_DESIGN.md` cu cele 7 personaje, monede și magazin, prototipul cu ecranele Personaje/Magazin) plus idei noi: magazin cu monede, mai multe personaje cu abilități diferite, XP care le crește abilitățile, rarități Epic/Legendar/Mitic, monede cumpărate cu bani, mai puține bonusuri sau bonusuri care expiră (ex. fotbalistul are piciorul permanent, la ceilalți piciorul expiră după 2 folosiri), „ultimate”, pagină per personaj cu close-up, sunete și plusuri/minusuri. PR separat de Faza 3.
+- **Făcut:** copiate `PLAN.md`, `GAME_DESIGN.md` și `reference/prototype.html` din versiunea userului (`CLAUDE.md` din repo a rămas, are regula 10 în plus); propunere în `docs/propuneri/personaje-progresie.md` (rarități, roster cu semnătură/compromis/Ultimate, bonusuri cu încărcări, XP și niveluri cu perk-uri, pagina personajului, economie cu Fitile/Gemuri fără cutii aleatoare, bucle de retenție, impact pe faze); întrebările Q-004 – Q-008. Branch `docs/personaje-progresie`, bazat pe Faza 3.
+- **Verificat:** doar documente; `pnpm format:check`.
+- **Notă operațională:** ideile cu putere cumpărată contrazic „fără pay-to-win” din `BUSINESS.md` §3 — propunerea recomandă varianta B (sidegrade + putere plafonată) și lasă decizia userului. După decizii, textul aprobat se mută în `GAME_DESIGN.md` / `PLAN.md` (și în proiectul claude.ai). `ROSTER` din `packages/content` are încă „Gogu”, documentele noi îl numesc „Gugu” — de aliniat în Faza 2c.
+
 ## 2026-09-30 — Claude Code (Opus 5.5) — Faza 3: multiplayer online (camere private)
 
 - **Cerut:** începerea Fazei 3 după handover (după repararea Prettier pe PR-ul fazei 2).
