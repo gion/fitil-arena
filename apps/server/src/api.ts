@@ -9,6 +9,9 @@ import {
   authenticate,
   buyCharFor,
   buyItemFor,
+  buyThemeFor,
+  claimOffline,
+  deleteAccount,
   createAccount,
   equipFor,
   getProfile,
@@ -89,6 +92,31 @@ export function registerApi(app: FastifyInstance, db: Db): void {
     if (!SHOP_CATS.includes(b.cat as ShopCat) || (b.id !== null && typeof b.id !== 'string'))
       return reply.code(400).send({ error: 'body' });
     return answer(reply, await equipFor(db, id, b.cat as ShopCat, b.id as string | null));
+  });
+
+  app.post('/themes/buy', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    const t = (req.body as { id?: unknown } | null)?.id;
+    if (typeof t !== 'string') return reply.code(400).send({ error: 'id' });
+    return answer(reply, await buyThemeFor(db, id, t));
+  });
+
+  /** Recompensa unui meci offline (cu boți), cu plafon zilnic; meciurile online le scrie camera. */
+  app.post('/rewards/offline', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    const r = await claimOffline(db, id, req.body);
+    if (!r.ok) return reply.code(429).send({ ok: false, why: r.why });
+    return { ok: true, coins: r.rewards.coins, xp: r.rewards.xp, profile: r.rewards.profile };
+  });
+
+  /** Ștergerea contului și a tuturor datelor lui (GDPR). */
+  app.delete('/me', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    await deleteAccount(db, id);
+    return reply.code(204).send();
   });
 
   app.post('/chars/buy', async (req, reply) => {

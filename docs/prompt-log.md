@@ -3,6 +3,12 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Sonnet 5.5) — Faza 6: completări (server-first, daily, legal)
+
+- **Cerut:** „adaugă și ce lipsește”; răspunsuri: textele legale sau pagini cu lorem ipsum, serverul sursa de adevăr.
+- **Făcut:** D-067 (server-first: cumpărături / echipare / recompense offline prin API), provocarea zilei în client, pagini legale placeholder, `DELETE /me`, limitare de rată; vezi `docs/progress.md`.
+- **Verificat:** lint, format, typecheck, `pnpm test` (cu Postgres), `pnpm build`; e2e cont / personaje / ui / online / heroes / fatalități cu server cu DB trec; `missions` (3D) pică intermitent și fără modificări.
+
 ## 2026-10-06 — Claude Code (Sonnet 5.5) — Faza 6: conturi, trofee, persistență
 
 - **Cerut:** următoarea fază după merge-ul Fazei 5; hosting cu Docker local (decis cu omul: Fly.io mai târziu, Q-003 rămâne deschisă).

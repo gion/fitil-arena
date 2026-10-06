@@ -100,6 +100,7 @@ test('joc rapid: doi jucători aleg personaje, camera publică 1 vs 1 se umple �
     await page.goto('/');
     await page.evaluate((h) => {
       localStorage.setItem('fitil-settings', JSON.stringify({ mode: 'vs', name: `P${h}` }));
+      localStorage.removeItem('fitil-account');
       localStorage.setItem('fitil-profile', JSON.stringify({ ch: h }));
     }, heroes[i]!);
     await page.reload();

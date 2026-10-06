@@ -57,6 +57,7 @@ async function fresh(page: Page, profile: object = { coins: 900, xp: { bubu: 400
     localStorage.clear();
     // mișcare oprită: tranzițiile devin instantanee, capturile sunt stabile
     localStorage.setItem('fitil-settings', JSON.stringify({ motion: false, name: 'Gion' }));
+    localStorage.removeItem('fitil-account');
     localStorage.setItem('fitil-profile', JSON.stringify(p));
   }, profile);
   await page.reload();

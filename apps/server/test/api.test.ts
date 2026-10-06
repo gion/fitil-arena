@@ -103,6 +103,47 @@ describe.skipIf(!TEST_DB_URL)('api cu Postgres', () => {
     expect(me.json().profile.owned).not.toContain('h_cap');
   });
 
+  it('recompensa meciului offline: plafonată, doar pe server, cu limită zilnică', async () => {
+    const a = await signup();
+    const claim = (payload: Record<string, unknown>) =>
+      app.inject({ method: 'POST', url: '/rewards/offline', headers: hdr(a.token), payload });
+    // valori umflate sunt tăiate: 80 de lăzi + 3 eliminări + victorie = 80 + 15 + 5 + 25 (+ bonus zilnic 50)
+    const r = await claim({ boxes: 9999, kills: 99, won: true });
+    expect(r.statusCode).toBe(200);
+    expect(r.json().coins).toBeGreaterThanOrEqual(80 + 15 + 5 + 25 + 50);
+    expect(r.json().coins).toBeLessThanOrEqual(80 + 15 + 5 + 25 + 50 + 100);
+    const me = await app.inject({ method: 'GET', url: '/me', headers: hdr(a.token) });
+    expect(me.json().profile.coins).toBe(100 + r.json().coins);
+    for (let i = 1; i < 30; i++) expect((await claim({ boxes: 1 })).statusCode).toBe(200);
+    expect((await claim({ boxes: 1 })).statusCode).toBe(429);
+    // limita refuză fără să strice profilul
+    const after = await app.inject({ method: 'GET', url: '/me', headers: hdr(a.token) });
+    expect(after.json().profile.coins).toBeGreaterThan(me.json().profile.coins);
+  });
+
+  it('teme: refuz fără fonduri; ștergerea contului șterge tot', async () => {
+    const a = await signup();
+    const t = await app.inject({
+      method: 'POST',
+      url: '/themes/buy',
+      headers: hdr(a.token),
+      payload: { id: 'nope' },
+    });
+    expect(t.statusCode).toBeGreaterThanOrEqual(400);
+    expect((await app.inject({ method: 'DELETE', url: '/me' })).statusCode).toBe(401);
+    expect((await app.inject({ method: 'DELETE', url: '/me', headers: hdr(a.token) })).statusCode).toBe(204);
+    expect((await app.inject({ method: 'GET', url: '/me', headers: hdr(a.token) })).statusCode).toBe(401);
+  });
+
+  it('limitare de rată: prea multe cereri de cont de pe același IP → 429', async () => {
+    const limited = buildApp(d.db, { rate: 20 }); // /auth/*: 2 pe minut
+    const codes: number[] = [];
+    for (let i = 0; i < 4; i++)
+      codes.push((await limited.inject({ method: 'POST', url: '/auth/anon' })).statusCode);
+    expect(codes).toEqual([201, 201, 429, 429]);
+    expect((await limited.inject({ method: 'GET', url: '/health' })).statusCode).toBe(200);
+  });
+
   it('provocarea zilei: scor verificat prin reluare, doar cel mai bun contează, clasament', async () => {
     // o zi în care AI-ul (jucând ca om) termină provocarea
     let day = '';

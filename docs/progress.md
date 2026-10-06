@@ -300,11 +300,18 @@
 - **client**: cont anonim în fundal (`online/account.ts`, doar dacă `/health` spune `accounts: true`), token + treaptă la intrarea în camere (cu un retry dacă treapta din cache e veche), banner cu trofeele după meci.
 - **teste**: content 39, net 16, server 13 (api, conturi + meci online între două conturi cu Postgres real), e2e online/personaje/fatalități trec; CI cu serviciu Postgres.
 
+**Completări (aceeași zi, după feedback):**
+
+- **Server-first (D-067)**: `/themes/buy`, `/rewards/offline` (plafoane + 30/zi), clientul trimite cumpărături / echipare / personaj / temă prin API (optimist + rollback), profilul de pe server îl înlocuiește pe cel local, recompense offline în coadă fără conexiune.
+- **Provocarea zilei în client**: card în Practice (+ clasament top 20), arenă 16:9 fixă, seed de la server, input-urile înregistrate pe tick și trimise la final; serverul reia rularea.
+- **Legal (D-068)**: pagini provizorii (lorem ipsum) în Setări și `privacy.html` / `terms.html`; `DELETE /me` + ecran „Delete account”; limitare de rată.
+- **Teste**: server 16 (inclusiv recompense offline, ștergere, limită de rată), client 18 (coada de sincronizare), e2e `account.spec.ts` (cumpărătura trece prin API, ștergerea contului, legal) — cu `TEST_DATABASE_URL` serverul e2e are conturi și restul e2e-urilor rulează legate de cont.
+
 **Rămas / cunoscut:**
 
-- **Profilul local și cel de pe server pot diverge**: recompensele meciurilor offline, cumpărăturile și echiparea rămân locale (clientul nu apelează încă `/shop/*`, `/chars/*`). Serverul scrie doar rezultatele meciurilor online. De decis (Q-012, Q-013) cum se unifică înainte de lansare.
-- Provocarea zilei: API gata, **fără ecran în client** (trebuie înregistrate input-urile pe tick și arena 16:9 fixă).
-- Fără limitare de rată pe API, fără ștergere de cont (`DELETE /me`) — de adăugat înainte de publicare (Q-011).
-- Misiunile nu au progres persistent nici local, deci nu sunt pe server.
-- Testele cu Postgres se sar fără `TEST_DATABASE_URL`; aici au rulat pe Postgres 16 instalat în container (Docker nu rulează în sesiunea cloud), nu prin `docker compose`.
-- Pe deploy, directorul `apps/server/drizzle/` trebuie să existe lângă `dist/` (sau la `../../drizzle`).
+- Misiunile nu au progres persistent (nici local; stelele sunt în `settings`, pe dispozitiv).
+- Textele legale sunt placeholder: de înlocuit înainte de publicare (Q-011).
+- Limitarea de rată e în memorie (un singur proces); la mai multe instanțe trece în Redis.
+- Testele cu Postgres se sar fără `TEST_DATABASE_URL`; aici au rulat pe Postgres 16 instalat în container (Docker nu rulează în sesiunea cloud).
+- Pe deploy, `apps/server/drizzle/` trebuie să existe lângă `dist/`.
+- e2e: `missions` (3D, fără GPU) pică intermitent și fără modificările din Faza 6; `smoke` FPS nu rulează în container.

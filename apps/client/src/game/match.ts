@@ -14,7 +14,8 @@ import {
 } from '@fitil/sim';
 import type { ChallengeProgress, Dir, GameEvent, GameState, Input, MaxStat, Tutorial } from '@fitil/sim';
 import { DEATH_MSG, HERO_LINES, emoteById, fatalityById, shopItem } from '@fitil/content';
-import type { NetClient } from '@fitil/net';
+import { DAILY_MAX_TICKS, encodeInput } from '@fitil/net';
+import type { NetClient, WireInput } from '@fitil/net';
 import { build, isTeamKind } from './setup.ts';
 import type { Built, Me, PlayKind, Slot } from './setup.ts';
 import type { BotLevel } from '@fitil/sim';
@@ -81,6 +82,8 @@ export class Match {
   readonly tutorial: Tutorial | null;
   readonly team: boolean;
   challenge: ChallengeProgress | null = null;
+  /** Provocarea zilei: input-ul jucătorului la fiecare tick, trimis serverului pentru verificare. */
+  readonly log: WireInput[] | null;
   /** Poziția de dinainte de ultimul tick (interpolare). */
   private prev = new Map<string, [number, number]>();
   private acc = 0;
@@ -124,6 +127,7 @@ export class Match {
     this.tutorial = b.tutorial;
     this.team = net ? isTeamMode(b.s.rules) : isTeamKind(kind);
     if (kind.type === 'challenge') this.challenge = startChallenge(kind.id);
+    this.log = kind.type === 'challenge' && kind.daily ? [] : null;
     this.snapshot();
   }
 
@@ -236,6 +240,8 @@ export class Match {
       p.bot !== null ? botInput(s, p.id) : undefined,
     );
     inputs[this.meId] = this.localInput();
+    if (this.log && this.log.length < DAILY_MAX_TICKS && this.challenge?.status === 'playing')
+      this.log.push(encodeInput(inputs[this.meId]!));
     step(s, inputs);
     for (const e of s.events) this.handle(e);
     if (this.tutorial && !this.tutDone) {

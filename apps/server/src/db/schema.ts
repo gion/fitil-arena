@@ -71,6 +71,19 @@ export const matchPlayers = pgTable(
   (t) => [primaryKey({ columns: [t.matchId, t.accountId] }), index('match_players_account').on(t.accountId)],
 );
 
+/** Câte recompense de meci offline a cerut un cont într-o zi (plafon anti-abuz). */
+export const offlineClaims = pgTable(
+  'offline_claims',
+  {
+    day: text('day').notNull(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    n: integer('n').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.day, t.accountId] })],
+);
+
 /** Provocarea zilei: cel mai bun rezultat (în tick-uri, mai puține = mai bine) per cont și zi. */
 export const dailyScores = pgTable(
   'daily_scores',

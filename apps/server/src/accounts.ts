@@ -3,6 +3,8 @@ import { eq, inArray, sql } from 'drizzle-orm';
 import {
   accessOf,
   buyChar,
+  buyTheme,
+  reward,
   buyItem,
   defaultProfile,
   equip,
@@ -11,9 +13,9 @@ import {
   selectChar,
   totalXp,
 } from '@fitil/content';
-import type { Profile, Refusal, ShopCat } from '@fitil/content';
+import type { MatchSummary, Profile, Refusal, Rewards, ShopCat } from '@fitil/content';
 import type { Db } from './db/index.ts';
-import { accounts, profiles, trophies } from './db/schema.ts';
+import { accounts, offlineClaims, profiles, trophies } from './db/schema.ts';
 
 export const hashToken = (t: string): string => createHash('sha256').update(t).digest('hex');
 
@@ -106,6 +108,8 @@ export const buyItemFor = (db: Db, id: string, item: string) => apply(db, id, (p
 export const equipFor = (db: Db, id: string, cat: ShopCat, item: string | null) =>
   apply(db, id, (p) => equip(p, cat, item));
 export const buyCharFor = (db: Db, id: string, ch: string) => apply(db, id, (p) => buyChar(p, ch, access(p)));
+export const buyThemeFor = (db: Db, id: string, theme: string) =>
+  apply(db, id, (p) => buyTheme(p, theme, access(p)));
 export const selectCharFor = (db: Db, id: string, ch: string) =>
   apply(db, id, (p) => selectChar(p, ch, access(p)));
 
@@ -139,3 +143,61 @@ export async function accountNames(db: Db, ids: string[]): Promise<Map<string, s
 }
 
 export const levelOfProfile = (p: Profile): number => playerLevel(totalXp(p)).level;
+
+/** Cât poate cere un cont într-o zi pentru meciuri offline (cu boți): recompensele lor nu se pot verifica. */
+export const OFFLINE_CLAIMS_PER_DAY = 30;
+
+/** Plafoanele unui meci offline: ce depășește e tăiat (un meci cu boți nu are mai mult). */
+export function clampSummary(raw: unknown): MatchSummary {
+  const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const n = (v: unknown, max: number) => Math.max(0, Math.min(max, Math.floor(Number(v) || 0)));
+  return {
+    boxes: n(r.boxes, 80),
+    kills: n(r.kills, 3),
+    won: r.won === true,
+    team: r.team === true,
+    caps: n(r.caps, 5),
+    stars: n(r.stars, 3),
+  };
+}
+
+export type OfflineResult = { ok: true; rewards: Rewards } | { ok: false; why: 'limit' };
+
+/** Recompensa unui meci offline (cu boți), cu plafon zilnic. Meciurile online le scrie camera, nu apelul ăsta. */
+export async function claimOffline(db: Db, id: string, raw: unknown, day = today()): Promise<OfflineResult> {
+  const summary = clampSummary(raw);
+  return db
+    .transaction(async (tx) => {
+      const [c] = await tx
+        .insert(offlineClaims)
+        .values({ day, accountId: id, n: 1 })
+        .onConflictDoUpdate({
+          target: [offlineClaims.day, offlineClaims.accountId],
+          set: { n: sql`${offlineClaims.n} + 1` },
+        })
+        .returning({ n: offlineClaims.n });
+      if ((c?.n ?? 0) > OFFLINE_CLAIMS_PER_DAY) {
+        tx.rollback();
+      }
+      const [row] = await tx
+        .select({ data: profiles.data })
+        .from(profiles)
+        .where(eq(profiles.accountId, id))
+        .for('update');
+      const r = reward(loadProfile(row?.data), summary, day);
+      await tx
+        .update(profiles)
+        .set({ data: r.profile, updatedAt: sql`now()` })
+        .where(eq(profiles.accountId, id));
+      return { ok: true as const, rewards: r };
+    })
+    .catch((e: unknown) => {
+      if (e instanceof Error && /rollback/i.test(e.name + e.message))
+        return { ok: false as const, why: 'limit' as const };
+      throw e;
+    });
+}
+
+export async function deleteAccount(db: Db, id: string): Promise<void> {
+  await db.delete(accounts).where(eq(accounts.id, id));
+}

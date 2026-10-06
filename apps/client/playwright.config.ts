@@ -28,7 +28,11 @@ export default defineConfig({
       // serverul de joc (Colyseus) pentru testele online; API-ul pe alt port ca să nu se ciocnească
       command: 'pnpm --filter @fitil/server serve',
       port: 2567,
-      env: { API_PORT: '3099' },
+      // cu TEST_DATABASE_URL serverul de test are conturi (testele din account.spec.ts); altfel doar vizitatori
+      env: {
+        API_PORT: '3099',
+        ...(process.env.TEST_DATABASE_URL ? { DATABASE_URL: process.env.TEST_DATABASE_URL } : {}),
+      },
       reuseExistingServer: true,
     },
   ],

@@ -27,6 +27,7 @@ test('magazin: câte un obiect din fiecare categorie se cumpără și se echipea
   await page.goto('/');
   await page.evaluate(() => {
     localStorage.clear();
+    localStorage.removeItem('fitil-account');
     localStorage.setItem('fitil-profile', JSON.stringify({ coins: 5000 }));
   });
   await page.reload();
@@ -70,6 +71,7 @@ test('personaje: pagina personajului, cumpărare, meci cu personajul ales și re
   await page.evaluate(() => {
     localStorage.clear();
     // nivel de jucător mare: Epicele cer nivelul 6
+    localStorage.removeItem('fitil-account');
     localStorage.setItem('fitil-profile', JSON.stringify({ coins: 700, xp: { bubu: 3000 } }));
   });
   await page.reload();
@@ -141,7 +143,10 @@ test('jucător nou: puține lucruri deschise, restul cu lacăt; nivelul deschide
   await expect(page.locator('[data-theme=craciun]')).toContainText('300 Fitile');
 
   // la nivelul 2 se deschide 1 vs 1
-  await page.evaluate(() => localStorage.setItem('fitil-profile', JSON.stringify({ xp: { bubu: 120 } })));
+  await page.evaluate(() => {
+    localStorage.removeItem('fitil-account');
+    localStorage.setItem('fitil-profile', JSON.stringify({ xp: { bubu: 120 } }));
+  });
   await page.reload();
   await page.locator('[data-test=play]').click();
   await expect(page.locator('[data-mode=vs]')).toBeEnabled();
