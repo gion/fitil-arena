@@ -1020,7 +1020,8 @@ export function portalRing(color: string, inner: boolean): void {
 
 /* ---------- personaje ---------- */
 
-export type Expr = 'normal' | 'happy' | 'doom' | 'dead';
+/** `fierce` = încruntat, hotărât (PLAY!/START! în meniuri); `blink` = ochi închiși (clipitul din meniuri). */
+export type Expr = 'normal' | 'happy' | 'doom' | 'dead' | 'fierce' | 'blink';
 
 /** Cum arată un personaj: care e (detaliile lui) și ce cosmetice poartă (id-uri din magazin). */
 export interface Look {
@@ -1066,6 +1067,16 @@ function body(s: ThemeStyle, col: string, face: [number, number], expr: Expr, lo
         ctx.stroke();
         continue;
       }
+      if (expr === 'blink') {
+        ctx.strokeStyle = s === 'neon' ? col : dark;
+        ctx.lineWidth = T * 0.04;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x - er * 0.9, y0 + er * 0.2);
+        ctx.lineTo(x + er * 0.9, y0 + er * 0.2);
+        ctx.stroke();
+        continue;
+      }
       if (expr === 'dead') {
         ctx.strokeStyle = s === 'neon' ? col : dark;
         ctx.lineWidth = T * 0.045;
@@ -1103,6 +1114,21 @@ function body(s: ThemeStyle, col: string, face: [number, number], expr: Expr, lo
       ctx.beginPath();
       ctx.arc(ex, y0 + r * 0.47, r * 0.1, 0, Math.PI);
       ctx.fill();
+    } else if (expr === 'fierce') {
+      ctx.strokeStyle = s === 'neon' ? col : dark;
+      ctx.lineWidth = T * 0.04;
+      ctx.lineCap = 'round';
+      for (const sd of [-1, 1]) {
+        const x = sd * r * 0.36 + ex;
+        ctx.beginPath();
+        ctx.moveTo(x - sd * r * 0.22, y0 - r * 0.24);
+        ctx.lineTo(x + sd * r * 0.16, y0 - r * 0.42);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(ex - r * 0.17, y0 + r * 0.5);
+      ctx.lineTo(ex + r * 0.17, y0 + r * 0.5);
+      ctx.stroke();
     } else if (expr === 'doom') {
       ctx.strokeStyle = s === 'neon' ? col : dark;
       ctx.lineWidth = T * 0.035;

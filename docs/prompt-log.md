@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Faza 4b: interfața „Comic”
+
+- **Cerut:** „începe Faza 4b” (PLAN.md): interfața după `docs/design/ui.md` și machetele din `reference/ui/`, doar landscape, fără schimbări de gameplay.
+- **Făcut:** tokeni + fonturi Bangers/Rubik locale; blocare landscape (iOS, Android, ecran „Rotate your phone”); componentele de bază (`ui/comic.ts`) cu răspuns la apăsare (vizual, sunete de interfață noi, vibrație); toate ecranele existente refăcute (principal, Play, Online, cameră privată, joc rapid, personaje, pagina personajului, magazin, pauză, setări, final, conexiune, rezultate) plus Missions, Practice, Themes; HUD de 44px cu variante și butoanele SUPER / bomba specială / BOOM! / BOMB; arena în cadru; personaje din meniuri care clipesc, privesc și reacționează (expresiile noi `fierce`, `blink`); tranziții (bandă de cerneală, fitil 3-2-1 + BOOM!). Deciziile D-055 – D-060, `docs/progress.md`, `GAME_DESIGN.md` (landscape, bara de 44px), testul nou `e2e/ui.spec.ts` și testele vechi adaptate. Commit-ul de pe `claude/kind-hypatia-8ysa02`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright pe build-ul final: toate testele trec (29 vechi adaptate + 6 noi în `ui.spec.ts`), fără testul de FPS (container fără GPU); capturile ecranelor în `docs/screens/ui/`, comparate vizual cu machetele la 844×390.
+- **Notă operațională:** fitilul de start pune meciul pe pauză 2,1s; testele care pornesc meciuri din meniu și citesc imediat starea trebuie să țină cont (sau să pornească cu `motion: false`, care face tranzițiile instantanee). Checkpoint-ul Q-010 (numele) nu a fost atins: login-ul cu wordmark rămâne pentru Faza 6.
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Ghid de interacțiune: sunet, vibrație, mișcare
 
 - **Cerut:** îndrumări pentru interacțiunea cu interfața: feedback tactil și sunete la apăsare și la schimbarea ecranului, animații de fundal, reacții ale personajelor din meniuri.

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { MODES } from '@fitil/content';
 
 type Win = {
   __fitil: {
@@ -46,12 +47,14 @@ test('online: gazda creează camera, al doilea jucător intră cu codul, meciul 
   await guest.locator('[data-test=name]').fill('Guest');
   await guest.locator('[data-test=code]').fill(code.toLowerCase());
   await guest.locator('[data-test=join]').click();
-  await expect(guest.locator('.seats li')).toHaveCount(2);
-  await expect(host.locator('.seats li')).toHaveCount(2);
+  await expect(guest.locator('.seats li:not(.empty)')).toHaveCount(2);
+  await expect(host.locator('.seats li:not(.empty)')).toHaveCount(2);
   // doar gazda are butonul Start și poate schimba modul
   await expect(guest.locator('[data-test=start]')).toHaveCount(0);
+  await expect(guest.locator('[data-rule=mode]')).toBeDisabled();
+  await host.locator('[data-rule=mode]').click();
   await host.locator('[data-mode=team2]').click();
-  await expect(guest.locator('[data-mode=team2]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(guest.locator('[data-rule=mode]')).toContainText(MODES.team2.name);
 
   await host.locator('[data-test=start]').click();
   await expect.poll(async () => (await state(guest))?.tick ?? 0, { timeout: 10_000 }).toBeGreaterThan(40);

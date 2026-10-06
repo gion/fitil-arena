@@ -47,7 +47,10 @@ test('personajul ales din Play intră în meci cu semnătura și Ultimate-ul lui
   await page.locator('[data-test=hero]').click();
   await expect(page.locator('.ccard')).toHaveCount(CHARACTERS.length);
   await page.locator('[data-char=zuzu]').click();
+  await page.locator('[data-test=open-char]').click();
   await page.locator('[data-test=select-char]').click();
+  // după alegere te întoarce singur în grilă
+  await expect(page.locator('.ccard')).toHaveCount(CHARACTERS.length);
   await page.getByRole('button', { name: 'Back' }).click();
   await expect(page.locator('[data-test=hero]')).toContainText(`${zuzu.name} — ${zuzu.ultimate.name}`);
   await page.locator('[data-mode=ffa]').click();
@@ -60,6 +63,11 @@ test('personajul ales din Play intră în meci cu semnătura și Ultimate-ul lui
   });
   expect(me.hero).toMatchObject({ id: 'zuzu', super: 'dash' });
   expect(me.maxBombs).toBe(zuzu.kit.maxBombs);
+  // fitilul de start ține meciul pe pauză 2,1s (D-057)
+  await page.waitForFunction(
+    () =>
+      !(window as unknown as { __fitil: { app: { match: { paused: boolean } } } }).__fitil.app.match.paused,
+  );
   // bara plină → butonul Ultimate apare „gata” și pornește la apăsare
   await page.evaluate(() => {
     const m = (window as unknown as Win).__fitil.app.match!;

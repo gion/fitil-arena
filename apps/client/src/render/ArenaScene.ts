@@ -117,6 +117,10 @@ const DEPTH = {
  * Randarea 2D a arenei (Phaser, WebGL), la rezoluția fizică a ecranului.
  * Citește starea din `Match` (simularea) și nu modifică nimic din ea.
  */
+/** Bara HUD (px CSS, D-053) și chenarul cadrului arenei. */
+const HUD = 44;
+const FRAME = 4;
+
 export class ArenaScene extends Phaser.Scene {
   match: Match | null = null;
   theme!: Theme;
@@ -210,16 +214,28 @@ export class ArenaScene extends Phaser.Scene {
     m?.on((e) => this.onEvent(e));
   }
 
-  /** Dreptunghiul zonei de joc pe ecran (pixeli fizici). */
+  /**
+   * Dreptunghiul zonei de joc pe ecran (pixeli fizici): sub bara de 44px, în cadrul cu chenar
+   * de 4px (desenat în DOM, `.frame`). În 3D, minimapa din stânga-sus.
+   */
   area(): { x: number; y: number; w: number; h: number } {
     const { width, height } = this.scale;
-    const top = 30 * DPR;
+    const top = (HUD + 2 + FRAME) * DPR;
     if (this.mini) {
-      const w = Math.round(width * 0.3);
-      const h = Math.round((height - top) * 0.36);
-      return { x: width - w - 6 * DPR, y: top + 6 * DPR, w, h };
+      const w = Math.round(Math.min(width * 0.22, 200 * DPR));
+      const h = Math.round(Math.min((height - top) * 0.3, 110 * DPR));
+      return { x: Math.round(56 * DPR), y: Math.round((HUD + 10) * DPR), w, h };
     }
-    return { x: 0, y: top, w: width, h: height - top };
+    const f = FRAME * DPR;
+    return { x: f, y: top, w: width - 2 * f, h: height - top - f };
+  }
+
+  /** Cadrul arenei (pixeli CSS), pentru chenarul din DOM; `null` fără meci. */
+  frameRect(): { x: number; y: number; w: number; h: number } | null {
+    if (!this.match) return null;
+    const v = this.cameras.main;
+    const f = this.mini ? 3 : FRAME;
+    return { x: v.x / DPR - f, y: v.y / DPR - f, w: v.width / DPR + 2 * f, h: v.height / DPR + 2 * f };
   }
 
   /** Poziția pe ecran (pixeli CSS) a unui punct din arenă (în pătrățele). */
@@ -449,7 +465,6 @@ export class ArenaScene extends Phaser.Scene {
     const s = m.s;
     const a = this.area();
     const cam = this.cameras.main;
-    cam.setViewport(a.x, a.y, a.w, a.h);
     const inf = s.inf !== null;
     const T = inf
       ? Math.floor(
@@ -473,6 +488,13 @@ export class ArenaScene extends Phaser.Scene {
     const rot = s.rot && !this.mini ? (s.rot.a / DEG) * (Math.PI / 180) : 0;
     const bw = s.W * T;
     const bh = s.H * T;
+    // cadrul strâns pe arenă (ca în machetă), centrat; arena rotativă și lumea infinită folosesc toată zona
+    if (inf || s.rot || this.mini) cam.setViewport(a.x, a.y, a.w, a.h);
+    else {
+      const vw = Math.min(a.w, bw);
+      const vh = Math.min(a.h, bh);
+      cam.setViewport(Math.round(a.x + (a.w - vw) / 2), Math.round(a.y + (a.h - vh) / 2), vw, vh);
+    }
     this.rotK = rot
       ? Math.min(
           1,

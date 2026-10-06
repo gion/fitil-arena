@@ -36,15 +36,18 @@ test('magazin: câte un obiect din fiecare categorie se cumpără și se echipea
   for (const cat of SHOP_CATS) {
     const it = SHOP.find((i) => i.cat === cat && i.price > 0 && !i.unlock)!;
     await page.locator(`[data-cat=${cat}]`).click();
+    // tap = probă (previzualizare), butonul de jos cumpără și îmbracă
     await page.locator(`[data-item=${it.id}]`).click();
+    await page.locator('[data-test=shop-cta]').click();
     coins -= it.price;
     await expect(page.locator(`[data-item=${it.id}]`)).toHaveClass(/\beq\b/);
     await expect(page.locator('[data-test=coins]')).toHaveText(String(coins));
   }
-  // scoaterea: al doilea tap pe un obiect purtat îl scoate
+  // scoaterea: pe un obiect purtat, butonul de jos îl scoate
   await page.locator('[data-cat=hat]').click();
   const hat = SHOP.find((i) => i.cat === 'hat' && i.price > 0)!.id;
   await page.locator(`[data-item=${hat}]`).click();
+  await page.locator('[data-test=shop-cta]').click();
   await expect(page.locator(`[data-item=${hat}]`)).not.toHaveClass(/\beq\b/);
   // persistență după reîncărcare
   await page.reload();
@@ -72,14 +75,17 @@ test('personaje: pagina personajului, cumpărare, meci cu personajul ales și re
   await page.reload();
   await page.locator('[data-test=characters]').click();
   await expect(page.locator('.ccard')).toHaveCount(11);
+  // primul tap arată personajul jos, „Open page” deschide pagina lui
   await page.locator(`[data-char=${EPIC.id}]`).click();
-  await expect(page.locator('.proscons .pros li').first()).toBeVisible();
+  await page.locator('[data-test=open-char]').click();
+  await expect(page.locator('.proscons .pros li').first()).toBeAttached();
   await page.locator('[data-test=listen]').click();
   await page.locator('[data-test=buy-char]').click();
   await expect(page.locator('[data-test=coins]')).toHaveText('100');
   // Magicianul nu e lansat încă: doar teaser
   await page.getByRole('button', { name: 'Back' }).click();
   await page.locator('[data-char=magician]').click();
+  await page.locator('[data-test=open-char]').click();
   await expect(page.locator('[data-test=soon]')).toBeDisabled();
   await expect(page.locator('[data-test=buy-char]')).toHaveCount(0);
 

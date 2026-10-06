@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#141726" />
+    <meta name="theme-color" content="#111111" />
     <link rel="icon" href="data:," />
     <title>Fitil Arena</title>
     <style>
@@ -14,7 +14,9 @@
       body {
         margin: 0;
         height: 100%;
-        background: #141726;
+        background-color: #ffd60a;
+        background-image: radial-gradient(#f2b600 24%, transparent 25%);
+        background-size: 14px 14px;
         overflow: hidden;
         overscroll-behavior: none;
       }
@@ -31,12 +33,87 @@
       .hidden {
         display: none !important;
       }
+      /* Doar landscape (D-054): pe telefon ținut în portrait, în locul jocului. CSS pur, merge și înainte de JS. */
+      #rotate {
+        display: none;
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 22px;
+          padding: 24px;
+          background-color: #ffd60a;
+          background-image: radial-gradient(#f2b600 24%, transparent 25%);
+          background-size: 14px 14px;
+          color: #111;
+          text-align: center;
+          font-family: 'Bangers', 'Arial Black', Impact, sans-serif;
+        }
+        #rotate b {
+          font-weight: 400;
+          font-size: 40px;
+          letter-spacing: 2px;
+          color: #ffd60a;
+          background: #111;
+          padding: 2px 18px;
+          transform: skewX(-8deg);
+        }
+        #rotate span {
+          font:
+            italic 500 15px 'Rubik',
+            system-ui,
+            sans-serif;
+          background: #fff3b0;
+          border: 3px solid #111;
+          padding: 4px 12px;
+        }
+        #rotate i {
+          width: 70px;
+          height: 120px;
+          box-sizing: border-box;
+          border: 6px solid #111;
+          border-radius: 12px;
+          background: #19b5e8;
+          box-shadow: 5px 5px 0 #111;
+          animation: rot-phone 2.4s ease-in-out infinite;
+        }
+        #game,
+        #ui,
+        #cv3 {
+          visibility: hidden;
+        }
+      }
+      @keyframes rot-phone {
+        0%,
+        30% {
+          transform: rotate(0);
+        }
+        60%,
+        100% {
+          transform: rotate(-90deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #rotate i {
+          animation: none;
+          transform: rotate(-90deg);
+        }
+      }
     </style>
   </head>
   <body>
     <canvas id="cv3" class="hidden"></canvas>
     <div id="game"></div>
     <div id="ui"></div>
+    <div id="rotate" role="alert">
+      <i></i><b>ROTATE YOUR PHONE</b><span>The arena only fits sideways.</span>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
