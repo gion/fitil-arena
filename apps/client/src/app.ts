@@ -41,6 +41,8 @@ import {
   seasonalTheme,
   themeById,
   CAT_NAMES,
+  emoteById,
+  fatalityById,
   CHARACTERS,
   MAX_LEVEL,
   RARITY,
@@ -86,6 +88,7 @@ import { OnlineSession } from './online/session.ts';
 import { store, today } from './profile.ts';
 import { DEV_TOOLS, now } from './clock.ts';
 import { Portraits, lookColor } from './ui/portrait.ts';
+import { FatPreviews } from './ui/fatPreview.ts';
 import type * as paint from './render/paint.ts';
 import {
   burst,
@@ -130,6 +133,7 @@ export class App {
   online: OnlineSession | null = null;
   private onlineErr = '';
   private portraits = new Portraits();
+  private fatPreviews = new FatPreviews();
   /** Ce ai făcut în meciul curent (pentru monede și XP). */
   private sum: MatchSummary = { boxes: 0, kills: 0, won: false, team: false, caps: 0, stars: 0 };
   kind: PlayKind = { type: 'mode', mode: settings.mode };
@@ -169,6 +173,7 @@ export class App {
   private conn!: HTMLElement;
   private fx!: HTMLElement;
   private viewBtn!: HTMLButtonElement;
+  private emoteBtn!: HTMLButtonElement;
   private menuBtn!: HTMLButtonElement;
   private overlay!: HTMLElement;
   private drawer!: HTMLElement;
@@ -257,7 +262,26 @@ export class App {
       { class: 'pausebtn', 'aria-label': 'Pause', 'data-test': 'pause', onclick: () => this.togglePause() },
       icon.pause(),
     );
-    const bar = h('div', { class: 'hudbar' }, this.chips, this.clock, this.stats, this.viewBtn, this.menuBtn);
+    this.emoteBtn = h(
+      'button',
+      {
+        class: 'viewbtn hidden',
+        'aria-label': 'Emote',
+        'data-test': 'emote',
+        onclick: () => this.match?.emote(),
+      },
+      '😀',
+    );
+    const bar = h(
+      'div',
+      { class: 'hudbar' },
+      this.chips,
+      this.clock,
+      this.stats,
+      this.emoteBtn,
+      this.viewBtn,
+      this.menuBtn,
+    );
     this.frameEl = h('div', { class: 'frame hidden', 'aria-hidden': 'true' });
     const left = h(
       'div',
@@ -1721,13 +1745,17 @@ export class App {
                       class: 'sicon',
                       style: `background:${it.col === 'rainbow' ? 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' : (it.col ?? '#fff')}`,
                     })
-                  : cat === 'voice' || cat === 'trail'
-                    ? h(
-                        'i',
-                        { class: 'sicon', style: it.col ? `color:${it.col}` : '' },
-                        cat === 'voice' ? '🔊' : '✦',
-                      )
-                    : this.portraits.add({ ch, outfit: { ...p.eq, [cat]: it.id }, bomb: cat === 'bomb' });
+                  : cat === 'fatality'
+                    ? this.fatPreviews.add({ id: it.fatality!, ch })
+                    : cat === 'emote'
+                      ? h('i', { class: 'sicon' }, emoteById(it.emote)?.icon ?? '?')
+                      : cat === 'voice' || cat === 'trail'
+                        ? h(
+                            'i',
+                            { class: 'sicon', style: it.col ? `color:${it.col}` : '' },
+                            cat === 'voice' ? '🔊' : '✦',
+                          )
+                        : this.portraits.add({ ch, outfit: { ...p.eq, [cat]: it.id }, bomb: cat === 'bomb' });
               return h(
                 'button',
                 {
@@ -2598,6 +2626,12 @@ export class App {
     const me = this.match!.me;
     const play = this.phase === 'play' && me.alive;
     const hero = me.hero ? charById(me.hero.id).ultimate : null;
+    const em = emoteById(this.match!.myEmote);
+    show(this.emoteBtn, play && !!em);
+    if (em && this.emoteBtn.textContent !== em.icon) {
+      this.emoteBtn.textContent = em.icon;
+      this.emoteBtn.setAttribute('aria-label', `Emote: ${em.name}`);
+    }
     show(this.sup, play && !!hero);
     if (hero) {
       const pct = Math.round((100 * me.charge) / SUPER_FULL);
@@ -2913,6 +2947,16 @@ export class App {
         setTimeout(() => this.voice.say(e.hero.text, 1.25), 250);
         vibrate([30, 40, 30, 40, 80]);
         break;
+      case 'emote': {
+        const em = emoteById(e.id);
+        if (em) this.sfx.fat(em.sfx);
+        break;
+      }
+      case 'fatality': {
+        const f = fatalityById(e.id);
+        if (f) this.sfx.fat(f.sfx);
+        break;
+      }
       case 'bye':
         this.voice.say('Bye bye!', 1.5);
         break;

@@ -17,13 +17,15 @@ import {
   tileY,
 } from '@fitil/sim';
 import type { GameState, ItemType, Player } from '@fitil/sim';
-import { TEAMS, arenaEventById, charById, shopItem } from '@fitil/content';
+import { TEAMS, arenaEventById, charById, emoteById, fatalityById, shopItem } from '@fitil/content';
 import type { Theme } from '@fitil/content';
 import { DPR } from '../display.ts';
 import type { Match, MatchEvent } from '../game/match.ts';
 import { FRIEND_COL } from './colors.ts';
 import { SPECIAL_COLOR } from './paint.ts';
 import { DizzyFX } from './dizzy.ts';
+import { fatalityPose } from './fatality.ts';
+import type { Prop } from './fatality.ts';
 import * as paint from './paint.ts';
 import { TexBank } from './textures.ts';
 
@@ -504,8 +506,9 @@ export class ArenaScene extends Phaser.Scene {
       : 1;
     // zoom cinematic („bye bye” 2.4×, momente de glorie 2.1×)
     const heroP = m.hero ? s.players[m.hero.player] : undefined;
-    const focusP = m.doom ? m.me : heroP;
-    const want = this.mini || !this.motion ? 1 : m.doom ? 2.4 : m.hero ? 2.1 : 1;
+    const finP = m.finale ? s.players[m.finale.player] : undefined;
+    const focusP = m.doom ? m.me : (heroP ?? finP);
+    const want = this.mini || !this.motion ? 1 : m.doom ? 2.4 : m.hero ? 2.1 : m.finale ? 1.9 : 1;
     this.zoomK += (want - this.zoomK) * 0.12;
     if (Math.abs(this.zoomK - 1) < 0.002) this.zoomK = 1;
     let cx = bw / 2;
@@ -1284,7 +1287,9 @@ export class ArenaScene extends Phaser.Scene {
     const P = this.pools;
     const deadT = p.alive ? 0 : (s.tick - p.deathTick) / TICK_HZ + m.alpha / TICK_HZ;
     const crushed = !p.alive && this.crushed.has(p.id);
-    if (!p.alive && deadT > (crushed ? 1.6 : 1.4)) return;
+    const fatId = !p.alive && !crushed ? m.fats.get(p.id) : undefined;
+    const fatDur = fatalityById(fatId)?.dur ?? 0;
+    if (!p.alive && deadT > (crushed ? 1.6 : fatDur || 1.4)) return;
     // ascuns în tufiș (sau tu ești orbit): nu se desenează deloc
     if (p.alive && !canSee(s, this.viewer(m), p)) return;
     const [x, y] = m.lerp(`p${p.id}`, p.px, p.py);
@@ -1300,6 +1305,9 @@ export class ArenaScene extends Phaser.Scene {
     const bob = p.moving ? Math.abs(Math.sin(w)) * -T * 0.04 : Math.sin(time * 3 + p.id) * T * 0.012;
     let cx = (x + 0.5) * T;
     let cy = (y + 0.5) * T;
+    const cx0 = cx;
+    const cy0 = cy;
+    const fat = fatId ? fatalityPose(fatId, deadT) : null;
     let rot = 0;
     let sx = 1;
     let sy = 1;
@@ -1312,7 +1320,14 @@ export class ArenaScene extends Phaser.Scene {
       }
     }
     if (!p.alive) {
-      if (crushed) {
+      if (fat) {
+        cx += fat.dx * T;
+        cy += fat.dy * T;
+        rot = fat.rot;
+        sx = fat.sx;
+        sy = fat.sy;
+        alpha = fat.alpha;
+      } else if (crushed) {
         cy += T * 0.25;
         sx = 1.6;
         sy = 0.22;
@@ -1432,6 +1447,31 @@ export class ArenaScene extends Phaser.Scene {
       .setRotation(rot)
       .setAlpha(alpha * (inCrate ? 0.45 : 1) * (blink && Math.sin(time * 30) > 0 ? 0.3 : 1))
       .setDepth(depth + (inCrate ? 0.2 : 0.001));
+    if (fat?.roast)
+      body.setTint(
+        Phaser.Display.Color.Interpolate.ColorWithColor(
+          Phaser.Display.Color.ValueToColor(0xffffff),
+          Phaser.Display.Color.ValueToColor(0xa8602a),
+          100,
+          fat.roast * 100,
+        ).color,
+      );
+    const em = p.alive ? m.emotes.get(p.id) : undefined;
+    if (em) {
+      const def = emoteById(em.id);
+      const pop = Math.min(1, em.t * 8);
+      const by = cy0 - T * (1.2 + 0.05 * Math.sin(em.t * 6));
+      this.pools
+        .actors!.get(
+          this.t('emoteBubble', 1.2, 1.2, 0.6, 0.6, () => paint.fatProp('bubble')),
+          cx0,
+          by,
+        )
+        .setScale(pop * 1.3)
+        .setDepth(depth + 0.007);
+      if (def) this.label(def.icon, cx0, by - T * 0.05);
+    }
+    if (fat) for (const pr of fat.props) this.fatProp(pr, cx0, cy0, depth);
     this.trail(p, x, y, dt);
     if (!p.alive) return;
     // înghețat: bloc de gheață
@@ -1551,6 +1591,17 @@ export class ArenaScene extends Phaser.Scene {
   private viewer(m: Match): Player | null {
     const me = m.s.players[m.meId];
     return me && me.alive ? me : null;
+  }
+
+  private fatProp(pr: Prop, cx: number, cy: number, depth: number): void {
+    const T = this.T;
+    const tex = this.t(`fat_${pr.kind}${pr.v}`, 1.6, 1.2, 0.8, 0.6, () => paint.fatProp(pr.kind, pr.v));
+    this.pools
+      .actors!.get(tex, cx + pr.x * T, cy + pr.y * T)
+      .setScale(pr.s)
+      .setRotation(pr.rot)
+      .setAlpha(Math.max(0, Math.min(1, pr.a)))
+      .setDepth(depth + 0.006);
   }
 
   /** Jucători striviți de rândul mobil (animație turtită). */

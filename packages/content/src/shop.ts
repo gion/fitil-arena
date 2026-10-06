@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { CHARACTERS, VOICE_IDS } from './characters.ts';
+import { EMOTES, FATALITIES, FATALITY_PRICE } from './fatalities.ts';
 
 /** Categoriile magazinului (totul e cosmetic, Q-004). */
-export const SHOP_CATS = ['color', 'hat', 'acc', 'bomb', 'trail', 'voice'] as const;
+export const SHOP_CATS = ['color', 'hat', 'acc', 'bomb', 'trail', 'voice', 'fatality', 'emote'] as const;
 export type ShopCat = (typeof SHOP_CATS)[number];
 
 export const CAT_NAMES: Record<ShopCat, string> = {
@@ -12,6 +13,8 @@ export const CAT_NAMES: Record<ShopCat, string> = {
   bomb: 'Bombs',
   trail: 'Trails',
   voice: 'Voices',
+  fatality: 'Fatalities',
+  emote: 'Emotes',
 };
 
 const ItemSchema = z.object({
@@ -24,6 +27,9 @@ const ItemSchema = z.object({
   /** Forma urmei. */
   shape: z.enum(['star', 'ring', 'heart', 'dot']).optional(),
   voice: z.enum(VOICE_IDS).optional(),
+  /** Fatalitatea (id din `fatalities.ts`) sau emote-ul. */
+  fatality: z.string().optional(),
+  emote: z.string().optional(),
   quips: z.array(z.string()).optional(),
   win: z.array(z.string()).optional(),
   /** Obiect exclusiv: nu se cumpără, se deblochează la nivelul personajului. */
@@ -90,6 +96,14 @@ export const SHOP: ShopItem[] = z.array(ItemSchema).parse([
     quips: ['La-la… ouch!', 'Such drama!'],
     win: ['La-la-laaa!'],
   },
+  ...FATALITIES.map((f) => ({
+    id: `f_${f.id}`,
+    cat: 'fatality',
+    name: f.name,
+    price: FATALITY_PRICE[f.rarity],
+    fatality: f.id,
+  })),
+  ...EMOTES.map((e) => ({ id: `e_${e.id}`, cat: 'emote', name: e.name, price: 40, emote: e.id })),
 ]);
 
 export const shopItem = (id: string | null | undefined): ShopItem | undefined =>
@@ -103,9 +117,22 @@ export interface Outfit {
   bomb: string | null;
   trail: string | null;
   voice: string | null;
+  /** Fatalitatea jucată pe cei pe care îi elimini. */
+  fatality: string | null;
+  /** Emote-ul de pe butonul din joc. */
+  emote: string | null;
 }
 
-export const NO_OUTFIT: Outfit = { color: null, hat: null, acc: null, bomb: null, trail: null, voice: null };
+export const NO_OUTFIT: Outfit = {
+  color: null,
+  hat: null,
+  acc: null,
+  bomb: null,
+  trail: null,
+  voice: null,
+  fatality: null,
+  emote: null,
+};
 
 /** Păstrează doar id-urile valide, fiecare în categoria lui (outfit venit din rețea sau din stocare). */
 export function cleanOutfit(v: unknown): Outfit {
