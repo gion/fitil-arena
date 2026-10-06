@@ -138,7 +138,7 @@ export class App {
   theme: Theme = this.allowedTheme();
   match: Match | null = null;
   online: OnlineSession | null = null;
-  /** Lumea Infinit online (D-069). */
+  /** Lumea Infinit online (D-070). */
   inf: InfiniteSession | null = null;
   private onlineErr = '';
   private portraits = new Portraits();
@@ -1351,7 +1351,7 @@ export class App {
         h('span', { 'data-test': 'lobby-status', class: 'hidden' }, status),
       );
     const share = async () => {
-      const text = `Join my Fitil room: ${o.code}`;
+      const text = `Join my Fuse Arena room: ${o.code}`;
       try {
         if (navigator.share) await navigator.share({ text });
         else await navigator.clipboard.writeText(o.code);

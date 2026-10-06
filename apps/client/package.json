@@ -12,6 +12,7 @@
     "cap:sync": "vite build && cap sync",
     "ios": "vite build && cap sync ios && cap open ios",
     "android": "vite build && cap sync android && cap open android",
+    "brand": "node scripts/brand.mjs",
     "screens": "SCREENS=1 playwright test e2e/screens.spec.ts",
     "test": "vitest run test"
   },

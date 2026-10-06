@@ -66,7 +66,7 @@ export type MatchEvent =
   | { type: 'challenge'; progress: ChallengeProgress };
 
 /**
- * Sursa stării online: `NetClient` (meciuri cu input-uri, D-030) sau `InfView` (Infinit, stare filtrată, D-069).
+ * Sursa stării online: `NetClient` (meciuri cu input-uri, D-030) sau `InfView` (Infinit, stare filtrată, D-070).
  */
 export interface NetSource {
   readonly view: GameState | null;

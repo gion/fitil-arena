@@ -6,9 +6,23 @@ Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar isto
 ## 2026-10-06 — Claude Code — Faza 7: Modul Infinit
 
 - **Cerut:** „începem faza 7” (PLAN.md: modul Infinit offline în sim, lume pe chunk-uri, instanțe de 30–80 de jucători cu interest management, respawn, scor, bonusuri la moarte, clasament live, minimapă, shard-uri; test de încărcare cu 80 de boți-client).
-- **Făcut:** sim — lumea pe chunk-uri 32×32 și modul Infinit (`world.ts`, `infinite.ts`); net — protocol de stare filtrată per client (`InfHost` / `InfView`); server — camera `infinite` (80 de oameni, shard-uri automate) și `pnpm --filter @fitil/server load:inf`; client — Infinit offline în Play și online în Online, HUD cu scor, clasament, minimapă, coroana liderului. Decizii D-069 – D-071, raport în `docs/progress.md`.
+- **Făcut:** sim — lumea pe chunk-uri 32×32 și modul Infinit (`world.ts`, `infinite.ts`); net — protocol de stare filtrată per client (`InfHost` / `InfView`); server — camera `infinite` (80 de oameni, shard-uri automate) și `pnpm --filter @fitil/server load:inf`; client — Infinit offline în Play și online în Online, HUD cu scor, clasament, minimapă, coroana liderului. Decizii D-070 – D-072, raport în `docs/progress.md`.
 - **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 148, content 39, net 22, client 18, server 7 + 11 sărite fără Postgres), `pnpm sim:bench` (0 excepții, 0 desync), e2e `infinite`, `missions`, `online`, `ui`, `characters` (22 trec), testul de încărcare cu 80 de boți (20.0 tick/s, tick mediu 5.8 ms, trafic max 5.6 KB/s per client).
 - **Notă operațională:** e2e în container: `PW_CHROMIUM=/opt/pw-browsers/chromium`. Testul de încărcare pornește singur serverul într-un proces separat; cu `--url ws://…` se poate îndrepta spre un server existent.
+
+## 2026-10-06 — Claude Code (Opus 5.5) — Numele „Fuse Arena” și iconițe cu bombă
+
+- **Cerut:** numele aplicației „Fuse Arena” și iconițe noi, „ceva cu bombe”; apoi un PR de testat pe telefon.
+- **Făcut:** redenumire în `index.html`, `capacitor.config.ts`, `strings.xml`, `Info.plist`, README și textul de invitație; `apps/client/scripts/brand.mjs` (`pnpm --filter @fitil/client brand`) generează din SVG propriu iconița iOS, iconițele Android (adaptivă + rotundă), ecranele de pornire, favicon și apple-touch-icon. D-069, Q-010 parțial rezolvat, CREDITS. PR gion/fitil-arena#11.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; iconițele și ecranul de pornire verificate vizual (inclusiv masca circulară Android). Pe telefon neverificat.
+- **Notă operațională:** după merge, `pnpm --filter @fitil/client cap:sync` și rebuild în Xcode/Android Studio; iOS poate ține iconița veche în cache până la reinstalare.
+
+## 2026-10-06 — Claude Code (Opus 5.5) — Zone sigure pe iPhone cu notch
+
+- **Cerut:** pe iPhone cu notch, în full screen, monedele din dreapta-sus nu se văd complet, iar notch-ul și colțurile rotunjite mușcă din marginea hărții; un padding interior puțin mai mare.
+- **Făcut:** `safeInsets()` în `apps/client/src/display.ts` (citește `env(safe-area-inset-*)`); `ArenaScene.area()` ține arena (și minimapa 3D) în zona sigură stânga/dreapta + 8px și jumătate din zona barei „home” jos; în CSS, marginile paginilor devin zona sigură + 24px (+16px pe ecrane mici), iar bara HUD primește +16px peste zona sigură. Pe ecranele fără zonă sigură nu se schimbă nimic.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `smoke` + `ui`: 10 trecute, testul de FPS pică și fără schimbare (container fără GPU). Pe iPhone neverificat.
+- **Notă operațională:** Playwright local are nevoie de `PW_CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` în containerul cloud.
 
 ## 2026-10-06 — Claude Code (Sonnet 5.5) — Faza 6: completări (server-first, daily, legal)
 

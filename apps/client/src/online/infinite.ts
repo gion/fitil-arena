@@ -7,7 +7,7 @@ import { serverUrl } from './session.ts';
 import type { SessionStatus } from './session.ts';
 
 /**
- * Lumea Infinit online (D-069): conexiunea la camera `infinite` + `InfView` (oglinda stării din jurul tău).
+ * Lumea Infinit online (D-070): conexiunea la camera `infinite` + `InfView` (oglinda stării din jurul tău).
  * Intri și ieși oricând; o instanță plină trimite automat într-alta.
  */
 export class InfiniteSession {

@@ -33,7 +33,7 @@ import { NO_INPUT, decodeInput, encodeInput } from './protocol.ts';
 import type { MeMsg, SlotInfo } from './protocol.ts';
 
 /*
- * Modul Infinit online (Faza 7, D-069): stare filtrată per client, nu input-uri (D-030 nu merge pentru
+ * Modul Infinit online (Faza 7, D-070): stare filtrată per client, nu input-uri (D-030 nu merge pentru
  * 30–80 de oameni într-o lume nemărginită). Serverul rulează simularea; fiecare client primește doar
  * chunk-urile din jurul lui (ca diferențe față de lumea generată, pe care o generează singur din seed),
  * schimbările de celule, jucătorii, bombele și evenimentele din zonă.
