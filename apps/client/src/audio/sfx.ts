@@ -2,6 +2,9 @@ import type { Theme } from '@fitil/content';
 
 type Wave = OscillatorType;
 
+/** Sunetele de interfață (`docs/design/ui.md`, „Interacțiune”). */
+export type UiSound = 'pop' | 'tick' | 'stamp' | 'stampOff' | 'pick' | 'nope' | 'tada' | 'whoosh' | 'down';
+
 /**
  * Sunete sintetizate cu WebAudio (portate din prototip). Nu folosesc fișiere,
  * deci nu există probleme de licență; sunetele depind de temă (unda, filtrele).
@@ -170,6 +173,92 @@ export class Sfx {
     n.start(t);
     n.stop(t + 1.6);
   }
+  /* ---------- interfața (fixe, nu depind de temă; mai încete decât meciul, cel mult unul la 60 ms) ---------- */
+
+  private uiAt = 0;
+
+  ui(kind: UiSound): void {
+    const c = this.on();
+    if (!c) return;
+    const now = c.currentTime;
+    if (now - this.uiAt < 0.06) return;
+    this.uiAt = now;
+    switch (kind) {
+      case 'pop':
+        this.tone(320, 120, 0.09, 'sine', 0.22);
+        this.noiseHit(now, 0.03, 900, 0.05, 'lowpass');
+        break;
+      case 'tick':
+        this.tone(1800, 1400, 0.025, 'square', 0.035);
+        break;
+      case 'stamp':
+      case 'stampOff':
+        this.noiseHit(now, 0.07, kind === 'stamp' ? 700 : 380, 0.22, 'lowpass');
+        this.tone(kind === 'stamp' ? 220 : 140, 70, 0.08, 'sine', 0.2);
+        break;
+      case 'pick':
+        this.tone(660, 660, 0.06, 'triangle', 0.09);
+        this.tone(990, 990, 0.08, 'triangle', 0.09, 0.06);
+        break;
+      case 'nope':
+        this.tone(150, 140, 0.07, 'sawtooth', 0.06);
+        this.tone(150, 130, 0.07, 'sawtooth', 0.06, 0.1);
+        break;
+      case 'tada':
+        [523, 659, 784, 1047].forEach((f, i) => this.tone(f, f, 0.12, 'triangle', 0.1, i * 0.08));
+        break;
+      case 'whoosh': {
+        const n = c.createBufferSource();
+        n.buffer = this.noise;
+        const f = c.createBiquadFilter();
+        f.type = 'bandpass';
+        f.Q.value = 1.2;
+        f.frequency.setValueAtTime(300, now);
+        f.frequency.exponentialRampToValueAtTime(2400, now + 0.22);
+        f.frequency.exponentialRampToValueAtTime(500, now + 0.45);
+        const g = c.createGain();
+        this.env(g, now, 0.12, 0.5, 0.12);
+        n.connect(f).connect(g).connect(this.master);
+        n.start(now);
+        n.stop(now + 0.55);
+        break;
+      }
+      case 'down':
+        [520, 390, 260].forEach((f, i) => this.tone(f, f * 0.85, 0.16, 'triangle', 0.12, i * 0.13));
+        break;
+    }
+  }
+
+  /** Fitilul care arde (start de meci): sfârâit cât durează, oprit de `stop()`. */
+  sizzle(dur: number): { stop(): void } {
+    const c = this.on();
+    if (!c) return { stop() {} };
+    const t = c.currentTime;
+    const n = c.createBufferSource();
+    n.buffer = this.noise;
+    n.loop = true;
+    const f = c.createBiquadFilter();
+    f.type = 'highpass';
+    f.frequency.value = 3500;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.07, t + 0.1);
+    g.gain.setValueAtTime(0.07, t + Math.max(0.1, dur - 0.05));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    n.connect(f).connect(g).connect(this.master);
+    n.start(t);
+    n.stop(t + dur + 0.05);
+    return {
+      stop: () => {
+        try {
+          n.stop();
+        } catch {
+          /* deja oprit */
+        }
+      },
+    };
+  }
+
   bad(): void {
     if (this.on()) [440, 330, 220].forEach((f, i) => this.tone(f, f * 0.8, 0.14, 'sawtooth', 0.12, i * 0.1));
   }

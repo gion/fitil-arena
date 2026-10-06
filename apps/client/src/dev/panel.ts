@@ -51,7 +51,11 @@ export function devScreen(ctx: DevCtx): HTMLElement {
     ctx.rerender();
   };
   const btn = (label: string, onclick: () => void, test?: string) =>
-    h('button', { class: 'icon-btn', onclick, ...(test ? { 'data-test': test } : {}) }, label);
+    h(
+      'button',
+      { class: 'b sec', style: 'font-size:18px', onclick, ...(test ? { 'data-test': test } : {}) },
+      label,
+    );
 
   const profiles = h(
     'div',
@@ -59,7 +63,7 @@ export function devScreen(ctx: DevCtx): HTMLElement {
     h(
       'button',
       {
-        class: 'opt',
+        class: 'card',
         'aria-pressed': String(!store.active),
         onclick: () => {
           store.use(null);
@@ -71,11 +75,11 @@ export function devScreen(ctx: DevCtx): HTMLElement {
     ...store.dev.list.map((d) =>
       h(
         'div',
-        { class: 'row' },
+        { class: 'row', style: 'display:flex;gap:10px;flex-wrap:wrap;align-items:center' },
         h(
           'button',
           {
-            class: 'opt',
+            class: 'card',
             'aria-pressed': String(store.dev.active === d.id),
             onclick: () => {
               store.use(d.id);
@@ -104,14 +108,14 @@ export function devScreen(ctx: DevCtx): HTMLElement {
 
   return h(
     'div',
-    { class: 'card dev' },
-    h('h2', {}, 'Developer'),
+    { class: 'page dev' },
+    h('div', { class: 'head' }, h('h1', { class: 'ptitle' }, 'DEVELOPER')),
     h('p', {}, 'Only in internal builds. Test profiles never touch the real one.'),
-    h('h3', {}, 'Profile'),
+    h('h2', { class: 'sub-title' }, 'Profile'),
     profiles,
     h(
       'div',
-      { class: 'row' },
+      { class: 'row', style: 'display:flex;gap:10px;flex-wrap:wrap;align-items:center' },
       btn(
         '+ New player',
         () => {
@@ -146,7 +150,7 @@ export function devScreen(ctx: DevCtx): HTMLElement {
     ),
     h(
       'div',
-      { class: 'row' },
+      { class: 'row', style: 'display:flex;gap:10px;flex-wrap:wrap;align-items:center' },
       btn('+500 Fitile', () => change((q) => ({ ...q, coins: q.coins + 500 })), 'dev-coins'),
       btn(
         '+1 player level',
@@ -165,10 +169,10 @@ export function devScreen(ctx: DevCtx): HTMLElement {
       btn('Reset daily bonus', () => change((q) => ({ ...q, daily: '', xpDay: {} }))),
       btn('Reset this profile', () => change(() => defaultProfile())),
     ),
-    h('h3', {}, 'Date (calendar, seasons, rotation)'),
+    h('h2', { class: 'sub-title' }, 'Date (calendar, seasons, rotation)'),
     h(
       'div',
-      { class: 'row' },
+      { class: 'row', style: 'display:flex;gap:10px;flex-wrap:wrap;align-items:center' },
       dateIn,
       btn('Today', () => {
         setDevDate(null);
@@ -185,6 +189,6 @@ export function devScreen(ctx: DevCtx): HTMLElement {
         .join(', ')}`,
     ),
     h('p', {}, `Releases: ${upcoming.join(' · ')}`),
-    h('button', { class: 'btn', 'data-test': 'dev-close', onclick: () => ctx.back() }, 'Done'),
+    h('button', { class: 'b main', 'data-test': 'dev-close', onclick: () => ctx.back() }, 'Done'),
   );
 }

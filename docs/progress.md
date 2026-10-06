@@ -244,10 +244,22 @@
 - Direcția aleasă și documentată: `docs/design/ui.md`, machete în `reference/ui/` (18 ecrane), deciziile D-051–D-053, faza adăugată în `PLAN.md`.
 - Machetele refăcute după meniurile reale de pe `main` (Play, Online, personaje cu stări, pagina de personaj, magazin, HUD cu inimi, SUPER și bombă specială, recompense în Fitile și XP); acum sunt 21. Decizia D-054 (doar landscape).
 
+**Implementat (2026-10-06):**
+
+- **Tokeni și fonturi:** `apps/client/src/ui/styles.css` rescris pe tokenii din `docs/design/ui.md` (galben cu raster, cerneală, roșu, cyan, caption, ok); Bangers + Rubik woff2 locale în `src/ui/fonts/` cu `fonts.css` și licențele OFL (D-059, `assets/CREDITS.md`).
+- **Doar landscape (D-054):** iOS `UISupportedInterfaceOrientations` fără portrait (+ `UIRequiresFullScreen` pe iPad), Android `screenOrientation="sensorLandscape"`; ecranul „Rotate your phone” în `index.html` (CSS pur, telefon în portrait); clientul cere mereu o arenă landscape (`aspect() ≥ 1`), mesajul de rotire din meniu a dispărut. Sim-ul a rămas neatins (fără schimbări de gameplay).
+- **Componente** (`src/ui/comic.ts`): titlu de pagină, butoane (principal / secundar / cyan / pătrat), panou (alb, cyan cu raze), casete de narator și de informații, balon, ștampilă ON/OFF, selector segmentat, insigne (NEW!, PICKED!, READY!, DONE!), explozie, pastila cu Fitile; `installPress` = răspunsul la apăsare pentru toată interfața (vizual la `pointerdown`, sunet + vibrație după tip, elementele blocate se scutură, D-060).
+- **Sunete de interfață** în `audio/sfx.ts` (`ui('pop' | 'tick' | 'stamp' | 'stampOff' | 'pick' | 'nope' | 'tada' | 'whoosh' | 'down')`, cel mult unul la 60 ms, fixe față de temă) și `sizzle()` pentru fitil; expresiile `fierce` și `blink` în `paint.ts`.
+- **Personajele din meniuri** (`ui/portrait.ts`): mereu stil classic, se leagănă, clipesc la 3–5s, privesc spre ultima atingere, se uită în jur după 20s; reacții (PLAY! → încruntat + replică de luptă, alegere / cumpărare / victorie → `happy`, blocat / conexiune pierdută / înfrângere → `doom`, sunet oprit → „Fine. I’ll whisper.”) cu replici din `MENU_LINES` și din `win` / `quips` (D-058).
+- **Ecrane refăcute** după machete: meniul principal, Play (grila de moduri, Rules, Bots, START!), Online (joc rapid + cameră privată), camera privată (locuri cu personaje, rânduri de reguli cu foaie de opțiuni, SHARE, D-056), jocul rapid („?” pe locurile goale, numărătoare), The Cast + pagina personajului (Listen / Try, Ultimate, nivel, recompense, Select / Buy), magazinul („Trying on” + buton de jos, D-055), pauza (ecran modal), setările (ștampile, Picture), finalul de meci (explozie, „X WINS!”, clasare cu cauza eliminării, „You got”, LEVEL UP!), „Connection lost” / „No way back”, rezultatele misiunilor / provocărilor / tutorialului; apoi Missions, Practice (cu legenda „How things work”) și Themes, fără machetă, din aceleași componente. Panoul DEV folosește clasele noi.
+- **HUD:** bara neagră de 44px (D-053) cu variante FFA (tu în galben, scorul în Bangers), echipe (scor + buline pe membri), steag (capturi ca buline, „FLAG OUT!”), coroană, cartof, misiune (bara de viață), cronometru în mijloc, inimi SVG, BOMBS / RANGE / SPEED, abilități și efecte în casete; butoanele de vedere (2D/1P/3P) și de pauză de 48×44. Arena stă într-un cadru cu chenar de 4px, strâns pe hartă (`ArenaScene.area()` / `frameRect()`); minimapa 3D în stânga-sus, cu chenar. SUPER rotund galben cu inel de încărcare și „READY!”, bomba specială rotundă (ICE / FLASH / POISON ×n), BOOM! înclinat, BOMB mare în 3D, joystick-ul și indicațiile în stil comic.
+- **Tranziții (D-057):** banda de cerneală (520 ms, `whoosh`) la navigare; fitil 3-2-1 + „BOOM!” la startul meciului din meniu, cu evenimentul arenei afișat; online doar explozia. Instant cu `settings.motion` oprit; buclele (raze, NEW!, „?”) se opresc și în fundal.
+- **Teste:** `e2e/ui.spec.ts` — fiecare ecran refăcut se deschide fără erori în consolă și nu are elemente interactive vizibile sub 44px; capturi în `docs/screens/ui/`; tema arenei (Clasic vs Neon) nu schimbă stilurile interfeței; „Rotate your phone” în portrait; elementul blocat nu se deschide. Testele existente adaptate la fluxurile noi (previzualizare în grilă și magazin, regulile camerei în foaie, titlurile noi).
+
 **Rămas / cunoscut:**
 
-- Nimic implementat în client încă.
-- Machetele nu au fost verificate vizual ecran cu ecran după export; pot exista suprapuneri sau texte tăiate de corectat la implementare.
-- Numele final (Q-010) blochează doar wordmark-ul de pe login.
-- Nedesenate încă: Missions, Practice, Themes, panoul DEV, ecranul „Rotate your phone”, splash, momentele „bye bye” / glorie, HUD-ul pentru Crown și Hot potato, stările butoanelor.
-- Blocarea pe landscape (D-054) nu e implementată; `GAME_DESIGN.md` mai descrie varianta de portrait.
+- Capturile din `docs/screens/ui/` trebuie comparate manual cu machetele (s-au comparat la implementare, pe 844×390).
+- `C-RoundStart` e simplificat: fără ecranul „GET READY!” cu luptătorii; evenimentul arenei apare în timpul fitilului (D-057).
+- Bangers nu a fost verificat pentru „ș/ț” (subsetul latin-ext e inclus); contează doar dacă apar texte în română.
+- Duratele de vibrație și volumele sunetelor de interfață sunt cele propuse în `docs/design/ui.md`, nereglate pe telefon real.
+- Machetele de login (Faza 6) și clasament rămân neimplementate; wordmark-ul așteaptă Q-010.

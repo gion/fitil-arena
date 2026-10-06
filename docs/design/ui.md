@@ -152,4 +152,4 @@ Personajele din meniuri sunt cele din joc, desenate de `Portraits` (`apps/client
 
 ## Ce nu e desenat încă
 
-Missions (harta de capitole și finalul de misiune), Practice (tutorial, provocări), Themes, panoul DEV, ecranul „Rotate your phone”, splash-ul de încărcare, momentele „bye bye” și de glorie, HUD-ul pentru Crown și Hot potato, stările butoanelor (apăsat, dezactivat), mesajele de tip toast. Se construiesc din componentele de mai sus.
+Splash-ul de încărcare, momentele „bye bye” și de glorie, HUD-ul pentru Crown și Hot potato, stările butoanelor (apăsat, dezactivat), mesajele de tip toast. Se construiesc din componentele de mai sus. Missions, Practice, Themes, panoul DEV și ecranul „Rotate your phone” au fost construite așa în Faza 4b (fără machetă); capturile lor sunt în `docs/screens/ui/`.

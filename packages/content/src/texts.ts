@@ -89,6 +89,20 @@ export const QUIPS = ['Ouch!', 'Oh no!', 'Mommy!', 'Not fair!', 'Again?!', 'My m
 export const TAUNTS = ['Hehe!', 'Too easy!', 'Ha ha ha!'];
 export const BYE = 'bye bye…';
 
+/**
+ * Replicile personajelor din meniuri (`docs/design/ui.md`, „Personajele din meniuri”):
+ * de luptă la PLAY!/START!, de repaus la intrarea în pagină. Bucuria și necazul folosesc
+ * replicile personajului din meci (`win`, `quips`).
+ */
+export const MENU_LINES = {
+  fight: ['I feel dangerous today.', 'Let’s blow stuff up!', 'Light the fuse!', 'Bombs away!', 'Stand back!'],
+  idle: ['Go on, press something.', 'Ready when you are.', 'Nice day for a blast.', 'Psst. Over here.'],
+  mute: 'Fine. I’ll whisper.',
+  unmute: 'CAN YOU HEAR ME?',
+  locked: 'Not yet!',
+  lost: 'Hello? Anyone?',
+} as const;
+
 /** Mesajul de moarte al jucătorului. `{k}` = numele ucigașului. */
 export const DEATH_MSG: Record<DeathCause | 'self', string> = {
   flame: 'Toasted by {k}!',

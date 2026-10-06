@@ -7,7 +7,7 @@
 4. **Cosmetic, nu pay-to-win**: banii cumpără stil, nu putere.
 
 ## Reguli de bază (din prototip)
-- **Grila se adaptează la ecran**: 11 rânduri în landscape, iar numărul de coloane (impar, 13–27) e ales după proporția ecranului ca harta să-l umple complet; în portrait invers (11 coloane, 13–25 rânduri). Pereți ficși pe pozițiile pare + lăzi distructibile (~70%). În multiplayer, dimensiunea e fixată de cameră (gazda/modul), nu de fiecare client.
+- **Grila se adaptează la ecran**: 11 rânduri în landscape, iar numărul de coloane (impar, 13–27) e ales după proporția ecranului ca harta să-l umple complet. Jocul e doar landscape (D-054); varianta de portrait din sim rămâne nefolosită de client. Pereți ficși pe pozițiile pare + lăzi distructibile (~70%). În multiplayer, dimensiunea e fixată de cameră (gazda/modul), nu de fiecare client.
 - Bombă: 2.4s timer, flacără în cruce, durată 0.55s, reacție în lanț. **Raza de start = 1** — creșterea vine doar din bonusuri (bonusul de rază cade mai des).
 - **Lăzi care reapar**: când rămân sub 35% din lăzile inițiale, apare o ladă nouă la 2.5–5.5s, pe un pătrățel liber, la cel puțin 3 pătrățele de orice jucător (cu animație de apariție).
 - Bonusuri de bază: +Bombă, +Rază, +Viteză, Picior (șut bombă), Mănușă, Detonator, Linie (vezi mai jos).
@@ -27,7 +27,7 @@
 - Țipete comice sintetizate la moarte + replici vocale (speechSynthesis în prototip; în joc: voice packs înregistrate).
 
 ## Interfață & controale (mobil)
-- **Harta ocupă tot ecranul**; UI-ul stă într-o **bară subțire de 30px** sus (jucători + scor, bombe disponibile, rază, viteză, bonusuri active, buton Vedere, buton Meniu). Nimic nu acoperă arena.
+- **Harta ocupă tot ecranul**; UI-ul stă într-o **bară de 44px** sus (D-053, ca butoanele să aibă ținta minimă de atins; arena e într-un cadru cu chenar, vezi `docs/design/ui.md`) (jucători + scor, bombe disponibile, rază, viteză, bonusuri active, buton Vedere, buton Meniu). Nimic nu acoperă arena.
 - **Meniu = pauză**: panou lateral (teme, sunet, rundă nouă, continuă). Pauză automată când aplicația trece în fundal.
 - **2D**: jumătatea stângă = joystick care **apare sub deget** și dispare la ridicare (te urmează dacă tragi mai departe); jumătatea dreaptă = **tap oriunde pune bomba** (fără buton), cu un cerc scurt de feedback. Indicațiile de control dispar la prima atingere sau după 6s.
 - Robustețe: orice atingere nouă preia joystick-ul (evită blocarea când se pierde evenimentul de ridicare la multi-touch).
@@ -126,7 +126,7 @@ Aceeași lume pe grilă, văzută din ochii personajului (3D simplu: pereții ș
 ## Moduri de joc
 - **Clasic (FFA 4)** — toți contra toți, ultimul rămas. Hartă adaptată la ecran.
 - **1 vs 1 (implementat în prototip)** — arenă mică **pătrată 11×11**, doar 2 jucători (colțuri opuse). Ambii pornesc cu **aceleași 3 bonusuri alese la întâmplare** (corect pentru amândoi), anunțate la start. Lăzi aurii puțin mai dese.
-- **Echipe 2v2 / 3v3 (implementat în prototip)** — echipele pe culori: **Albaștrii** (nuanțe de albastru) și **Roșii** (nuanțe de roșu); coechipierii au un inel în culoarea echipei. **Foc prieten oprit complet**: nici bombele coechipierilor, nici **propriile bombe** nu te rănesc. **Bombele au culoarea echipei** (albastru/roșu, în 2D și 3D) plus un inel colorat pe jos, ca să vezi dintr-o privire ale cui sunt. Echipele pornesc pe laturi opuse (stânga/dreapta în landscape, sus/jos în portrait). Câștigă echipa care rămâne cu cel puțin un jucător. Scor pe echipă în bară, cu buline pentru membrii vii/eliminați. Mesaj la moarte: „Echipa ta mai luptă”. În camere private, foc prieten comutabil.
+- **Echipe 2v2 / 3v3 (implementat în prototip)** — echipele pe culori: **Albaștrii** (nuanțe de albastru) și **Roșii** (nuanțe de roșu); coechipierii au un inel în culoarea echipei. **Foc prieten oprit complet**: nici bombele coechipierilor, nici **propriile bombe** nu te rănesc. **Bombele au culoarea echipei** (albastru/roșu, în 2D și 3D) plus un inel colorat pe jos, ca să vezi dintr-o privire ale cui sunt. Echipele pornesc pe laturi opuse (stânga/dreapta; jocul e doar landscape). Câștigă echipa care rămâne cu cel puțin un jucător. Scor pe echipă în bară, cu buline pentru membrii vii/eliminați. Mesaj la moarte: „Echipa ta mai luptă”. În camere private, foc prieten comutabil.
 - **Capturează steagul (3v3, implementat în prototip)** — fiecare echipă are un steag la baza ei (mijlocul laturii proprii, marcată cu un cerc în culoarea echipei; lăzile din jurul bazelor sunt curățate, iar culoarea dintre baze e mai liberă).
   - **Furi** steagul adversarilor trecând peste el; purtătorul e cu 15% mai lent și poartă steagul în spate.
   - **Capturezi** ducându-l pe tile-ul bazei tale **doar dacă steagul tău e acasă**.
