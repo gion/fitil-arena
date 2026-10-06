@@ -1143,7 +1143,7 @@ export class App {
         h('span', { 'data-test': 'lobby-status', class: 'hidden' }, status),
       );
     const share = async () => {
-      const text = `Join my Fitil room: ${o.code}`;
+      const text = `Join my Fuse Arena room: ${o.code}`;
       try {
         if (navigator.share) await navigator.share({ text });
         else await navigator.clipboard.writeText(o.code);

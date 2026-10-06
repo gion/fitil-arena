@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Opus 5.5) — Numele „Fuse Arena” și iconițe cu bombă
+
+- **Cerut:** numele aplicației „Fuse Arena” și iconițe noi, „ceva cu bombe”; apoi un PR de testat pe telefon.
+- **Făcut:** redenumire în `index.html`, `capacitor.config.ts`, `strings.xml`, `Info.plist`, README și textul de invitație; `apps/client/scripts/brand.mjs` (`pnpm --filter @fitil/client brand`) generează din SVG propriu iconița iOS, iconițele Android (adaptivă + rotundă), ecranele de pornire, favicon și apple-touch-icon. D-069, Q-010 parțial rezolvat, CREDITS. PR gion/fitil-arena#11.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; iconițele și ecranul de pornire verificate vizual (inclusiv masca circulară Android). Pe telefon neverificat.
+- **Notă operațională:** după merge, `pnpm --filter @fitil/client cap:sync` și rebuild în Xcode/Android Studio; iOS poate ține iconița veche în cache până la reinstalare.
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Zone sigure pe iPhone cu notch
 
 - **Cerut:** pe iPhone cu notch, în full screen, monedele din dreapta-sus nu se văd complet, iar notch-ul și colțurile rotunjite mușcă din marginea hărții; un padding interior puțin mai mare.
