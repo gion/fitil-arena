@@ -7,10 +7,12 @@ import {
   TICK_HZ,
   collectInputs,
   createGame,
+  crownRules,
   ctfRules,
   duelRules,
   gridForAspect,
   hashState,
+  potatoRules,
   rotateRules,
   shiftRules,
   step,
@@ -30,11 +32,16 @@ const MODES = [
   'rânduri mobile',
   'rotativă',
   'CTF',
+  'coroana',
+  'cartoful',
 ];
 
 function setupFor(seed: number): GameSetup {
   const kind = seed % MODES.length;
   const four = () => LEVELS.map((_, i) => ({ bot: LEVELS[(seed + i) % 4]! }));
+  if (kind === 8) return { seed, rules: { ...crownRules(16 / 9), extras: true }, players: four() };
+  if (kind === 9)
+    return { seed, rules: { ...potatoRules(16 / 9), extras: true, bushRate: 0.06 }, players: four() };
   if (kind === 5) return { seed, rules: shiftRules(16 / 9), players: four() };
   if (kind === 6) return { seed, rules: rotateRules(), players: four() };
   if (kind === 7)
@@ -99,7 +106,8 @@ for (let seed = 1; seed <= N; seed++) {
     perMode[seed % MODES.length]!.ticks += s.tick;
     longest = Math.max(longest, s.tick);
     if (s.rules.hurryUpTick && s.tick >= s.rules.hurryUpTick) hurry++;
-    if (!setup.rules?.mode || setup.rules.mode === 'ffa') {
+    const ffaLike = ['ffa', 'crown', 'potato'].includes(setup.rules?.mode ?? 'ffa');
+    if (ffaLike) {
       for (const p of s.players) played[p.bot as BotLevel]++;
       if (s.result.winner === null) draws++;
       else wins[s.players[s.result.winner]!.bot as BotLevel]++;

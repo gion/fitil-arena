@@ -556,7 +556,14 @@ export const ITEM_COLOR: Record<ItemType, string> = {
   maxbomb: '#ffd23f',
   heart: '#ff5f93',
   crystal: '#6ff4ff',
+  ice: '#9fe8ff',
+  flash: '#fff27a',
+  poison: '#8dff5a',
+  hex: '#c27bff',
 };
+
+/** Culoarea bombelor speciale (corp + strălucire), folosită și la randarea bombelor. */
+export const SPECIAL_COLOR = { ice: '#9fe8ff', flash: '#fff27a', poison: '#8dff5a' } as const;
 const NEG = new Set<ItemType>(['slow', 'shrink', 'fewer', 'reverse', 'hiccup', 'dizzy']);
 const GOLDS = new Set<ItemType>(['maxspeed', 'maxfire', 'maxbomb']);
 const BASE_ICON: Partial<Record<ItemType, ItemType>> = {
@@ -616,8 +623,63 @@ export function item(it: ItemType, px: number, py: number, round: boolean): void
   itemIcon(it, cx, cy);
 }
 
+/** Bombă specială: corp colorat și un semn (fulg, stea, picătură). */
+export function specialIcon(kind: 'ice' | 'flash' | 'poison', cx: number, cy: number, r = T * 0.19): void {
+  const c = SPECIAL_COLOR[kind];
+  glow(c, 8);
+  ctx.fillStyle = '#10121c';
+  circle(cx, cy + r * 0.2, r);
+  ctx.fill();
+  noGlow();
+  ctx.strokeStyle = c;
+  ctx.fillStyle = c;
+  ctx.lineWidth = r * 0.22;
+  ctx.lineCap = 'round';
+  const y = cy + r * 0.2;
+  if (kind === 'ice') {
+    ctx.beginPath();
+    for (let i = 0; i < 3; i++) {
+      const a = (i * Math.PI) / 3;
+      ctx.moveTo(cx - Math.cos(a) * r * 0.6, y - Math.sin(a) * r * 0.6);
+      ctx.lineTo(cx + Math.cos(a) * r * 0.6, y + Math.sin(a) * r * 0.6);
+    }
+    ctx.stroke();
+  } else if (kind === 'flash') {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = (i * Math.PI) / 5 - Math.PI / 2;
+      const rad = i % 2 ? r * 0.25 : r * 0.62;
+      ctx.lineTo(cx + Math.cos(a) * rad, y + Math.sin(a) * rad);
+    }
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(cx, y - r * 0.6);
+    ctx.quadraticCurveTo(cx + r * 0.5, y + r * 0.1, cx, y + r * 0.5);
+    ctx.quadraticCurveTo(cx - r * 0.5, y + r * 0.1, cx, y - r * 0.6);
+    ctx.fill();
+  }
+}
+
 function itemIcon(it: ItemType, cx: number, cy: number): void {
   switch (it) {
+    case 'ice':
+    case 'flash':
+    case 'poison':
+      specialIcon(it, cx, cy);
+      text('×3', cx + T * 0.2, cy + T * 0.24, T * 0.16, ITEM_COLOR[it]);
+      return;
+    case 'hex':
+      ctx.fillStyle = '#c27bff';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, T * 0.24, T * 0.14, 0, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = '#1a0a26';
+      circle(cx, cy, T * 0.08);
+      ctx.fill();
+      text('−1', cx, cy + T * 0.26, T * 0.16, '#c27bff');
+      return;
     case 'heart':
       ctx.fillStyle = '#ff5f93';
       ctx.beginPath();
@@ -1953,5 +2015,170 @@ export function pigeon(): void {
   ctx.fill();
   ctx.fillStyle = '#d8dde8';
   ellipse(-r * 0.2, -r * 0.35, r * 0.6, r * 0.3, -0.5);
+  ctx.fill();
+}
+
+/* ---------- Faza 4: personaje, tufișuri, gheață, otravă, capcane ---------- */
+
+/**
+ * Semnul personajului deasupra capului (desen provizoriu; arta finală ține de direcția artistică).
+ * Centrat în (0, 0), cam 0.5×0.4 pătrățele.
+ */
+export function heroMark(id: string, col: string): void {
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  switch (id) {
+    case 'zuzu': // fulger
+      ctx.fillStyle = '#ffe14a';
+      ctx.beginPath();
+      ctx.moveTo(T * 0.04, -T * 0.18);
+      ctx.lineTo(-T * 0.1, T * 0.02);
+      ctx.lineTo(0, T * 0.02);
+      ctx.lineTo(-T * 0.05, T * 0.18);
+      ctx.lineTo(T * 0.11, -T * 0.03);
+      ctx.lineTo(T * 0.01, -T * 0.03);
+      ctx.closePath();
+      ctx.fill();
+      return;
+    case 'gogu': // șapcă
+      ctx.fillStyle = '#2fd3c6';
+      ellipse(0, T * 0.04, T * 0.18, T * 0.12);
+      ctx.fill();
+      ctx.fillRect(0, T * 0.02, T * 0.26, T * 0.06);
+      return;
+    case 'fifi': // fundă
+      ctx.fillStyle = '#ff7ac8';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-T * 0.18, -T * 0.1);
+      ctx.lineTo(-T * 0.18, T * 0.1);
+      ctx.closePath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(T * 0.18, -T * 0.1);
+      ctx.lineTo(T * 0.18, T * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      circle(0, 0, T * 0.05);
+      ctx.fill();
+      return;
+    case 'veta': // basma cu buline
+      ctx.fillStyle = '#b07cff';
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.22, T * 0.12);
+      ctx.quadraticCurveTo(0, -T * 0.28, T * 0.22, T * 0.12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      for (const [x, y] of [
+        [-0.08, 0.02],
+        [0.06, -0.04],
+        [0.1, 0.07],
+      ]) {
+        circle(x! * T, y! * T, T * 0.025);
+        ctx.fill();
+      }
+      return;
+    case 'maestro': // pălărie de vrăjitor cu stea
+      ctx.fillStyle = '#3b2a7a';
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.2, T * 0.14);
+      ctx.lineTo(T * 0.2, T * 0.14);
+      ctx.lineTo(T * 0.04, -T * 0.24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#ffc83d';
+      circle(T * 0.02, -T * 0.02, T * 0.04);
+      ctx.fill();
+      return;
+    case 'robo': // antenă cu led
+      ctx.strokeStyle = '#9aa7b8';
+      ctx.lineWidth = T * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(0, T * 0.16);
+      ctx.lineTo(0, -T * 0.08);
+      ctx.stroke();
+      glow('#ff4d4d', 8);
+      ctx.fillStyle = '#ff4d4d';
+      circle(0, -T * 0.12, T * 0.06);
+      ctx.fill();
+      noGlow();
+      return;
+    default: // bubu: moț
+      ctx.strokeStyle = col;
+      ctx.lineWidth = T * 0.05;
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.04, T * 0.14);
+      ctx.quadraticCurveTo(-T * 0.12, -T * 0.08, T * 0.06, -T * 0.14);
+      ctx.stroke();
+  }
+}
+
+/** Blocul de gheață peste jucătorul înghețat (centrat). */
+export function iceBlock(): void {
+  ctx.fillStyle = 'rgba(159,232,255,0.42)';
+  rr(-T * 0.42, -T * 0.6, T * 0.84, T * 1.0, T * 0.12);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(230,250,255,0.9)';
+  ctx.lineWidth = T * 0.04;
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(-T * 0.28, -T * 0.42);
+  ctx.lineTo(-T * 0.12, -T * 0.5);
+  ctx.moveTo(-T * 0.3, -T * 0.3);
+  ctx.lineTo(-T * 0.22, -T * 0.34);
+  ctx.stroke();
+}
+
+/** Norul toxic pe un pătrățel (origine stânga-sus). */
+export function toxic(): void {
+  glow('#8dff5a', 10);
+  ctx.fillStyle = 'rgba(120,230,70,0.32)';
+  for (const [x, y, r] of [
+    [0.3, 0.4, 0.26],
+    [0.65, 0.35, 0.24],
+    [0.5, 0.65, 0.28],
+  ] as const) {
+    circle(x * T, y * T, r * T);
+    ctx.fill();
+  }
+  noGlow();
+}
+
+/**
+ * Tufiș (origine: centrul pătrățelului): iarbă înaltă, cu fire — diferită de lăzi pe toate temele
+ * (pe Jungle lăzile sunt deja tufe cu frunze).
+ */
+export function bush(c1: string, c2: string, variant: number): void {
+  ctx.lineCap = 'round';
+  ctx.fillStyle = 'rgba(20,60,20,0.35)';
+  ellipse(0, T * 0.32, T * 0.44, T * 0.12);
+  ctx.fill();
+  for (let layer = 0; layer < 2; layer++) {
+    ctx.strokeStyle = layer ? c1 : c2;
+    ctx.lineWidth = T * (layer ? 0.06 : 0.08);
+    for (let i = 0; i < 9; i++) {
+      const u = (i + 0.5) / 9 - 0.5;
+      const x0 = u * T * 0.82 + (hash(i, variant, layer + 3) - 0.5) * T * 0.08;
+      const h = T * (0.55 + 0.3 * hash(i, variant, layer + 7));
+      const lean = (hash(i, variant, 11) - 0.5) * T * 0.35 + u * T * 0.2;
+      ctx.beginPath();
+      ctx.moveTo(x0, T * 0.34);
+      ctx.quadraticCurveTo(x0 + lean * 0.3, T * 0.34 - h * 0.6, x0 + lean, T * 0.34 - h);
+      ctx.stroke();
+    }
+  }
+}
+
+/** Capcana lui Robo-Mici: o placă cu un led. */
+export function trap(): void {
+  ctx.fillStyle = '#3a3f55';
+  rr(-T * 0.22, -T * 0.12, T * 0.44, T * 0.24, T * 0.06);
+  ctx.fill();
+  ctx.strokeStyle = '#9aa7b8';
+  ctx.lineWidth = T * 0.03;
+  ctx.stroke();
+  ctx.fillStyle = '#ff4d4d';
+  circle(0, 0, T * 0.05);
   ctx.fill();
 }

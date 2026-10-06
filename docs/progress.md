@@ -170,3 +170,67 @@
 - Datele din calendar sunt provizorii; pragurile de nivel sunt o primă estimare (de calibrat pe retenție, `BUSINESS.md` §5).
 - Deblocările sunt locale, deci ocolibile din `localStorage` — verificarea reală vine cu conturile (Faza 6).
 - Nu există încă misiuni zilnice sau battle pass (rămân în `GAME_DESIGN.md` §Progres).
+
+## Demo web pe GitHub Pages (2026-10-01)
+
+**Făcut:** workflow `Pages` care construiește clientul cu `VITE_OFFLINE_ONLY=1` (fără meniul Online și fără reluarea camerei) și îl publică pe GitHub Pages la fiecare push pe `main` (D-042). Se joacă tot ce e offline: Play cu boți, Practice, Misiuni, 2D/1P/3P, teme.
+
+**Rămas:** Pages trebuie activat o dată din setările repo-ului (Settings → Pages → Source: GitHub Actions). Online-ul în demo așteaptă hostingul serverului (Q-003).
+
+## Faza 4 — Personaje, Super, moduri
+
+**Mini-plan** (milestone-uri, fiecare cu `lint + typecheck + test` verde și commit):
+
+1. **sim — reguli**: personaje ca date (`HeroSpec`: Super, pasiv, statistici deja ajustate cu afinitățile), bara de Super (lăzi, eliminări, timp), cele 7 Super-uri și pasivele cu reguli (ricoșeu, scut o dată pe meci, capcană la moarte); inimi (`rules.lives`, Inima +1, max 3); bombe speciale cu 3 încărcături (gheață, flashbang, otravă) și Blestem; tufișuri cu `canSee` (boții respectă vizibilitatea); reguli pentru evenimentele de arenă (drop-uri, viteza șutului, aruncare mai lungă, fitil); modurile Coroana și Cartoful fierbinte; boți care folosesc Super-ul și joacă modurile noi.
+2. **content**: cele 7 personaje (raritate, statistici, pasiv, Super), afinitățile personaj × temă, evenimentele de arenă trase din seed, `heroSpec(hero, temă)` care le combină, modurile noi și textele — validate cu zod.
+3. **balans**: bench cu personaje și arene aleatoare (FFA de 4), raport în `docs/balance.md`; țintă 18–32% pe personaj și 15–35% pe arenă.
+4. **net + server**: personajul ales în lobby (per loc), modurile noi, matchmaking public pe mod (camere publice care pornesc când se umplu sau după un timp, cu boți).
+5. **client**: ecran de selecție personaj (cu afinitățile temei curente), buton Super cu bară, iconița bombei următoare pe buton și glisare pentru schimbare, inimi în HUD, anunțul evenimentului de arenă, randare 2D/3D pentru tot ce e nou.
+6. **acceptare**: teste sim pentru fiecare abilitate și modificator, bench de balans, Playwright pentru selecție + modurile noi.
+
+**Făcut:**
+
+- **sim — personaje**: `HeroSpec` (Super, pasiv, statistici deja ajustate cu afinitatea temei) pe `PlayerSetup.hero`; bara de Super (0–100: +8 ladă spartă, +35 adversar lovit/eliminat, +1/s, înmulțit cu procentul personajului; se păstrează la revenire); cele 7 Super-uri (`heroes.ts`): bombă mare (+2 rază, în plus), dash 3 pătrățele, bombă lipicioasă (se lipește de primul jucător atins, fitil 1.5s), cluster (4 mini-bombe la exact 2 pătrățele), poșeta (aruncare 4–9 pătrățele peste ziduri), oprirea timpului (bombele celorlalți stau 1.5s), teleport (portalul mai îndepărtat sau un loc sigur la ≥5); pasive: ricoșeu la șut (2×), șalul (o lovitură pe meci, apoi doar 0.4s de fugă), capcana la moarte (explodează sub primul adversar, 15s), timerele bombelor (doar vizual).
+- **sim — inimi, bonusuri, bombe speciale**: `rules.lives` + inimi din afinități (max 3), o lovitură ia o inimă cu 1.5s de invulnerabilitate; Inima (+1), Blestemul (adversarii −1 rază, 8s) și bombele speciale cu 3 încărcături, folosite înaintea celor normale, cu schimbarea tipului (`Input.swap`): gheață (îngheață 2s, apăsările scurtează, nu sparge lăzi), flashbang (orbește 2.5s), otravă (explozie + nor 3s; 1s în nor = o lovitură). Drop-urile noi doar cu `rules.extras` (12% din drop-uri).
+- **sim — tufișuri**: `bush[]` generat din seed, ars de flacără; `canSee(s, viewer, target)` (ascuns la peste 1 pătrățel, coechipierii se văd, orbitul nu vede departe); boții țintesc doar ce văd.
+- **sim — evenimente de arenă (reguli)**: `dropPct`, `kickPct`, `throwExtra`, `fuse`, `event`.
+- **sim — moduri**: Coroana (o iei călcând pe ea, cade la moarte, 60s ținută sau cel mai mult în 2:30, revenire după 3s) și Cartoful fierbinte (primul la 3s, fitil 10–16s, trece la atingere cu 1s pauză, explodează în cruce cu raza 2 și elimină purtătorul).
+- **Boți**: folosesc Super-urile (de scăpare când sunt în pericol, de atac când au ținte), vânează coroana/purtătorul, fug de cartof sau aleargă cu el spre cel mai apropiat, reacționează întârziat când sunt orbiți.
+- **content**: cele 7 personaje (raritate, statistici, pasiv, Super, texte), afinitățile pe toate cele 10 teme, 7 evenimente de arenă cu ponderi, `matchRules(mod, temă, seed, aspect)` folosit identic de client și server, `botHeroes`, textele noi; validate cu zod.
+- **Balans** (`pnpm balance`, `docs/balance.md`): 3500 de meciuri — personajele între 22% și 28%, fiecare personaj × arenă între 15.5% și 33% (ținte atinse).
+- **net + server**: personajul ales per loc (`hero` la intrare și în lobby), `extras` comutabil de gazdă, input pe fir cu Super și schimbare (6 câmpuri, compatibil cu cele vechi); **joc rapid public** (`quick`, câte o cameră pe mod prin `filterBy`): pornește când se umple sau după 15s, cu numărătoare în lobby; tufișurile sunt oprite online (Q-009).
+- **Client**: ecran de selecție a personajului (Super, pasiv, raritate, afinitatea cu tema curentă) din Play, Online și lobby; butonul Super cu inel de încărcare (Q pe tastatură), butonul bombei speciale următoare (R; în 3D și glisare în sus pe BOMB), inimi în HUD, stări (șal, blestem, înghețat, orbit), cipuri pentru coroană și cartof, bannerul evenimentului de arenă la start, meniul Online cu joc rapid pe mod, lobby cu personaj per jucător și comutatorul de evenimente. 2D: semnul fiecărui personaj, tufișuri (iarbă înaltă, ascund jucătorii și bombele adversarilor), bloc de gheață, nor toxic, flăcări colorate pe tip, bombe speciale colorate, bombe gri la oprirea timpului, timere pentru Master Fitil, capcane, coroana (pe jos și pe cap), cartoful cu secundele rămase, ochiul Blestemului, orbire și ceață ca fereastră în jurul tău. 3D: tufișuri, nor toxic, bombe colorate, gheață/coroană/cartof pe personaj, jucători ascunși, overlay de orbire/ceață.
+- **Teste**: sim 111 (30 noi: fiecare Super și pasiv, inimi, încărcare, fiecare bombă specială, Blestem, drop-uri, tufișuri, Coroana, Cartoful, determinism cu personaje, boți care folosesc Super-urile); content 13; net 11 (personaje per loc, extras, joc rapid, input pe fir, Coroana și Cartoful în bucla cu latență); server 5 (joc rapid cu doi clienți headless, alt mod → altă cameră, hash-uri egale); Playwright: selecția personajului + Super din buton, Coroana și Cartoful în 2D și 3P, joc rapid în două browsere. `pnpm sim:bench` are și Coroana (~113s) și Cartoful (~33s): 0 excepții, 0 desync.
+
+**Rămas / cunoscut:**
+
+- **Q-009**: tufișurile online (sincronizarea prin input-uri dă fiecărui client toată starea); până la decizie sunt doar offline.
+- Arta personajelor e provizorie (culoare + un semn deasupra capului); designul final ține de checkpoint-ul de direcție artistică. La fel numele (de lucru, traduse: „Auntie Veta”, „Master Fitil”).
+- Interpretări de design notate în D-043 (oprirea timpului, teleportul, cluster-ul, capcana, gheața/flashbang-ul care nu sparg lăzi).
+- Boții nu folosesc schimbarea bombei speciale (le folosesc în ordine) și încă nu folosesc mănușa/detonatorul/linia.
+- Matchmaking-ul public e simplu (o cameră deschisă pe mod, fără niveluri de skill/regiuni); clasarea vine cu conturile (Faza 6).
+- Testul de FPS nu poate rula în containerul cloud (fără GPU); e2e-urile rulează aici cu `PW_CHROMIUM=/opt/pw-browsers/chromium`.
+
+## Faza 4 — integrarea cu personajele, magazinul și deblocările (2026-10-06)
+
+**Context:** Faza 4 fusese făcută pe 2026-10-01 pe ramura `feat/faza-4-personaje` (pornită din Faza 3), în paralel cu Faza 2c + deblocările de pe `main`. Cele două aveau sisteme de personaje diferite și 28 de fișiere în conflict (74 de zone).
+
+**Mini-plan:** merge manual, strat cu strat (sim → content → net/server → client), cu testele ambelor părți verzi după fiecare; un singur model de personaj (D-048); Ultimate pentru toate cele 11 personaje (D-049); bench de balans pe rosterul complet.
+
+**Făcut:**
+
+- **sim**: kit + erou pe același jucător (`applyHero` apoi `applyKit`), inimile din Faza 4 cu a doua viață a lui Gugu, ricoșeul unificat (`Bomb.bounce`), uleiul Bucătarului în `fire`, prima bombă mare și fitilul lung în `placeBomb`, `applyItem` cu opțiuni; 4 Ultimate-uri noi (Cutremur, Penalty, Boo!, Switcheroo) cu boți care le folosesc.
+- **content**: `characters.ts` are `ultimate.kind`/`pct`; `heroes.ts` a rămas cu afinitățile (pe id-urile din roster, plus câteva pentru personajele noi), `heroSpec` și `charSetup`; modurile noi au niveluri de deblocare; balans refăcut pe 11 personaje.
+- **net/server**: un singur `buildOnline` (personaje + reguli de arenă + încărcări, tufișuri doar offline), locuri cu personaj și ținută, joc rapid cu `MeMsg`.
+- **client**: selecția de erou a ramurii a fost înlocuită cu butonul de personaj (nume — Ultimate, nota afinității) care deschide grila; butonul Ultimate arată numele și culoarea personajului; restul din Faza 4 (bombe speciale, inimi, tufișuri, Coroana, Cartoful, evenimente de arenă, joc rapid) e neschimbat.
+- **Balans** (`docs/balance.md`, 6000 de meciuri): 19.5–31.4% pe personaj, fiecare personaj × arenă în 15–35% (ținte atinse după două ajustări de afinitate pe tema Valentin).
+- **Teste**: sim 132 (96 + 30 din Faza 4 + 6 noi pentru Ultimate-urile noi și combinația kit + erou), content 34, net 11, server 5; Playwright 23 din 24.
+
+**Rămas / cunoscut:**
+
+- **Testul de FPS n-a putut fi validat la integrare**: laptopul era pe baterie la 11%, iar Chromium randa la 30 fps chiar și o pagină goală. Codul nostru pe cadru măsoară 0.1–0.4 ms cu CPU 4x. De rerulat pe alimentare (`pnpm test:e2e -g FPS`).
+- Boții folosesc rar Penalty, Switcheroo și Portal Jump (cer o situație anume).
+- Perk-urile de la nivelurile 4 și 8 (D-034) nu există încă.
+- Boo! e doar vizual online (ca tufișurile, Q-009): clientul știe poziția.
+- În 3D lipsesc în continuare cronometrul Maestrului, uleiul, urmele și porumbelul.
+- Workflow-ul `Pages` (demo-ul cerut pe 2026-10-01) vine cu acest merge; publică doar după ce Pages e activat manual din setările repo-ului.

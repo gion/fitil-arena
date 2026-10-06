@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { deriveRng, sec, shuffle } from '@fitil/sim';
-import type { CharKit } from '@fitil/sim';
+import type { CharKit, SuperKind } from '@fitil/sim';
 
 /** Raritățile (Q-006): raritatea aduce abilități mai neobișnuite, nu cifre mai mari. */
 export const RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'] as const;
@@ -46,6 +46,20 @@ export const WALKS = [
 ] as const;
 export type Walk = (typeof WALKS)[number];
 
+const SUPERS = [
+  'bigbomb',
+  'dash',
+  'sticky',
+  'cluster',
+  'purse',
+  'timestop',
+  'warp',
+  'quake',
+  'penalty',
+  'boo',
+  'swap',
+] as const satisfies readonly SuperKind[];
+
 const KitSchema = z.object({
   speed: z.number().int().min(100).max(315),
   range: z.number().int().min(1).max(3),
@@ -79,8 +93,14 @@ const CharSchema = z.object({
   signature: z.string().min(1),
   pros: z.array(z.string().min(1)).min(1),
   cons: z.array(z.string().min(1)).min(1),
-  /** Ultimate-ul vine în Faza 4 (Q-008); aici doar prezentarea. */
-  ultimate: z.object({ name: z.string().min(1), desc: z.string().min(1) }),
+  /** Ultimate-ul (în simulare: `SuperKind`): numele și descrierea din joc, tipul și viteza de încărcare. */
+  ultimate: z.object({
+    name: z.string().min(1),
+    desc: z.string().min(1),
+    kind: z.enum(SUPERS),
+    /** Viteza de încărcare, în procente (Ultimate-urile puternice se încarcă mai greu). */
+    pct: z.number().int().min(70).max(150),
+  }),
   /** Culoarea de bază (offline, în FFA) și culoarea exclusivă de la nivelul 5. */
   color: z.string().regex(/^#[0-9a-f]{6}$/i),
   signatureColor: z.string().regex(/^#[0-9a-f]{6}$/i),
@@ -106,7 +126,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'First bomb of every round is huge (+2 range).',
     pros: ['Huge first bomb', 'No weak spots'],
     cons: ['Nothing special after the first bomb'],
-    ultimate: { name: 'Big Bang', desc: 'One more giant bomb (+2 range).' },
+    ultimate: {
+      name: 'Big Bang',
+      desc: 'Drops a giant bomb (+2 range) on top of your normal ones.',
+      kind: 'bigbomb',
+      pct: 100,
+    },
     color: '#5ad15a',
     signatureColor: '#b7ff5a',
     size: 1,
@@ -125,7 +150,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Two lives: survives the first hit.',
     pros: ['2 lives', 'Starts with range 2'],
     cons: ['Slowest walker', 'Big body'],
-    ultimate: { name: 'Earthquake', desc: 'Pushes every nearby bomb one tile away.' },
+    ultimate: {
+      name: 'Earthquake',
+      desc: 'Shoves every bomb within 2 tiles away from him.',
+      kind: 'quake',
+      pct: 100,
+    },
     color: '#b08a5a',
     signatureColor: '#7a4a1c',
     size: 1.15,
@@ -144,7 +174,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Fastest character in the game.',
     pros: ['Top speed from the start', 'Small body'],
     cons: ['At most 5 bombs'],
-    ultimate: { name: 'Dash', desc: 'Dashes 3 tiles, through flames.' },
+    ultimate: {
+      name: 'Dash',
+      desc: 'Dashes up to 3 tiles in the direction she faces.',
+      kind: 'dash',
+      pct: 100,
+    },
     color: '#e0a35a',
     signatureColor: '#ff3b2f',
     size: 0.88,
@@ -163,7 +198,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Permanent Kick; kicked bombs bounce back once.',
     pros: ['Kick forever (others get 3 kicks)', 'Kicked bombs ricochet once'],
     cons: ['Can’t pick up the Glove'],
-    ultimate: { name: 'Penalty', desc: 'Kicks every bomb in the line of sight.' },
+    ultimate: {
+      name: 'Penalty',
+      desc: 'Kicks every bomb in his line of sight, all at once.',
+      kind: 'penalty',
+      pct: 100,
+    },
     color: '#2fb4ff',
     signatureColor: '#ffffff',
     size: 0.95,
@@ -182,7 +222,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Magnet: picks up good power-ups from neighbouring tiles.',
     pros: ['Collects power-ups one tile away', 'Quick'],
     cons: ['Small range at the start'],
-    ultimate: { name: 'Cluster', desc: 'Four mini-bombs in a cross.' },
+    ultimate: {
+      name: 'Cluster',
+      desc: 'Four mini-bombs in a cross, two tiles away.',
+      kind: 'cluster',
+      pct: 115,
+    },
     color: '#ff9ad0',
     signatureColor: '#ff3fa0',
     size: 0.95,
@@ -201,7 +246,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Permanent Glove and an 8-second shield at the start.',
     pros: ['Glove forever (others get 3 throws)', '8s shield at the start'],
     cons: ['Slow'],
-    ultimate: { name: 'The Handbag', desc: 'Throws a bomb across the whole arena.' },
+    ultimate: {
+      name: 'The Handbag',
+      desc: 'Swings a bomb 4 to 9 tiles away, over walls.',
+      kind: 'purse',
+      pct: 80,
+    },
     color: '#ffb870',
     signatureColor: '#d8306a',
     size: 1.05,
@@ -220,7 +270,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'His blasts leave oil for 2s that slows everyone else.',
     pros: ['Oil slows opponents by 40%', 'Great for trapping'],
     cons: ['His fuses are 0.3s longer'],
-    ultimate: { name: 'The Pan', desc: 'Sends a kicked bomb straight back.' },
+    ultimate: {
+      name: 'Sticky Sauce',
+      desc: 'Kicks a sticky bomb that glues itself to the first player it hits.',
+      kind: 'sticky',
+      pct: 90,
+    },
     color: '#f4f4f8',
     signatureColor: '#ff7a1a',
     size: 1.05,
@@ -239,7 +294,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Sees the countdown of every bomb.',
     pros: ['Bomb timers on screen', 'Starts with range 2'],
     cons: ['At most 6 bombs'],
-    ultimate: { name: 'Time Stop', desc: 'Freezes his own bombs for 1.5s.' },
+    ultimate: {
+      name: 'Time Stop',
+      desc: 'For 1.5s everyone else’s bombs freeze. His keep ticking.',
+      kind: 'timestop',
+      pct: 130,
+    },
     color: '#9ad7ff',
     signatureColor: '#ffd23f',
     size: 1,
@@ -258,7 +318,12 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Immune to slow, reverse, dizzy and hiccups; permanent Kick.',
     pros: ['Immune to bad power-ups', 'Kick forever'],
     cons: ['Can’t pick up the Shield'],
-    ultimate: { name: 'Portal Jump', desc: 'Teleports to any open portal.' },
+    ultimate: {
+      name: 'Portal Jump',
+      desc: 'Teleports to the farther portal, or to a safe spot far away.',
+      kind: 'warp',
+      pct: 100,
+    },
     color: '#c8ccd8',
     signatureColor: '#ff3b3b',
     size: 1,
@@ -277,7 +342,7 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Walks through one crate every 20 seconds.',
     pros: ['Phases through crates', 'Quick'],
     cons: ['Can’t pick up the Shield', 'Blasts still hit him inside a crate'],
-    ultimate: { name: 'Boo!', desc: 'Invisible to others for 2s.' },
+    ultimate: { name: 'Boo!', desc: 'Invisible to opponents for 2 seconds.', kind: 'boo', pct: 110 },
     color: '#e8f0ff',
     signatureColor: '#7dffd8',
     size: 0.95,
@@ -296,7 +361,7 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     signature: 'Once per round, an enemy bomb that would hit him turns into a pigeon.',
     pros: ['Survives one enemy blast per round'],
     cons: ['At most 6 bombs', 'Shields last half as long'],
-    ultimate: { name: 'Switcheroo', desc: 'Swaps places with an opponent.' },
+    ultimate: { name: 'Switcheroo', desc: 'Swaps places with the nearest opponent.', kind: 'swap', pct: 90 },
     color: '#8a5cff',
     signatureColor: '#ffd23f',
     size: 1,

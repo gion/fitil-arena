@@ -54,6 +54,8 @@ export const MODE_LEVEL: Record<ModeId, number> = {
   team2: 3,
   team3: 3,
   rot: 4,
+  potato: 3,
+  crown: 4,
   shift: 4,
   ctf: 5,
 };

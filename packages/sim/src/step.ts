@@ -1,12 +1,20 @@
-import { action, detonate, placeBomb, tryKick } from './actions.ts';
+import { action, detonate, newBomb, placeBomb, swapSpecial, tryKick } from './actions.ts';
 import { BOT_LEVELS, botCooldown } from './botLevels.ts';
 import {
+  BLIND,
   CARRIER_SPEED_PCT,
   CHAIN_DELAY,
   FLAME,
   GHOST_CD,
   OIL,
   OIL_SPEED_PCT,
+  CHARGE_BOX,
+  CHARGE_TICK,
+  FREEZE,
+  STICKY_FUSE,
+  TOXIC,
+  TOXIC_HURT,
+  TRAP_RANGE,
   HURT_FLAME,
   CURSE_DELAY,
   GRACE,
@@ -16,7 +24,8 @@ import {
   SLIDE_SPEED,
   SPEED_MAX,
 } from './constants.ts';
-import { addFlame, damage, kill, shieldSave } from './effects.ts';
+import { addCharge, addFlame, damage, kill, shieldSave } from './effects.ts';
+import { useSuper } from './heroes.ts';
 import { collectCrystal, hitTarget, updateMission } from './missions.ts';
 import { updateWorld } from './world.ts';
 import {
@@ -36,10 +45,18 @@ import {
 } from './grid.ts';
 import { applyItem, isNegative, rollDrop, rollGold } from './items.ts';
 import { updateMobs } from './mobs.ts';
-import { carriedFlag, updateCtf, updateRespawn, updateRotation, updateShift } from './modes.ts';
+import {
+  carriedFlag,
+  updateCrown,
+  updateCtf,
+  updatePotato,
+  updateRespawn,
+  updateRotation,
+  updateShift,
+} from './modes.ts';
 import { nextFloat, nextInt } from './rng.ts';
 import { isTeamMode } from './setup.ts';
-import { DIRS, DX, DY, EMPTY, HARD, SOFT, U, VIA_LIGHTNING, opposite } from './types.ts';
+import { DIRS, DX, DY, EMPTY, FLAME_KIND, HARD, SOFT, U, VIA_LIGHTNING, opposite } from './types.ts';
 import type { Bomb, Dir, GameState, Input, ItemType, Player } from './types.ts';
 
 /**
@@ -54,11 +71,14 @@ export function step(s: GameState, inputs: readonly (Input | undefined)[]): Game
   updateBombs(s);
   explodeBombs(s);
   updateFlames(s);
+  updatePotato(s);
   updateMobs(s);
   updatePlayers(s, inputs);
   updateShift(s);
   updateRotation(s);
   updateCtf(s);
+  updateCrown(s);
+  updateTraps(s);
   updateRespawn(s);
   updatePortals(s);
   updateBoxRespawn(s);
@@ -73,7 +93,9 @@ function handleActions(s: GameState, inputs: readonly (Input | undefined)[]): vo
   for (const p of s.players) {
     const inp = inputs[p.id];
     if (!p.alive || !inp) continue;
-    if (inp.face !== undefined && inp.bomb) p.face = inp.face;
+    if (inp.face !== undefined && (inp.bomb || inp.super)) p.face = inp.face;
+    if (inp.swap) swapSpecial(p);
+    if (inp.super) useSuper(s, p);
     if (inp.detonate) detonate(s, p);
     if (!inp.bomb) continue;
     if (p.bot !== null) {
@@ -100,8 +122,45 @@ function teleportBomb(s: GameState, b: Bomb): void {
   } else if (pi < 0) b.tpLock = -1;
 }
 
+/** Pasul următor al unei bombe care alunecă e blocat? */
+function slideBlocked(s: GameState, b: Bomb, d: Dir): boolean {
+  const nx = b.x + DX[d]!;
+  const ny = b.y + DY[d]!;
+  return (
+    !inBounds(s, nx, ny) ||
+    tileAt(s, nx, ny) !== EMPTY ||
+    s.bombs.some((o) => o !== b && o.x === nx && o.y === ny && o.held === null && o.fly === null) ||
+    playerAt(s, nx, ny) !== undefined
+  );
+}
+
+/** Bomba lipicioasă s-a oprit lângă un jucător: se lipește de el. */
+function trySticky(s: GameState, b: Bomb, d: Dir): boolean {
+  if (!b.sticky) return false;
+  const q = playerAt(s, b.x + DX[d]!, b.y + DY[d]!);
+  if (!q) return false;
+  b.stuck = q.id;
+  b.sticky = false;
+  b.slide = null;
+  b.prog = 0;
+  b.x = tileX(q);
+  b.y = tileY(q);
+  b.fuse = Math.min(b.fuse, STICKY_FUSE);
+  s.events.push({ type: 'stick', bomb: b.id, player: q.id });
+  return true;
+}
+
 function updateBombs(s: GameState): void {
+  const ts = s.timeStop;
   for (const b of s.bombs) {
+    if (b.stuck !== null) {
+      const q = s.players[b.stuck];
+      if (q?.alive) {
+        b.x = tileX(q);
+        b.y = tileY(q);
+      } else b.stuck = null;
+    }
+    if (ts && b.owner !== ts.owner && b.fly === null) continue; // timpul e oprit pentru bombele celorlalți
     if (b.fly) {
       b.fly.t++;
       if (b.fly.t >= b.fly.dur) {
@@ -115,7 +174,7 @@ function updateBombs(s: GameState): void {
     if (b.held !== null) continue; // bomba din mână nu arde
     b.fuse--;
     if (b.slide === null) continue;
-    b.prog += SLIDE_SPEED;
+    b.prog += s.rules.kickPct === 100 ? SLIDE_SPEED : Math.floor((SLIDE_SPEED * s.rules.kickPct) / 100);
     while (b.slide !== null && b.prog >= U) {
       b.prog -= U;
       b.x += DX[b.slide]!;
@@ -126,33 +185,21 @@ function updateBombs(s: GameState): void {
         b.slide = null;
         break;
       }
-      const nx = b.x + DX[b.slide]!;
-      const ny = b.y + DY[b.slide]!;
-      const blocked =
-        !inBounds(s, nx, ny) ||
-        tileAt(s, nx, ny) !== EMPTY ||
-        s.bombs.some((o) => o !== b && o.x === nx && o.y === ny && o.held === null && o.fly === null) ||
-        playerAt(s, nx, ny) !== undefined;
-      if (blocked) {
-        // ricoșeu (Fotbalistul): se întoarce o dată, dacă înapoi e liber
-        const back = opposite(b.slide);
-        const bx = b.x + DX[back]!;
-        const by = b.y + DY[back]!;
-        if (
-          b.bounce &&
-          tileAt(s, bx, by) === EMPTY &&
-          !s.bombs.some((o) => o !== b && o.x === bx && o.y === by && o.held === null && o.fly === null) &&
-          playerAt(s, bx, by) === undefined
-        ) {
-          b.bounce--;
-          b.slide = back;
-          continue;
-        }
-        b.slide = null;
-        b.prog = 0;
+      if (!slideBlocked(s, b, b.slide)) continue;
+      if (trySticky(s, b, b.slide)) break;
+      const back = opposite(b.slide);
+      if (b.bounce > 0 && !slideBlocked(s, b, back)) {
+        // ricoșeu (pasivul Fifi): bomba se întoarce
+        b.bounce--;
+        b.slide = back;
+        s.events.push({ type: 'bounce', bomb: b.id, x: b.x, y: b.y });
+        continue;
       }
+      b.slide = null;
+      b.prog = 0;
     }
   }
+  if (ts && --ts.t <= 0) s.timeStop = null;
 }
 
 function openPortals(s: GameState): void {
@@ -191,7 +238,23 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
   s.chainCount[b.chain] = cc;
   if (cc === 4) openPortals(s);
   const owner = s.players[b.owner];
-  if (owner) owner.active = Math.max(0, owner.active - 1);
+  if (owner && !b.free) owner.active = Math.max(0, owner.active - 1);
+  const fk = FLAME_KIND[b.kind];
+  const lethal = fk === 0 || fk === 3;
+  const fire = (x: number, y: number) => {
+    addFlame(s, x, y, b.owner, b.via, fk);
+    if (fk === 3) {
+      const k = idx(s, x, y);
+      s.toxic[k] = TOXIC;
+      s.toxicOwner[k] = b.owner;
+    }
+    // Bucătarul: flăcările bombelor lui normale lasă ulei
+    if (fk === 0 && owner?.kit?.oil) {
+      const k = idx(s, x, y);
+      s.oil[k] = FLAME + OIL;
+      s.oilOwner[k] = b.owner;
+    }
+  };
   s.events.push({
     type: 'explode',
     bomb: b.id,
@@ -201,15 +264,7 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
     owner: b.owner,
     chain: b.chain,
   });
-  const oily = owner?.kit?.oil === true;
-  const burn = (x: number, y: number) => {
-    addFlame(s, x, y, b.owner, b.via);
-    if (!oily) return;
-    const k = idx(s, x, y);
-    s.oil[k] = FLAME + OIL;
-    s.oilOwner[k] = b.owner;
-  };
-  burn(b.x, b.y);
+  fire(b.x, b.y);
   for (const d of DIRS) {
     for (let i = 1; i <= b.range; i++) {
       const nx = b.x + DX[d]! * i;
@@ -217,25 +272,31 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
       const g = tileAt(s, nx, ny);
       if (g === HARD) break;
       const k = idx(s, nx, ny);
+      if (g === SOFT && !lethal) break; // gheața și flashbang-ul nu sparg lăzi
       if (g === SOFT && s.mission && hitTarget(s, nx, ny, b.owner, b.via)) break;
       if (g === SOFT) {
         s.grid[k] = EMPTY;
-        burn(nx, ny);
+        fire(nx, ny);
+        addCharge(owner, CHARGE_BOX);
         const gold = s.gold[k] === 1;
         const cursed = s.cursed[k] === 1;
         s.gold[k] = 0;
         s.cursed[k] = 0;
         if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
-        else s.drops[k] = gold ? rollGold(s.rng) : rollDrop(s.rng, s.rules.hearts);
+        else
+          s.drops[k] = gold
+            ? rollGold(s.rng)
+            : rollDrop(s.rng, s.rules.hearts, s.rules.extras, s.rules.dropPct);
         s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed, owner: b.owner });
         break;
       }
       for (const o of s.bombs) {
-        if (o.x !== nx || o.y !== ny || o.held !== null || o.fly !== null || dead.has(o.id)) continue;
+        if (!lethal || o.x !== nx || o.y !== ny || o.held !== null || o.fly !== null || dead.has(o.id))
+          continue;
         o.fuse = Math.min(o.fuse, CHAIN_DELAY);
         if (!o.chain) o.chain = b.chain;
       }
-      burn(nx, ny);
+      fire(nx, ny);
     }
   }
 }
@@ -255,7 +316,7 @@ function pigeon(s: GameState, b: Bomb, dead: Set<number>): boolean {
   if (!mag) return false;
   mag.pigeonUsed = true;
   dead.add(b.id);
-  if (owner) owner.active = Math.max(0, owner.active - 1);
+  if (owner && !b.free) owner.active = Math.max(0, owner.active - 1);
   s.events.push({ type: 'pigeon', player: mag.id, bomb: b.id, x: b.x, y: b.y });
   return true;
 }
@@ -278,12 +339,14 @@ function explodeBombs(s: GameState): void {
 
 function updateFlames(s: GameState): void {
   for (let k = 0; k < s.oil.length; k++) if (s.oil[k]! > 0 && --s.oil[k]! === 0) s.oilOwner[k] = -1;
+  for (let k = 0; k < s.toxic.length; k++) if (s.toxic[k]! > 0 && --s.toxic[k]! === 0) s.toxicOwner[k] = -1;
   for (let k = 0; k < s.flame.length; k++) {
     if (s.flame[k]! <= 0) continue;
     s.flame[k]!--;
     if (s.flame[k] === 0) {
       s.flameOwner[k] = -1;
       s.flameVia[k] = 0;
+      s.flameKind[k] = 0;
       const d = s.drops[k];
       if (d) {
         s.items[k] = d;
@@ -328,7 +391,7 @@ function pickup(s: GameState, p: Player, x: number, y: number): void {
   if (!it) return;
   s.items[k] = null;
   const pre = { speed: p.speed, bombs: p.bombs, range: p.range };
-  if (!applyItem(p, it, s.rules.charges)) {
+  if (!applyItem(p, it, { charged: s.rules.charges, health: s.rules.health })) {
     s.events.push({ type: 'immune', player: p.id, item: it });
     return;
   }
@@ -402,15 +465,34 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
     if (!p.alive) continue;
     let want: Dir | null = inputs[p.id]?.dir ?? null;
     if (want !== null && p.revT > 0) want = opposite(want);
-    move(s, p, want);
+    if (p.frozenT > 0) p.frozenT--;
+    else move(s, p, want);
 
     const k = idx(s, tileX(p), tileY(p));
-    if (p.graceT > 0) p.graceT--;
-    if (s.flame[k]! > 0 && p.graceT === 0) {
-      const ownerId = s.flameOwner[k]!;
+    const friendlyTo = (ownerId: number) => {
       const owner = ownerId >= 0 ? s.players[ownerId] : undefined;
-      const friendly =
-        isTeamMode(s.rules) && !s.rules.friendlyFire && owner !== undefined && owner.team === p.team;
+      return isTeamMode(s.rules) && !s.rules.friendlyFire && owner !== undefined && owner.team === p.team;
+    };
+    if (p.graceT > 0) p.graceT--;
+    const fk = s.flameKind[k]!;
+    if (s.flame[k]! > 0 && p.graceT === 0 && (fk === 1 || fk === 2)) {
+      if (!friendlyTo(s.flameOwner[k]!)) {
+        if (fk === 1 && p.frozenT === 0) {
+          p.frozenT = FREEZE;
+          p.moving = false;
+          p.px = tileX(p) * U;
+          p.py = tileY(p) * U;
+          p.fx = p.tx = tileX(p);
+          p.fy = p.ty = tileY(p);
+          s.events.push({ type: 'frozen', player: p.id });
+        } else if (fk === 2 && p.blindT === 0) {
+          p.blindT = BLIND;
+          s.events.push({ type: 'blinded', player: p.id });
+        }
+      }
+    } else if (s.flame[k]! > 0 && p.graceT === 0) {
+      const ownerId = s.flameOwner[k]!;
+      const friendly = friendlyTo(ownerId);
       if (!friendly && !shieldSave(s, p, GRACE)) {
         const via = s.flameVia[k]!;
         damage(
@@ -424,7 +506,27 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
         if (!p.alive) continue;
       }
     }
+    if (s.toxic[k]! > 0 && p.graceT === 0 && !friendlyTo(s.toxicOwner[k]!)) {
+      if (++p.toxT >= TOXIC_HURT) {
+        p.toxT = 0;
+        if (!shieldSave(s, p, GRACE)) {
+          const o = s.toxicOwner[k]!;
+          damage(s, p, HURT_FLAME, o >= 0 ? o : null, 'poison');
+          if (!p.alive) continue;
+        }
+      }
+    } else p.toxT = 0;
+    const trap = s.traps.findIndex((t) => t.x === tileX(p) && t.y === tileY(p));
+    if (trap >= 0 && s.traps[trap]!.owner !== p.id && !friendlyTo(s.traps[trap]!.owner)) {
+      const t = s.traps.splice(trap, 1)[0]!;
+      if (!bombAt(s, t.x, t.y)) newBomb(s, t.owner, t.x, t.y, TRAP_RANGE, { fuse: 0, free: true });
+      s.events.push({ type: 'trapFire', x: t.x, y: t.y, owner: t.owner });
+    }
     if (p.shieldT > 0) p.shieldT--;
+    if (p.blindT > 0) p.blindT--;
+    if (p.hexT > 0) p.hexT--;
+    if (p.hiddenT > 0) p.hiddenT--;
+    if (s.tick % CHARGE_TICK === 0) addCharge(p, 1);
     if (p.ghostT > 0) p.ghostT--;
     pickup(s, p, tileX(p), tileY(p));
     // Fifi: magnet pentru bonusurile pozitive din pătrățelele vecine
@@ -469,6 +571,8 @@ function updateBoxRespawn(s: GameState): void {
     if (
       s.grid[k] !== EMPTY ||
       s.flame[k]! > 0 ||
+      s.bush[k] ||
+      (s.crown && s.crown.holder === null && s.crown.x === x && s.crown.y === y) ||
       s.items[k] ||
       s.drops[k] ||
       bombAt(s, x, y) ||
@@ -514,9 +618,12 @@ function updateHurry(s: GameState): void {
   s.bombs = s.bombs.filter((b) => {
     if (b.x !== x || b.y !== y || b.held !== null || b.fly !== null) return true;
     const owner = s.players[b.owner];
-    if (owner) owner.active = Math.max(0, owner.active - 1);
+    if (owner && !b.free) owner.active = Math.max(0, owner.active - 1);
     return false;
   });
+  s.bush[k] = 0;
+  s.toxic[k] = 0;
+  s.traps = s.traps.filter((t) => t.x !== x || t.y !== y);
   for (const p of s.players) {
     if (!p.alive) continue;
     if (tileX(p) === x && tileY(p) === y) kill(s, p, null, 'hurry');
@@ -531,7 +638,7 @@ function updateHurry(s: GameState): void {
 }
 
 function checkResult(s: GameState): void {
-  if (s.result || s.players.length < 2 || s.rules.mode === 'ctf') return;
+  if (s.result || s.players.length < 2 || s.rules.mode === 'ctf' || s.rules.mode === 'crown') return;
   if (s.rules.timeLimit && s.tick >= s.rules.timeLimit) {
     s.result = { winner: null, team: null, tick: s.tick };
     s.events.push({ type: 'roundEnd', winner: null, team: null });
@@ -549,4 +656,8 @@ function checkResult(s: GameState): void {
     s.result = { winner: alive[0]?.id ?? null, team: null, tick: s.tick };
   }
   s.events.push({ type: 'roundEnd', winner: s.result.winner, team: s.result.team });
+}
+
+function updateTraps(s: GameState): void {
+  if (s.traps.length) s.traps = s.traps.filter((t) => --t.t > 0);
 }

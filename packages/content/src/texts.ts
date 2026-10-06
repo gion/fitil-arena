@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import type { BotLevel, ChallengeId, DeathCause, ItemType, MaxStat, TutorialStep } from '@fitil/sim';
 
-/** Modurile offline din Faza 2 (ordinea din selector). */
-export const MODE_IDS = ['ffa', 'vs', 'team2', 'team3', 'ctf', 'rot', 'shift'] as const;
+/** Modurile de arenă (ordinea din selector); Coroana și Cartoful fierbinte vin din Faza 4. */
+export const MODE_IDS = ['ffa', 'vs', 'team2', 'team3', 'ctf', 'rot', 'shift', 'crown', 'potato'] as const;
 export type ModeId = (typeof MODE_IDS)[number];
 
 const TextSchema = z.object({ name: z.string().min(1), desc: z.string().min(1) });
@@ -28,6 +28,14 @@ export const MODES: Record<ModeId, z.infer<typeof TextSchema>> = z
     shift: {
       name: 'Shifting rows',
       desc: 'Free for all. Rows and columns slide from time to time, with everything on them. If a crate pushes you into a wall, you get squashed. Red arrows mark the next row.',
+    },
+    crown: {
+      name: 'Crown',
+      desc: 'Grab the crown and keep it. It drops when you fall. Hold it for 60s, or the longest in 2:30, to win. You respawn after 3s.',
+    },
+    potato: {
+      name: 'Hot potato',
+      desc: 'A giant bomb jumps from player to player on touch. Don’t be the one holding it when it blows. Last one standing wins.',
     },
   });
 
@@ -58,7 +66,14 @@ export const ITEM_NAMES: Record<ItemType, string> = {
   maxbomb: 'MAX BOMBS!',
   heart: '+25% health',
   crystal: 'Crystal!',
+  ice: 'Ice bombs ×3',
+  flash: 'Flashbangs ×3',
+  poison: 'Poison bombs ×3',
+  hex: 'HEX! Enemies −1 range',
 };
+
+/** În arenă inima nu dă viață, ci o inimă în plus (maxim 3). */
+export const HEART_ARENA = '+1 heart';
 
 /** Replicile momentelor de glorie (localizabile; în versiunea finală pot veni din pachete de voce). */
 export const HERO_LINES: Record<MaxStat | 'win' | 'team', string[]> = {
@@ -82,6 +97,8 @@ export const DEATH_MSG: Record<DeathCause | 'self', string> = {
   spider: 'Got by a spider!',
   lightning: 'Zapped by lightning!',
   crush: 'Squashed by a shifting row!',
+  poison: 'Choked on {k}’s poison cloud!',
+  potato: 'The hot potato blew up in your hands!',
 };
 
 export const TEAMS = [

@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import { HARD, HOME, SOFT, TICK_HZ, U, idx, inBounds, targetAt, walkable } from '@fitil/sim';
+import { HARD, HOME, SOFT, TICK_HZ, U, canSee, idx, inBounds, targetAt, walkable } from '@fitil/sim';
 import type { Dir, GameState } from '@fitil/sim';
 import { TEAMS, charById } from '@fitil/content';
 import { FRIEND_COL } from '../render/colors.ts';
 import type { Theme } from '@fitil/content';
 import type { Match, MatchEvent } from '../game/match.ts';
 import * as paint from '../render/paint.ts';
+import { SPECIAL_COLOR } from '../render/paint.ts';
 import type { Quality, View } from '../settings.ts';
 import { settings } from '../settings.ts';
 
@@ -583,6 +584,20 @@ export class Renderer3D {
     const zg = new THREE.PlaneGeometry(0.9, 0.9);
     zg.rotateX(-Math.PI / 2);
     inst('zone', zg, zm);
+    // Faza 4: tufișuri și nor toxic
+    inst(
+      'bush',
+      new THREE.ConeGeometry(0.5, 1, 7, 1, true),
+      std({ color: '#8fc94a', roughness: 0.9, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      true,
+    );
+    const tg = new THREE.PlaneGeometry(1, 1);
+    tg.rotateX(-Math.PI / 2);
+    inst(
+      'toxic',
+      tg,
+      new THREE.MeshBasicMaterial({ color: '#8dff5a', transparent: true, opacity: 0.35, depthWrite: false }),
+    );
     const sg = new THREE.PlaneGeometry(1, 1);
     sg.rotateX(-Math.PI / 2);
     inst(
@@ -847,6 +862,31 @@ export class Renderer3D {
       sh.name = 'shield';
       sh.visible = false;
       grp.add(sh);
+      // Faza 4: gheață, coroană, cartoful fierbinte
+      const ice = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.95, 0.8),
+        new THREE.MeshBasicMaterial({ color: '#9fe8ff', transparent: true, opacity: 0.4, depthWrite: false }),
+      );
+      ice.position.y = 0.45;
+      ice.name = 'ice';
+      ice.visible = false;
+      grp.add(ice);
+      const crown = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.2, 0.16, 0.16, 6, 1, true),
+        std({ color: '#ffd23f', metalness: 0.6, roughness: 0.3, side: THREE.DoubleSide }),
+      );
+      crown.position.y = 0.86;
+      crown.name = 'crown';
+      crown.visible = false;
+      grp.add(crown);
+      const pot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.3, 18, 14),
+        std({ color: '#1a1b26', emissive: '#ff3b3b', emissiveIntensity: 0 }),
+      );
+      pot.position.y = 1.15;
+      pot.name = 'potato';
+      pot.visible = false;
+      grp.add(pot);
       this.root.add(grp);
       this.players.push(grp);
     }
@@ -1058,7 +1098,19 @@ export class Renderer3D {
     this.time = m.time;
     const time = this.time;
     const I = this.inst;
-    for (const k of ['soft', 'softCursed', 'softGold', 'fa', 'fb', 'fg', 'item', 'zone', 'shift'])
+    for (const k of [
+      'soft',
+      'softCursed',
+      'softGold',
+      'fa',
+      'fb',
+      'fg',
+      'item',
+      'zone',
+      'shift',
+      'bush',
+      'toxic',
+    ])
       I[k]!.n = 0;
     const inf = s.inf !== null;
     // fereastra randată: toată arena sau, în lumea infinită, ±17 pătrățele în jurul jucătorului
@@ -1105,6 +1157,8 @@ export class Renderer3D {
           this.set(I.fb!, x, 0, y, w, h, w, r);
           this.set(I.fg!, x, 0.02, y, a, 1, a);
         }
+        if (s.bush[k]) this.set(I.bush!, x, 0.45, y, 0.9, 0.9, 0.9);
+        if (s.toxic[k]! > 0) this.set(I.toxic!, x, 0.04, y, 1, 1, 1);
         const it = s.items[k];
         if (it && g !== SOFT) {
           const i = I.item!;
@@ -1128,7 +1182,19 @@ export class Renderer3D {
       (I.shift!.mesh.material as THREE.MeshBasicMaterial).opacity =
         sh.warn > 0 ? 0.2 + 0.3 * Math.abs(Math.sin(time * 14)) : 0.2;
     }
-    for (const k of ['soft', 'softCursed', 'softGold', 'fa', 'fb', 'fg', 'item', 'zone', 'shift']) {
+    for (const k of [
+      'soft',
+      'softCursed',
+      'softGold',
+      'fa',
+      'fb',
+      'fg',
+      'item',
+      'zone',
+      'shift',
+      'bush',
+      'toxic',
+    ]) {
       const i = I[k]!;
       i.mesh.count = i.n;
       i.mesh.instanceMatrix.needsUpdate = true;
@@ -1175,7 +1241,16 @@ export class Renderer3D {
       else g.rotation.x = 0;
       const owner = s.players[b.owner];
       const body = g.userData.body as THREE.MeshStandardMaterial;
-      body.color.set(m.team && owner ? TEAMS[owner.team]!.bomb : this.theme.c3.bomb);
+      const stopped = s.timeStop !== null && s.timeStop.owner !== b.owner;
+      body.color.set(
+        b.kind !== 'normal'
+          ? SPECIAL_COLOR[b.kind]
+          : stopped
+            ? '#8a90a8'
+            : m.team && owner
+              ? TEAMS[owner.team]!.bomb
+              : this.theme.c3.bomb,
+      );
       body.emissiveIntensity = hot ? (Math.sin(time * rate) > 0 ? 1.2 : 0.1) : 0;
       for (const o of g.children) {
         if (o.name === 'spark') o.scale.setScalar(0.25 + Math.random() * 0.2);
@@ -1366,7 +1441,8 @@ export class Renderer3D {
         return;
       }
       const isHero = hero !== null && hero.player === p.id;
-      g.visible = !(p.id === m.meId && fps && !m.doom && !isHero);
+      const viewer = m.me.alive ? m.me : null;
+      g.visible = !(p.id === m.meId && fps && !m.doom && !isHero) && canSee(s, viewer, p);
       g.scale.setScalar((g.userData.size as number | undefined) ?? 1);
       let w = this.walk.get(p.id) ?? p.id;
       if (p.moving || (isHero && hero.kind === 'speed'))
@@ -1392,6 +1468,14 @@ export class Renderer3D {
         if (o.name === 'foot-1') o.position.z = walk * 0.1;
         if (o.name === 'foot1') o.position.z = -walk * 0.1;
         if (o.name === 'halo') o.scale.setScalar(1 + 0.12 * Math.sin(this.time * 5));
+        if (o.name === 'ice') o.visible = p.frozenT > 0;
+        if (o.name === 'crown') o.visible = s.crown?.holder === p.id;
+        if (o.name === 'potato') {
+          o.visible = s.potato?.holder === p.id;
+          const left = s.potato?.fuse ?? 99;
+          ((o as THREE.Mesh).material as THREE.MeshStandardMaterial).emissiveIntensity =
+            left < 3 * TICK_HZ && Math.sin(this.time * 24) > 0 ? 1.2 : 0;
+        }
       }
     });
   }

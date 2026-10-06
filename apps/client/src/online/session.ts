@@ -2,6 +2,7 @@ import { Client } from '@colyseus/sdk';
 import type { Room } from '@colyseus/sdk';
 import { NetClient, lagFromQuery, lagLink } from '@fitil/net';
 import type { LagOpts, Link, MeMsg, RoomCfg } from '@fitil/net';
+import type { ModeId } from '@fitil/content';
 
 /** Adresa serverului de joc: `VITE_SERVER_URL` sau același host ca pagina, portul 2567. */
 export function serverUrl(): string {
@@ -74,6 +75,15 @@ export class OnlineSession {
 
   static async join(code: string, me: MeMsg): Promise<OnlineSession> {
     return new OnlineSession(await new Client(serverUrl()).joinById(code.toUpperCase(), me));
+  }
+
+  /** Joc rapid: intră într-o cameră publică a modului (sau creează una) care pornește singură. */
+  static async quick(mode: ModeId, me: MeMsg, aspect: number): Promise<OnlineSession> {
+    return new OnlineSession(await new Client(serverUrl()).joinOrCreate('quick', { ...me, mode, aspect }));
+  }
+
+  get isQuick(): boolean {
+    return this.net.lobby?.quick === true;
   }
 
   /** Personajul sau ținuta s-au schimbat în lobby. */

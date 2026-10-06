@@ -1,7 +1,7 @@
 import { now } from './clock.ts';
-import type { BotLevel } from '@fitil/sim';
 import { seasonalTheme, themeById } from '@fitil/content';
 import type { ModeId } from '@fitil/content';
+import type { BotLevel } from '@fitil/sim';
 
 export type View = '2d' | 'fps' | 'chase';
 export type Quality = 'low' | 'medium' | 'high';
@@ -58,7 +58,8 @@ function load(): Settings {
   };
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? { ...def, ...(JSON.parse(raw) as Partial<Settings>) } : def;
+    const st = raw ? { ...def, ...(JSON.parse(raw) as Partial<Settings>) } : def;
+    return st;
   } catch {
     return def;
   }
