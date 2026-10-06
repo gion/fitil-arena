@@ -998,3 +998,49 @@ canvas.portrait.small {
   cursor: default;
   transform: none;
 }
+
+/* ---------- deblocări și panoul DEV ---------- */
+.new {
+  font: 900 8px var(--body);
+  letter-spacing: 0.08em;
+  color: #10121c;
+  background: #7dffb0;
+  border-radius: 999px;
+  padding: 1px 5px;
+  margin-left: 4px;
+  vertical-align: 2px;
+}
+.opt.locked {
+  opacity: 0.6;
+}
+.opt small.price {
+  color: var(--gold);
+}
+.plevel {
+  font: 800 12px var(--body);
+  color: #9fe3ff;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.plevel i {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4fc3ff var(--w), #2e3350 var(--w));
+}
+.dev-btn {
+  font-size: 12px;
+  border-style: dashed;
+}
+.card.dev .row {
+  justify-content: center;
+}
+.dev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dev-list .row .opt {
+  flex: 1;
+}

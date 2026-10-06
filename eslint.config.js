@@ -16,6 +16,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/.venv/**',
       'tools/voice/out/**',
+      '.claude/worktrees/**',
     ],
   },
   js.configs.recommended,

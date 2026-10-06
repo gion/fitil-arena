@@ -153,3 +153,20 @@
 - În 3D lipsesc cronometrul Maestrului, uleiul, urmele și porumbelul (sunt doar în 2D).
 - Boții nu știu de semnăturile noi (Ghost nu trece prin lăzi intenționat, nu evită uleiul).
 - Proprietatea personajelor/cosmeticelor nu se verifică online (Faza 6).
+
+## Deblocări treptate, calendar și panoul DEV (2026-10-06)
+
+**Mini-plan:** regulile de deblocare ca funcții pure în content (nivel de jucător, moduri, personaje, teme, calendar, rotație), cu teste; profiluri multiple și ceas controlabil în client; lacăte, teasere și insigne „NEW” în meniuri; panou DEV exclus din build-ul public.
+
+**Făcut:**
+
+- **content** (`progression.ts`): `playerLevel` din XP-ul total, `modeLock`, `charState` (deținut / rotație / de cumpărat / nivel / „coming soon”), `themeState` (deschisă / eveniment / nivel / de cumpărat), `weeklyRotation`, `unlocksAt`, `openKeys`; economia verifică nivelul și lansarea la cumpărare, rotația la alegere, `buyTheme`, iar `reward` anunță nivelurile de jucător noi, ce deschid și temele de eveniment păstrate. Profilul are `themes` și `seen`.
+- **client**: `clock.ts` (data curentă, mutabilă din panoul DEV), `store` cu profilul real + profiluri de test și rol de admin; lacăte pe moduri și teme, teme de eveniment „free now · play to keep”, cumpărarea temelor în afara perioadei; cărți de personaj cu siluetă și numărătoare, „Free this week”, „Player Lv N”; pagina personajului cu acțiunea potrivită stării; nivelul de jucător cu bară lângă monede; insigne „NEW” în meniul principal și pe elemente; bannere la nivel nou de jucător; dacă personajul ales nu mai e disponibil (rotația s-a terminat) joci cu Bubu; tema aleasă revine la una permisă.
+- **Panoul DEV** (`dev/panel.ts`): profiluri (jucător nou / veteran / admin), +Fitile, +nivel, +XP, deblochează tot, resetări, data simulată cu sezonul, rotația și lansările afișate.
+- **Teste**: content 27 (9 noi: curba, moduri, nivel + Fitile, calendar, rotație, teme, tema păstrată, niveluri de jucător în recompense, ce vede un jucător nou); Playwright 18 (nou: jucător nou — lacăte, teasere, rotație, teme, lipsa butonului DEV în build-ul public, nivelul 2 deschide 1 vs 1; testul de personaje rulează cu dată fixă).
+
+**Rămas / cunoscut:**
+
+- Datele din calendar sunt provizorii; pragurile de nivel sunt o primă estimare (de calibrat pe retenție, `BUSINESS.md` §5).
+- Deblocările sunt locale, deci ocolibile din `localStorage` — verificarea reală vine cu conturile (Faza 6).
+- Nu există încă misiuni zilnice sau battle pass (rămân în `GAME_DESIGN.md` §Progres).

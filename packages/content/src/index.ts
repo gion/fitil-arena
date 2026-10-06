@@ -4,3 +4,4 @@ export * from './missions.ts';
 export * from './characters.ts';
 export * from './shop.ts';
 export * from './economy.ts';
+export * from './progression.ts';

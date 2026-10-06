@@ -51,6 +51,16 @@ import {
   reward,
   selectChar,
   shopItem,
+  buyTheme,
+  canPlay,
+  charState,
+  markSeen,
+  modeLock,
+  openKeys,
+  playerLevel,
+  themeOpen,
+  themeState,
+  totalXp,
 } from '@fitil/content';
 import type { MatchSummary, ModeId, Profile, Rewards, ShopCat, Theme } from '@fitil/content';
 import { Music } from './audio/music.ts';
@@ -70,6 +80,7 @@ import { $, h, show } from './ui/dom.ts';
 import { maxHumans } from '@fitil/net';
 import { OnlineSession } from './online/session.ts';
 import { store, today } from './profile.ts';
+import { DEV_TOOLS, now } from './clock.ts';
 import { Portraits } from './ui/portrait.ts';
 
 type Phase = 'menu' | 'play' | 'paused' | 'over';
@@ -86,7 +97,7 @@ export class App {
   voice: VoicePack;
   private synth: SynthVoice;
   private voiceLoading = false;
-  theme: Theme = currentTheme();
+  theme: Theme = this.allowedTheme();
   match: Match | null = null;
   online: OnlineSession | null = null;
   private onlineErr = '';
@@ -233,6 +244,35 @@ export class App {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', this.theme.ink);
   }
 
+  /** Tema aleasă, dacă profilul curent o are deschisă; altfel tema de sezon sau Clasic. */
+  private allowedTheme(): Theme {
+    const t = currentTheme();
+    if (themeOpen(store.profile, t.id, store.access())) return t;
+    const season = seasonalTheme(now());
+    return season && themeOpen(store.profile, season.id, store.access()) ? season : themeById('clasic');
+  }
+
+  /** Personajul cu care joci: cel ales, dacă încă îl poți folosi (rotația gratuită se poate termina). */
+  private playCh(): string {
+    const p = store.profile;
+    return canPlay(p, p.ch, store.access()) ? p.ch : 'bubu';
+  }
+
+  /** Insigna „NEW” pentru deblocările nevăzute de un tip (`mode`, `char`, `theme`). */
+  private fresh(kind: string): string[] {
+    const p = store.profile;
+    return openKeys(p, store.access()).filter((k) => k.startsWith(kind + ':') && !p.seen.includes(k));
+  }
+
+  private newBadge(kind: string): HTMLElement | null {
+    return this.fresh(kind).length ? h('span', { class: 'new' }, 'NEW') : null;
+  }
+
+  private seeAll(kind: string): void {
+    const keys = this.fresh(kind);
+    if (keys.length) store.set(markSeen(store.profile, keys));
+  }
+
   /** `persist = false`: tema camerei online, fără să schimbe tema aleasă de jucător. */
   setTheme(id: string, persist = true): void {
     if (persist) {
@@ -269,7 +309,7 @@ export class App {
   /* ---------- ecrane ---------- */
 
   private mainMenu(): HTMLElement {
-    const season = seasonalTheme(new Date());
+    const season = seasonalTheme(now());
     return this.card(
       h('h1', {}, 'FITIL'),
       h('p', {}, 'Bombs, chains, kicks and throws. Last one standing wins.'),
@@ -277,6 +317,7 @@ export class App {
         'button',
         { class: 'btn', 'data-test': 'play', onclick: () => this.showScreen(() => this.playMenu()) },
         'Play',
+        this.newBadge('mode'),
       ),
       h(
         'button',
@@ -295,6 +336,7 @@ export class App {
             onclick: () => this.showScreen(() => this.charactersMenu()),
           },
           'Characters',
+          this.newBadge('char'),
         ),
         h(
           'button',
@@ -319,10 +361,21 @@ export class App {
           },
           'Practice',
         ),
-        h('button', { class: 'opt', onclick: () => this.showScreen(() => this.themesMenu()) }, 'Themes'),
+        h(
+          'button',
+          { class: 'opt', 'data-test': 'themes', onclick: () => this.showScreen(() => this.themesMenu()) },
+          'Themes',
+          this.newBadge('theme'),
+        ),
         h('button', { class: 'opt', onclick: () => this.showScreen(() => this.settingsMenu()) }, 'Settings'),
       ),
       season && h('p', {}, `Seasonal theme: ${season.name}`),
+      DEV_TOOLS &&
+        h(
+          'button',
+          { class: 'btn ghost dev-btn', 'data-test': 'dev', onclick: () => void this.openDev() },
+          `DEV · ${store.label}${store.admin ? ' (admin)' : ''}`,
+        ),
       h(
         'p',
         { class: 'rot' },
@@ -373,21 +426,30 @@ export class App {
   }
 
   private modeGrid(onPick: (m: ModeId) => void): HTMLElement {
+    const a = store.access();
+    const seen = store.profile.seen;
     return h(
       'div',
       { class: 'grid' },
-      ...MODE_IDS.map((m) =>
-        h(
+      ...MODE_IDS.map((m) => {
+        const lock = modeLock(m, a);
+        return h(
           'button',
           {
-            class: 'opt',
+            class: 'opt' + (lock ? ' locked' : ''),
             'aria-pressed': String(this.kind.type === 'mode' && this.kind.mode === m),
             'data-mode': m,
+            disabled: !!lock,
             onclick: () => onPick(m),
           },
           MODES[m].name,
-        ),
-      ),
+          lock?.kind === 'level'
+            ? h('small', {}, `🔒 Player Lv ${lock.level}`)
+            : !seen.includes(`mode:${m}`)
+              ? h('span', { class: 'new' }, 'NEW')
+              : null,
+        );
+      }),
     );
   }
 
@@ -414,7 +476,9 @@ export class App {
   }
 
   private playMenu(): HTMLElement {
-    if (this.kind.type !== 'mode') this.kind = { type: 'mode', mode: settings.mode };
+    if (this.kind.type !== 'mode' || modeLock(this.kind.mode, store.access()))
+      this.kind = { type: 'mode', mode: modeLock(settings.mode, store.access()) ? 'ffa' : settings.mode };
+    queueMicrotask(() => this.seeAll('mode'));
     const mode = this.kind.mode;
     return this.card(
       h('h2', {}, 'Choose a mode'),
@@ -690,11 +754,28 @@ export class App {
       );
   }
 
+  /** Panoul DEV (doar în build-urile interne; modulul lipsește din build-ul public). */
+  private async openDev(): Promise<void> {
+    // condiția e constantă la compilare: în build-ul public importul (și modulul) dispar
+    if (!__DEV_TOOLS__) return;
+    const { devScreen } = await import('./dev/panel.ts');
+    const open = (): HTMLElement =>
+      devScreen({
+        back: () => {
+          this.theme = this.allowedTheme();
+          this.setTheme(this.theme.id, false);
+          this.showScreen(() => this.mainMenu());
+        },
+        rerender: () => this.showScreen(open),
+        sfx: this.sfx,
+      });
+    this.showScreen(open);
+  }
+
   /* ---------- personaje, magazin, recompense ---------- */
 
   private meMsg(name: string) {
-    const p = store.profile;
-    return { name, ch: p.ch, outfit: p.eq };
+    return { name, ch: this.playCh(), outfit: store.profile.eq };
   }
 
   private setProfile(p: Profile): void {
@@ -705,9 +786,16 @@ export class App {
   private coinRow(): HTMLElement {
     const p = store.profile;
     const lv = levelOf(p.xp[p.ch] ?? 0).level;
+    const pl = playerLevel(totalXp(p));
     return h(
       'div',
       { class: 'coin-row' },
+      h(
+        'span',
+        { class: 'plevel', 'data-test': 'player-level', title: `${pl.into}/${pl.need} XP` },
+        `Player Lv ${pl.level}`,
+        h('i', { style: `--w:${pl.need ? Math.round((pl.into / pl.need) * 100) : 100}%` }),
+      ),
       h('span', { class: 'coinpill', 'data-test': 'coins' }, h('i'), String(p.coins)),
       h(
         'button',
@@ -744,6 +832,7 @@ export class App {
 
   /** Grila de personaje. `back` = unde te întorci (meniul principal sau lobby-ul online). */
   private charactersMenu(back: () => HTMLElement = () => this.mainMenu()): HTMLElement {
+    queueMicrotask(() => this.seeAll('char'));
     const p = store.profile;
     return this.card(
       h('h2', {}, 'Characters'),
@@ -753,7 +842,9 @@ export class App {
         'div',
         { class: 'cgrid' },
         ...CHARACTERS.map((c) => {
-          const own = p.chars.includes(c.id);
+          const st = charState(p, c.id, store.access());
+          const own = st.kind === 'owned' || st.kind === 'rotation';
+          const soon = st.kind === 'soon';
           const lv = levelOf(p.xp[c.id] ?? 0).level;
           return h(
             'button',
@@ -764,14 +855,29 @@ export class App {
               style: `--rar:${RARITY[c.rarity].color}`,
               onclick: () => this.showScreen(() => this.characterPage(c.id, () => this.charactersMenu(back))),
             },
-            this.portraits.add({ ch: c.id, outfit: p.ch === c.id ? p.eq : null }),
-            h('span', { class: 'cname' }, c.name),
+            this.portraits.add(
+              soon
+                ? { ch: c.id, outfit: null, color: '#0b0d16' }
+                : { ch: c.id, outfit: p.ch === c.id ? p.eq : null },
+            ),
+            h('span', { class: 'cname' }, soon ? '???' : c.name),
             this.rarityChip(c.rarity),
             h(
               'small',
               {},
-              p.ch === c.id ? `Selected · Lv ${lv}` : own ? `Lv ${lv}` : `${charPrice(c)} Fitile`,
+              p.ch === c.id
+                ? `Selected · Lv ${lv}`
+                : st.kind === 'owned'
+                  ? `Lv ${lv}`
+                  : st.kind === 'rotation'
+                    ? 'Free this week'
+                    : st.kind === 'soon'
+                      ? `Coming in ${st.days} day${st.days === 1 ? '' : 's'}`
+                      : st.kind === 'level'
+                        ? `🔒 Player Lv ${st.level}`
+                        : `${charPrice(c)} Fitile`,
             ),
+            !soon && !p.seen.includes(`char:${c.id}`) && own ? h('span', { class: 'new' }, 'NEW') : null,
           );
         }),
       ),
@@ -783,11 +889,14 @@ export class App {
   private characterPage(id: string, back: () => HTMLElement = () => this.charactersMenu()): HTMLElement {
     const c = charById(id);
     const p = store.profile;
-    const own = p.chars.includes(id);
+    const st = charState(p, id, store.access());
+    const own = st.kind === 'owned' || st.kind === 'rotation';
     const xp = p.xp[id] ?? 0;
     const lv = levelOf(xp);
     const canvas = this.portraits.add(
-      { ch: id, outfit: p.ch === id ? p.eq : null, turn: true },
+      st.kind === 'soon'
+        ? { ch: id, outfit: null, turn: true, color: '#0b0d16' }
+        : { ch: id, outfit: p.ch === id ? p.eq : null, turn: true },
       'portrait big',
     );
     const listen = () => {
@@ -823,33 +932,45 @@ export class App {
               class: 'btn',
               'data-test': 'select-char',
               onclick: () => {
-                const r = selectChar(store.profile, id);
+                const r = selectChar(store.profile, id, store.access());
                 if (r.ok) this.setProfile(r.profile);
                 this.sfx.init();
                 this.sfx.voiceLine(c.voice);
                 this.showScreen(back);
               },
             },
-            'Select',
+            st.kind === 'rotation' ? 'Play free this week' : 'Select',
           )
-      : h(
-          'button',
-          {
-            class: 'btn',
-            'data-test': 'buy-char',
-            disabled: p.coins < price,
-            onclick: () => {
-              const r = buyChar(store.profile, id);
-              if (!r.ok) return;
-              const sel = selectChar(r.profile, id);
-              this.setProfile(sel.ok ? sel.profile : r.profile);
-              this.sfx.init();
-              this.sfx.win();
-              refresh();
-            },
-          },
-          p.coins < price ? `${price} Fitile · you have ${p.coins}` : `Buy for ${price} Fitile`,
-        );
+      : st.kind === 'soon'
+        ? h(
+            'button',
+            { class: 'btn', disabled: true, 'data-test': 'soon' },
+            `Coming ${st.date} · in ${st.days} days`,
+          )
+        : st.kind === 'level'
+          ? h(
+              'button',
+              { class: 'btn', disabled: true, 'data-test': 'buy-char' },
+              `Reach player level ${st.level} · then ${charPrice(c)} Fitile`,
+            )
+          : h(
+              'button',
+              {
+                class: 'btn',
+                'data-test': 'buy-char',
+                disabled: p.coins < price,
+                onclick: () => {
+                  const r = buyChar(store.profile, id, store.access());
+                  if (!r.ok) return;
+                  const sel = selectChar(r.profile, id, store.access());
+                  this.setProfile(sel.ok ? sel.profile : r.profile);
+                  this.sfx.init();
+                  this.sfx.win();
+                  refresh();
+                },
+              },
+              p.coins < price ? `${price} Fitile · you have ${p.coins}` : `Buy for ${price} Fitile`,
+            );
     return this.card(
       h('div', { class: 'char-head' }, h('h2', {}, c.name), this.rarityChip(c.rarity)),
       h('p', {}, c.tagline),
@@ -1002,6 +1123,15 @@ export class App {
     store.set(r.profile);
     const ch = charById(r.profile.ch);
     const lv = levelOf(r.profile.xp[ch.id] ?? 0);
+    const notes = [
+      ...r.playerUps.map(
+        (u) => `Player level ${u.level}!` + (u.unlocks.length ? ` Unlocked: ${u.unlocks.join(', ')}` : ''),
+      ),
+      ...r.keptThemes.map((t) => `${themeById(t).name} theme is yours to keep!`),
+    ];
+    notes.forEach((n, i) =>
+      setTimeout(() => this.showBanner(n, 2600, 'gold'), 700 + (r.levelUps.length + i) * 2700),
+    );
     for (const [i, l] of r.levelUps.entries())
       setTimeout(
         () =>
@@ -1111,18 +1241,39 @@ export class App {
   }
 
   private themeGrid(onPick: (id: string) => void): HTMLElement {
-    const season = seasonalTheme(new Date())?.id;
+    const season = seasonalTheme(now())?.id;
+    const a = store.access();
+    const p = store.profile;
     return h(
       'div',
       { class: 'grid three' },
-      ...THEMES.map((t) =>
-        h(
+      ...THEMES.map((t) => {
+        const st = themeState(p, t.id, a);
+        const lock =
+          st.kind === 'level'
+            ? h('small', {}, `🔒 Player Lv ${st.level}`)
+            : st.kind === 'buy'
+              ? h('small', { class: 'price' }, `${st.price} Fitile`)
+              : st.kind === 'event'
+                ? h('small', { class: 'now' }, 'free now · play to keep')
+                : null;
+        return h(
           'button',
           {
-            class: 'opt',
+            class: 'opt' + (st.kind === 'level' || st.kind === 'buy' ? ' locked' : ''),
             'aria-pressed': String(t.id === this.theme.id),
             'data-theme': t.id,
-            onclick: () => onPick(t.id),
+            disabled: st.kind === 'level' || (st.kind === 'buy' && p.coins < st.price),
+            onclick: () => {
+              if (st.kind === 'buy') {
+                const r = buyTheme(store.profile, t.id, store.access());
+                if (!r.ok) return;
+                store.set(r.profile);
+                this.sfx.init();
+                this.sfx.win();
+              }
+              onPick(t.id);
+            },
           },
           h(
             'span',
@@ -1132,17 +1283,21 @@ export class App {
             ),
           ),
           t.name,
-          t.id === season
-            ? h('small', { class: 'now' }, 'season')
-            : t.season
-              ? h('small', {}, 'event')
-              : null,
-        ),
-      ),
+          lock ??
+            (t.id === season
+              ? h('small', { class: 'now' }, 'season')
+              : t.season
+                ? h('small', {}, 'event')
+                : !p.seen.includes(`theme:${t.id}`)
+                  ? h('span', { class: 'new' }, 'NEW')
+                  : null),
+        );
+      }),
     );
   }
 
   private themesMenu(): HTMLElement {
+    queueMicrotask(() => this.seeAll('theme'));
     return this.card(
       h('h2', {}, 'Themes'),
       this.themeGrid((id) => {
@@ -1383,7 +1538,7 @@ export class App {
     if (!sameKind || !this.match) this.scores = [];
     const p = store.profile;
     const m = Match.offline(kind, settings.bots, this.seedN++, this.aspect(), this.control(), {
-      ch: p.ch,
+      ch: this.playCh(),
       outfit: p.eq,
       classic: settings.classic,
     });
