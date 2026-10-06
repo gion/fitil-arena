@@ -58,6 +58,15 @@ Nu trece la faza următoare până nu trec criteriile. Progresul se ține în `d
 
 ---
 
+## Faza 2c — Personaje, monede, magazin
+- Cele 7 personaje din prototip data-driven în `packages/content` (statistici, pasiv, mers, voce, replici, preț), cu teste de sim pentru fiecare pasiv (a doua viață, magnet, imunitate, bomba mare, limită de bombe).
+- Economie locală: monede pe evenimente, bonus zilnic, inventar, echipare; migrare pe cont în Faza 6 (serverul devine sursa de adevăr pentru monede).
+- Randare cosmetice în 2D și 3D; ecrane Personaje și Magazin cu previzualizări.
+
+**Acceptare:** test că fiecare personaj pornește cu statisticile corecte; test de economie (cumpărare fără fonduri refuzată, echipare/scoatere, persistență); Playwright: cumpără și echipează un obiect din fiecare categorie fără erori.
+
+---
+
 ## Faza 3 — Multiplayer online (camere private)
 **Scop:** 2–4 jucători online, în aceeași cameră, cu cod.
 - Colyseus room care rulează `packages/sim` autoritar la 20 Hz; clienții trimit doar input cu număr de secvență.
@@ -72,21 +81,6 @@ Nu trece la faza următoare până nu trec criteriile. Progresul se ține în `d
 
 ---
 
-## Faza 3b — Interfața „Comic”
-**Scop:** meniurile, HUD-ul și tranzițiile arată ca în `docs/design/ui.md` și `reference/ui/`, doar landscape. Fără schimbări de gameplay.
-- Tokeni CSS și fonturile Bangers + Rubik împachetate local (notate în `assets/CREDITS.md`).
-- Componentele de bază din specificație (butoane, panou, casete, balon, ștampilă ON/OFF, selector segmentat, titlu de pagină).
-- Ecranele existente refăcute pe rând: acasă/start, alegerea modului, camera privată, pauza, setările, finalul de meci, bannerele de conexiune.
-- HUD-ul din joc (bară de 44px, variante FFA / echipe / steag) și controalele din 3D.
-- Tranzițiile: fitil + explozie la start de meci, bandă de cerneală la navigare; reduse la `prefers-reduced-motion`.
-- Ecranele fără funcționalitate încă (login cu cont, personaje, clasament, căutare de jucători) se fac în fazele lor, după aceleași machete.
-
-**Acceptare:** `pnpm lint && pnpm typecheck && pnpm test` trec; smoke Playwright pe fiecare ecran refăcut (se deschide, 0 erori în consolă, niciun element interactiv sub 44px); capturi în `docs/screens/` comparate manual cu machetele; tema arenei se poate schimba fără ca interfața să se modifice.
-
-**Checkpoint uman:** numele final (Fitil / Fuse Arena, Q-004) înainte de a fixa wordmark-ul de pe login.
-
----
-
 ## Faza 4 — Personaje, Super, moduri
 - Sistem de personaje data-driven (`packages/content`), abilități pasive + Super cu bară de încărcare.
 - Implementează cele 7 personaje din `GAME_DESIGN.md`.
@@ -97,6 +91,21 @@ Nu trece la faza următoare până nu trec criteriile. Progresul se ține în `d
 - Bombe speciale cu încărcături (gheață, flashbang, otravă) și bonusurile Inimă și Blestem, conform `GAME_DESIGN.md`. UI: iconița bombei următoare pe buton, glisare pentru schimbare.
 
 **Acceptare:** fiecare abilitate și fiecare tip de modificator are test de sim; bench cu personaje și arene aleatoare: rată de victorie per personaj între 18% și 32% în FFA de 4, și pe fiecare arenă în parte între 15% și 35% (raport de balans în `docs/balance.md`).
+
+---
+
+## Faza 4b — Interfața „Comic”
+**Scop:** meniurile, HUD-ul și tranzițiile arată ca în `docs/design/ui.md` și `reference/ui/`, doar landscape. Fără schimbări de gameplay.
+- Tokeni CSS și fonturile Bangers + Rubik împachetate local (notate în `assets/CREDITS.md`).
+- Componentele de bază din specificație (butoane, panou, casete, balon, ștampilă ON/OFF, selector segmentat, titlu de pagină).
+- Ecranele existente refăcute pe rând: acasă/start, alegerea modului, selecția și pagina de personaj, magazinul, camera privată și jocul rapid, pauza, setările, finalul de meci, bannerele de conexiune.
+- HUD-ul din joc (bară de 44px, variante FFA / echipe / steag) și controalele din 3D.
+- Tranzițiile: fitil + explozie la start de meci, bandă de cerneală la navigare; reduse la `prefers-reduced-motion`.
+- Ecranele fără funcționalitate încă (login cu cont, clasament) se fac în fazele lor, după aceleași machete. Magazinul nu are machetă: se construiește din componentele din specificație.
+
+**Acceptare:** `pnpm lint && pnpm typecheck && pnpm test` trec; smoke Playwright pe fiecare ecran refăcut (se deschide, 0 erori în consolă, niciun element interactiv sub 44px); capturi în `docs/screens/` comparate manual cu machetele; tema arenei se poate schimba fără ca interfața să se modifice.
+
+**Checkpoint uman:** numele final (Fitil / Fuse Arena, Q-010) înainte de a fixa wordmark-ul de pe login.
 
 ---
 

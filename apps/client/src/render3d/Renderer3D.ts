@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import { HARD, HOME, SOFT, TICK_HZ, U, idx, inBounds, targetAt, walkable } from '@fitil/sim';
+import { HARD, HOME, SOFT, TICK_HZ, U, canSee, idx, inBounds, targetAt, walkable } from '@fitil/sim';
 import type { Dir, GameState } from '@fitil/sim';
-import { TEAMS } from '@fitil/content';
+import { TEAMS, charById } from '@fitil/content';
 import { FRIEND_COL } from '../render/colors.ts';
 import type { Theme } from '@fitil/content';
 import type { Match, MatchEvent } from '../game/match.ts';
 import * as paint from '../render/paint.ts';
+import { SPECIAL_COLOR } from '../render/paint.ts';
 import type { Quality, View } from '../settings.ts';
 import { settings } from '../settings.ts';
 
@@ -583,6 +584,20 @@ export class Renderer3D {
     const zg = new THREE.PlaneGeometry(0.9, 0.9);
     zg.rotateX(-Math.PI / 2);
     inst('zone', zg, zm);
+    // Faza 4: tufișuri și nor toxic
+    inst(
+      'bush',
+      new THREE.ConeGeometry(0.5, 1, 7, 1, true),
+      std({ color: '#8fc94a', roughness: 0.9, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      true,
+    );
+    const tg = new THREE.PlaneGeometry(1, 1);
+    tg.rotateX(-Math.PI / 2);
+    inst(
+      'toxic',
+      tg,
+      new THREE.MeshBasicMaterial({ color: '#8dff5a', transparent: true, opacity: 0.35, depthWrite: false }),
+    );
     const sg = new THREE.PlaneGeometry(1, 1);
     sg.rotateX(-Math.PI / 2);
     inst(
@@ -642,7 +657,67 @@ export class Renderer3D {
 
   private pcolor(id: number): string {
     const c = this.match?.slots[id]?.color ?? '#ffffff';
+    if (c === 'rainbow') return '#ff5a5a';
     return this.theme.tint[c] ?? c;
+  }
+
+  /** Detaliile personajului și pălăria cumpărată (versiuni simple ale desenelor 2D). */
+  private charBits(grp: THREE.Group, ch: string | null, hatId: string | null): void {
+    const m = (geo: THREE.BufferGeometry, color: string, x: number, y: number, z: number) => {
+      const o = new THREE.Mesh(geo, std({ color }));
+      o.position.set(x, y, z);
+      o.castShadow = true;
+      grp.add(o);
+      return o;
+    };
+    if (ch === 'gugu') m(new THREE.BoxGeometry(0.32, 0.06, 0.06), '#2b1d12', 0, 0.36, 0.33).rotation.x = 0.3;
+    if (ch === 'zuzu')
+      m(new THREE.TorusGeometry(0.33, 0.035, 8, 24), '#e0302f', 0, 0.58, 0).rotation.x = Math.PI / 2;
+    if (ch === 'striker')
+      m(new THREE.TorusGeometry(0.33, 0.035, 8, 24), '#ffffff', 0, 0.6, 0).rotation.x = Math.PI / 2;
+    if (ch === 'fifi')
+      for (const sd of [-1, 1])
+        m(new THREE.ConeGeometry(0.08, 0.16, 10), '#ff5fa8', 0.2 + sd * 0.09, 0.74, 0).rotation.z =
+          (sd * Math.PI) / 2;
+    if (ch === 'veta') {
+      const sc = m(
+        new THREE.SphereGeometry(0.36, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+        '#d8306a',
+        0,
+        0.44,
+        -0.02,
+      );
+      sc.scale.set(1.02, 1.05, 1.02);
+      m(new THREE.BoxGeometry(0.18, 0.16, 0.08), '#8a4a22', 0.36, 0.25, 0);
+    }
+    if (ch === 'maestru') {
+      for (const sd of [-1, 1]) m(new THREE.SphereGeometry(0.12, 10, 8), '#f4f4f8', sd * 0.3, 0.55, -0.05);
+      m(new THREE.SphereGeometry(0.1, 10, 8), '#f4f4f8', 0, 0.76, -0.05);
+    }
+    if (ch === 'robo') {
+      m(new THREE.CylinderGeometry(0.015, 0.015, 0.25, 6), '#333333', 0, 0.82, 0);
+      m(new THREE.SphereGeometry(0.05, 8, 6), '#ff3b3b', 0, 0.96, 0);
+    }
+    if (ch === 'chef' && !hatId) {
+      m(new THREE.CylinderGeometry(0.2, 0.18, 0.2, 16), '#ffffff', 0, 0.82, 0);
+      m(new THREE.SphereGeometry(0.22, 14, 10), '#ffffff', 0, 0.98, 0);
+    }
+    if (ch === 'magician' && !hatId) {
+      m(new THREE.CylinderGeometry(0.34, 0.34, 0.03, 20), '#16161e', 0, 0.72, 0);
+      m(new THREE.CylinderGeometry(0.2, 0.2, 0.32, 16), '#16161e', 0, 0.9, 0);
+    }
+    if (!hatId) return;
+    if (hatId === 'h_top') {
+      m(new THREE.CylinderGeometry(0.34, 0.34, 0.03, 20), '#16161e', 0, 0.72, 0);
+      m(new THREE.CylinderGeometry(0.2, 0.2, 0.36, 16), '#16161e', 0, 0.92, 0);
+    } else if (hatId === 'h_crown')
+      m(new THREE.CylinderGeometry(0.2, 0.18, 0.18, 8, 1, true), '#ffd23f', 0, 0.8, 0);
+    else if (hatId === 'h_cap')
+      m(new THREE.SphereGeometry(0.3, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), '#2f6de0', 0, 0.62, 0);
+    else if (hatId === 'h_cowboy') {
+      m(new THREE.CylinderGeometry(0.42, 0.42, 0.03, 20), '#8a5a2b', 0, 0.72, 0);
+      m(new THREE.CylinderGeometry(0.18, 0.22, 0.22, 14), '#8a5a2b', 0, 0.84, 0);
+    } else if (hatId === 'h_party') m(new THREE.ConeGeometry(0.16, 0.4, 14), '#ff5fa8', 0, 0.9, 0);
   }
 
   private buildPlayers(s: GameState): void {
@@ -651,14 +726,22 @@ export class Renderer3D {
     for (const p of s.players) {
       const grp = new THREE.Group();
       const col = this.pcolor(p.id);
+      const slot = this.match?.slots[p.id];
+      const ch = slot?.ch ?? null;
+      const mat = std({
+        color: col,
+        roughness: ch === 'robo' ? 0.3 : 0.45,
+        metalness: ch === 'robo' ? 0.5 : 0,
+        emissive: neon ? col : '#000000',
+        emissiveIntensity: neon ? 0.35 : 0,
+      });
+      if (ch === 'ghost') {
+        mat.transparent = true;
+        mat.opacity = 0.75;
+      }
       const body = new THREE.Mesh(
-        new THREE.SphereGeometry(0.34, 24, 18),
-        std({
-          color: col,
-          roughness: 0.45,
-          emissive: neon ? col : '#000000',
-          emissiveIntensity: neon ? 0.35 : 0,
-        }),
+        ch === 'robo' ? new THREE.BoxGeometry(0.6, 0.6, 0.6) : new THREE.SphereGeometry(0.34, 24, 18),
+        mat,
       );
       body.position.y = 0.4;
       body.castShadow = true;
@@ -685,8 +768,12 @@ export class Renderer3D {
         f.castShadow = true;
         grp.add(f);
       }
+      this.charBits(grp, ch, slot?.outfit?.hat ?? null);
+      if (ch) grp.userData.size = charById(ch).size;
       const hat = new THREE.Group();
       hat.position.y = 0.72;
+      // pălăria cumpărată sau a personajului înlocuiește pălăria temei
+      if (slot?.outfit?.hat || ch === 'chef' || ch === 'magician') hat.visible = false;
       if (st === 'halloween') {
         const m = std({ color: '#2a1640' });
         hat.add(new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.03, 20), m));
@@ -775,6 +862,31 @@ export class Renderer3D {
       sh.name = 'shield';
       sh.visible = false;
       grp.add(sh);
+      // Faza 4: gheață, coroană, cartoful fierbinte
+      const ice = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.95, 0.8),
+        new THREE.MeshBasicMaterial({ color: '#9fe8ff', transparent: true, opacity: 0.4, depthWrite: false }),
+      );
+      ice.position.y = 0.45;
+      ice.name = 'ice';
+      ice.visible = false;
+      grp.add(ice);
+      const crown = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.2, 0.16, 0.16, 6, 1, true),
+        std({ color: '#ffd23f', metalness: 0.6, roughness: 0.3, side: THREE.DoubleSide }),
+      );
+      crown.position.y = 0.86;
+      crown.name = 'crown';
+      crown.visible = false;
+      grp.add(crown);
+      const pot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.3, 18, 14),
+        std({ color: '#1a1b26', emissive: '#ff3b3b', emissiveIntensity: 0 }),
+      );
+      pot.position.y = 1.15;
+      pot.name = 'potato';
+      pot.visible = false;
+      grp.add(pot);
       this.root.add(grp);
       this.players.push(grp);
     }
@@ -986,7 +1098,19 @@ export class Renderer3D {
     this.time = m.time;
     const time = this.time;
     const I = this.inst;
-    for (const k of ['soft', 'softCursed', 'softGold', 'fa', 'fb', 'fg', 'item', 'zone', 'shift'])
+    for (const k of [
+      'soft',
+      'softCursed',
+      'softGold',
+      'fa',
+      'fb',
+      'fg',
+      'item',
+      'zone',
+      'shift',
+      'bush',
+      'toxic',
+    ])
       I[k]!.n = 0;
     const inf = s.inf !== null;
     // fereastra randată: toată arena sau, în lumea infinită, ±17 pătrățele în jurul jucătorului
@@ -1033,6 +1157,8 @@ export class Renderer3D {
           this.set(I.fb!, x, 0, y, w, h, w, r);
           this.set(I.fg!, x, 0.02, y, a, 1, a);
         }
+        if (s.bush[k]) this.set(I.bush!, x, 0.45, y, 0.9, 0.9, 0.9);
+        if (s.toxic[k]! > 0) this.set(I.toxic!, x, 0.04, y, 1, 1, 1);
         const it = s.items[k];
         if (it && g !== SOFT) {
           const i = I.item!;
@@ -1056,7 +1182,19 @@ export class Renderer3D {
       (I.shift!.mesh.material as THREE.MeshBasicMaterial).opacity =
         sh.warn > 0 ? 0.2 + 0.3 * Math.abs(Math.sin(time * 14)) : 0.2;
     }
-    for (const k of ['soft', 'softCursed', 'softGold', 'fa', 'fb', 'fg', 'item', 'zone', 'shift']) {
+    for (const k of [
+      'soft',
+      'softCursed',
+      'softGold',
+      'fa',
+      'fb',
+      'fg',
+      'item',
+      'zone',
+      'shift',
+      'bush',
+      'toxic',
+    ]) {
       const i = I[k]!;
       i.mesh.count = i.n;
       i.mesh.instanceMatrix.needsUpdate = true;
@@ -1103,7 +1241,16 @@ export class Renderer3D {
       else g.rotation.x = 0;
       const owner = s.players[b.owner];
       const body = g.userData.body as THREE.MeshStandardMaterial;
-      body.color.set(m.team && owner ? TEAMS[owner.team]!.bomb : this.theme.c3.bomb);
+      const stopped = s.timeStop !== null && s.timeStop.owner !== b.owner;
+      body.color.set(
+        b.kind !== 'normal'
+          ? SPECIAL_COLOR[b.kind]
+          : stopped
+            ? '#8a90a8'
+            : m.team && owner
+              ? TEAMS[owner.team]!.bomb
+              : this.theme.c3.bomb,
+      );
       body.emissiveIntensity = hot ? (Math.sin(time * rate) > 0 ? 1.2 : 0.1) : 0;
       for (const o of g.children) {
         if (o.name === 'spark') o.scale.setScalar(0.25 + Math.random() * 0.2);
@@ -1294,8 +1441,9 @@ export class Renderer3D {
         return;
       }
       const isHero = hero !== null && hero.player === p.id;
-      g.visible = !(p.id === m.meId && fps && !m.doom && !isHero);
-      g.scale.setScalar(1);
+      const viewer = m.me.alive ? m.me : null;
+      g.visible = !(p.id === m.meId && fps && !m.doom && !isHero) && canSee(s, viewer, p);
+      g.scale.setScalar((g.userData.size as number | undefined) ?? 1);
       let w = this.walk.get(p.id) ?? p.id;
       if (p.moving || (isHero && hero.kind === 'speed'))
         w += dt * ((p.speed * TICK_HZ) / U) * 5 + (isHero && hero.kind === 'speed' ? dt * 30 : 0);
@@ -1320,6 +1468,14 @@ export class Renderer3D {
         if (o.name === 'foot-1') o.position.z = walk * 0.1;
         if (o.name === 'foot1') o.position.z = -walk * 0.1;
         if (o.name === 'halo') o.scale.setScalar(1 + 0.12 * Math.sin(this.time * 5));
+        if (o.name === 'ice') o.visible = p.frozenT > 0;
+        if (o.name === 'crown') o.visible = s.crown?.holder === p.id;
+        if (o.name === 'potato') {
+          o.visible = s.potato?.holder === p.id;
+          const left = s.potato?.fuse ?? 99;
+          ((o as THREE.Mesh).material as THREE.MeshStandardMaterial).emissiveIntensity =
+            left < 3 * TICK_HZ && Math.sin(this.time * 24) > 0 ? 1.2 : 0;
+        }
       }
     });
   }

@@ -84,7 +84,7 @@ export function updateWorld(s: GameState): void {
     s.bombs = s.bombs.filter((b) => {
       if (b.held !== null || b.fly || !far(b.x, b.y, KEEP_BOMB)) return true;
       const o = s.players[b.owner];
-      if (o) o.active = Math.max(0, o.active - 1);
+      if (o && !b.free) o.active = Math.max(0, o.active - 1);
       return false;
     });
   if (s.spiders.length) s.spiders = s.spiders.filter((c) => !far(mobX(c), mobY(c), KEEP_MOB));

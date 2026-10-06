@@ -8,10 +8,15 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.scripts.json",
+    "balance": "tsx scripts/balance.ts"
   },
   "dependencies": {
     "zod": "^4.0.0",
     "@fitil/sim": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "@types/node": "^22.0.0"
   }
 }

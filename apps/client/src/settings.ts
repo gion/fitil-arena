@@ -1,6 +1,7 @@
-import type { BotLevel } from '@fitil/sim';
+import { now } from './clock.ts';
 import { seasonalTheme, themeById } from '@fitil/content';
 import type { ModeId } from '@fitil/content';
+import type { BotLevel } from '@fitil/sim';
 
 export type View = '2d' | 'fps' | 'chase';
 export type Quality = 'low' | 'medium' | 'high';
@@ -24,6 +25,8 @@ export interface Settings {
   stars: Record<string, number>;
   /** Numele din camerele online. */
   name: string;
+  /** Jocul clasic: fără personaje și fără încărcări (Q-005). */
+  classic: boolean;
 }
 
 const KEY = 'fitil-settings';
@@ -51,10 +54,12 @@ function load(): Settings {
     challenges: [],
     stars: {},
     name: '',
+    classic: false,
   };
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? { ...def, ...(JSON.parse(raw) as Partial<Settings>) } : def;
+    const st = raw ? { ...def, ...(JSON.parse(raw) as Partial<Settings>) } : def;
+    return st;
   } catch {
     return def;
   }
@@ -71,4 +76,4 @@ export function save(): void {
 }
 
 /** Tema curentă: cea aleasă, altfel cea de sezon, altfel Clasic. */
-export const currentTheme = () => themeById(settings.theme ?? seasonalTheme(new Date())?.id ?? 'clasic');
+export const currentTheme = () => themeById(settings.theme ?? seasonalTheme(now())?.id ?? 'clasic');

@@ -1,20 +1,34 @@
-import { FUSE, LINE_MAX_EXTRA, REMOTE_FUSE } from './constants.ts';
+import { BIG_BOMB_EXTRA, BOUNCES, FREEZE_TAP, LINE_MAX_EXTRA, REMOTE_FUSE } from './constants.ts';
 import { bombAt, getBomb, idx, padIndex, playerAt, tileAt, tileX, tileY, walkable } from './grid.ts';
+import { useCharge } from './items.ts';
+import { isTeamMode } from './setup.ts';
 import { DX, DY, EMPTY } from './types.ts';
-import type { Bomb, Dir, GameState, Player } from './types.ts';
+import type { Bomb, BombKind, Dir, GameState, Player } from './types.ts';
 
-export function placeBomb(s: GameState, p: Player, x = tileX(p), y = tileY(p)): boolean {
-  if (!p.alive || p.carry !== null || p.active >= p.bombs || bombAt(s, x, y) || s.flame[idx(s, x, y)]! > 0)
-    return false;
-  const remote = p.remote && p.bot === null;
+/** Raza bombelor jucătorului: −1 (minim 1) cât timp un adversar are Blestemul. */
+export function effectiveRange(s: GameState, p: Player): number {
+  const team = isTeamMode(s.rules);
+  const hexed = s.players.some((q) => q !== p && q.alive && q.hexT > 0 && !(team && q.team === p.team));
+  return hexed ? Math.max(1, p.range - 1) : p.range;
+}
+
+/** O bombă nouă pe jos (fără verificări și fără să o numere la jucător). */
+export function newBomb(
+  s: GameState,
+  owner: number,
+  x: number,
+  y: number,
+  range: number,
+  o: Partial<Pick<Bomb, 'fuse' | 'kind' | 'free' | 'remote' | 'sticky'>> = {},
+): Bomb {
   const b: Bomb = {
     id: s.nextBombId++,
     x,
     y,
-    fuse: remote ? REMOTE_FUSE : FUSE,
-    range: p.range,
-    owner: p.id,
-    remote,
+    fuse: o.fuse ?? s.rules.fuse,
+    range,
+    owner,
+    remote: o.remote ?? false,
     slide: null,
     prog: 0,
     held: null,
@@ -22,10 +36,47 @@ export function placeBomb(s: GameState, p: Player, x = tileX(p), y = tileY(p)): 
     chain: 0,
     tpLock: padIndex(s, x, y) >= 0 ? idx(s, x, y) : -1,
     via: 0,
+    kind: o.kind ?? 'normal',
+    free: o.free ?? false,
+    stuck: null,
+    sticky: o.sticky ?? false,
+    bounce: 0,
   };
   s.bombs.push(b);
+  s.events.push({ type: 'bombPlaced', bomb: b.id, x, y, owner });
+  return b;
+}
+
+export function placeBomb(s: GameState, p: Player, x = tileX(p), y = tileY(p)): boolean {
+  if (
+    !p.alive ||
+    p.carry !== null ||
+    p.frozenT > 0 ||
+    p.active >= p.bombs ||
+    bombAt(s, x, y) ||
+    s.flame[idx(s, x, y)]! > 0
+  )
+    return false;
+  const kind: BombKind = p.specials.shift() ?? 'normal';
+  const remote = p.remote && p.bot === null && kind === 'normal';
+  // semnături: prima bombă mare (Bubu), fitil mai lung (Bucătarul)
+  const big = p.bigBomb && kind === 'normal';
+  if (big) p.bigBomb = false;
+  const b = newBomb(s, p.id, x, y, effectiveRange(s, p) + (big ? BIG_BOMB_EXTRA : 0), {
+    kind,
+    remote,
+    fuse: remote ? REMOTE_FUSE : s.rules.fuse + (p.kit?.fuseAdd ?? 0),
+  });
+  if (big) b.big = true;
   p.active++;
-  s.events.push({ type: 'bombPlaced', bomb: b.id, x, y, owner: p.id });
+  return true;
+}
+
+/** Schimbă tipul bombei speciale următoare: toate încărcăturile primului tip trec la coadă. */
+export function swapSpecial(p: Player): boolean {
+  const first = p.specials[0];
+  if (first === undefined || p.specials.every((k) => k === first)) return false;
+  p.specials = [...p.specials.filter((k) => k !== first), ...p.specials.filter((k) => k === first)];
   return true;
 }
 
@@ -43,16 +94,19 @@ export function placeLine(s: GameState, p: Player): boolean {
     placeBomb(s, p, x, y);
     n++;
   }
+  if (n > 0) useCharge(s, p, 'line');
   return n > 0;
 }
 
 export function detonate(s: GameState, p: Player): boolean {
   let n = 0;
+  if (p.frozenT > 0) return false;
   for (const b of s.bombs)
     if (b.owner === p.id && b.remote && b.held === null && b.fly === null) {
       b.fuse = 0;
       n++;
     }
+  if (n > 0) useCharge(s, p, 'remote');
   return n > 0;
 }
 
@@ -61,7 +115,7 @@ export function tryLift(s: GameState, p: Player): boolean {
   const x = tileX(p);
   const y = tileY(p);
   const b = bombAt(s, x, y) ?? bombAt(s, x + DX[p.face]!, y + DY[p.face]!);
-  if (!b || b.slide !== null) return false;
+  if (!b || b.slide !== null || b.stuck !== null) return false;
   b.held = p.id;
   p.carry = b.id;
   s.events.push({ type: 'lift', player: p.id, bomb: b.id });
@@ -89,7 +143,7 @@ export function throwBomb(s: GameState, p: Player): void {
     if (ty < 1) ty = s.H - 2;
     if (ty > s.H - 2) ty = 1;
   };
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3 + s.rules.throwExtra; i++) {
     tx += dx;
     ty += dy;
     steps++;
@@ -109,20 +163,24 @@ export function throwBomb(s: GameState, p: Player): void {
   b.y = ty;
   b.slide = null;
   s.events.push({ type: 'throw', player: p.id, bomb: b.id });
+  useCharge(s, p, 'glove');
 }
 
 export function tryKick(s: GameState, p: Player, dir: Dir): boolean {
   const x = tileX(p) + DX[dir]!;
   const y = tileY(p) + DY[dir]!;
   const b = bombAt(s, x, y);
-  if (!b || b.slide !== null) return false;
+  if (!b || b.slide !== null || b.stuck !== null) return false;
   const nx = x + DX[dir]!;
   const ny = y + DY[dir]!;
   if (!walkable(s, nx, ny) || playerAt(s, nx, ny)) return false;
   b.slide = dir;
   b.via = 1;
   b.prog = 0;
+  // ricoșeu: semnătura Fotbalistului (o dată) sau pasivul de erou (de două ori)
+  b.bounce = p.kit?.ricochet ? 1 : p.hero?.passive === 'bounce' ? BOUNCES : 0;
   s.events.push({ type: 'kick', player: p.id, bomb: b.id });
+  useCharge(s, p, 'kick');
   return true;
 }
 
@@ -132,6 +190,11 @@ export function tryKick(s: GameState, p: Player, dir: Dir): boolean {
  */
 export function action(s: GameState, p: Player, double: boolean): boolean {
   if (!p.alive) return false;
+  if (p.frozenT > 0) {
+    // apăsările repetate scurtează înghețul
+    p.frozenT = Math.max(1, p.frozenT - FREEZE_TAP);
+    return false;
+  }
   if (p.carry !== null) {
     throwBomb(s, p);
     return true;

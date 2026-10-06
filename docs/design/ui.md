@@ -1,6 +1,6 @@
 # Interfața jocului — direcția „Comic” (C)
 
-Direcția vizuală aleasă de proprietar pe 2026-10-06 (D-034): bandă desenată — galben cu raster, cerneală neagră, colțuri drepte, casete înclinate, baloane de vorbire. Texte în engleză (D-028), **doar landscape**.
+Direcția vizuală aleasă de proprietar pe 2026-10-06 (D-051): bandă desenată — galben cu raster, cerneală neagră, colțuri drepte, casete înclinate, baloane de vorbire. Texte în engleză (D-028), **doar landscape**.
 
 - **Sursa de adevăr pentru „cum arată”:** `reference/ui/*.dc.html` (un fișier per ecran, 844×390, stiluri inline). Fișierele se randează doar în canvasul de design (au nevoie de runtime-ul lui); în repo se citesc ca markup. Canvasul: https://claude.ai/artifact/5rH1dcy2uvaw4DJqTsSaKw (privat, al proprietarului).
 - **Sursa de adevăr pentru „cum se simte” jocul** rămâne `reference/prototype.html`.
@@ -56,25 +56,25 @@ Meniurile, HUD-ul, butoanele și baloanele arată la fel în orice temă. Tema (
 
 ## Ecrane
 
-| Fișier                                      | Ecran                                                                   |
-| ------------------------------------------- | ----------------------------------------------------------------------- |
-| `C-Login.dc.html`                           | Login (invitat, Apple, Google, cod de cameră)                           |
-| `C-Login-FuseArena.dc.html`                 | Varianta de login dacă numele devine „Fuse Arena” (Q-004)               |
-| `C-Home.dc.html`                            | Acasă                                                                   |
-| `C-Mod.dc.html`                             | Alegerea modului                                                        |
-| `C-Personaje.dc.html`                       | Personaje                                                               |
-| `C-Lobby.dc.html`                           | Cameră privată                                                          |
-| `C-Matchmaking.dc.html`                     | Căutare de jucători (pentru matchmaking-ul public, care nu există încă) |
-| `C-RoundStart.dc.html`                      | Start de rundă, cu evenimentul de arenă                                 |
-| `C-Game.dc.html`                            | În joc, 2D; proprietăți: `theme` (classic/neon), `mode` (ffa/ctf)       |
-| `C-Game-Neon.dc.html`, `C-Game-CTF.dc.html` | Același ecran cu tema Neon, respectiv HUD-ul de steag                   |
-| `C-Game-3D.dc.html`                         | Controalele din vederea 3D: joystick, buton BOMB, minimapă              |
-| `C-Pauza.dc.html`                           | Pauză                                                                   |
-| `C-Reconnect.dc.html`                       | Conexiune pierdută / reconectare eșuată                                 |
-| `C-Final.dc.html`                           | Final de meci                                                           |
-| `C-Setari.dc.html`                          | Setări                                                                  |
-| `C-Clasament.dc.html`                       | Clasament                                                               |
-| `C-Transitions.dc.html`                     | Prototipul de tranziții                                                 |
+| Fișier                                      | Ecran                                                             |
+| ------------------------------------------- | ----------------------------------------------------------------- |
+| `C-Login.dc.html`                           | Login (invitat, Apple, Google, cod de cameră)                     |
+| `C-Login-FuseArena.dc.html`                 | Varianta de login dacă numele devine „Fuse Arena” (Q-010)         |
+| `C-Home.dc.html`                            | Acasă                                                             |
+| `C-Mod.dc.html`                             | Alegerea modului                                                  |
+| `C-Personaje.dc.html`                       | Personaje                                                         |
+| `C-Lobby.dc.html`                           | Cameră privată                                                    |
+| `C-Matchmaking.dc.html`                     | Căutare de jucători (pentru jocul rapid, D-046)                   |
+| `C-RoundStart.dc.html`                      | Start de rundă, cu evenimentul de arenă                           |
+| `C-Game.dc.html`                            | În joc, 2D; proprietăți: `theme` (classic/neon), `mode` (ffa/ctf) |
+| `C-Game-Neon.dc.html`, `C-Game-CTF.dc.html` | Același ecran cu tema Neon, respectiv HUD-ul de steag             |
+| `C-Game-3D.dc.html`                         | Controalele din vederea 3D: joystick, buton BOMB, minimapă        |
+| `C-Pauza.dc.html`                           | Pauză                                                             |
+| `C-Reconnect.dc.html`                       | Conexiune pierdută / reconectare eșuată                           |
+| `C-Final.dc.html`                           | Final de meci                                                     |
+| `C-Setari.dc.html`                          | Setări                                                            |
+| `C-Clasament.dc.html`                       | Clasament                                                         |
+| `C-Transitions.dc.html`                     | Prototipul de tranziții                                           |
 
 ## HUD-ul din joc
 

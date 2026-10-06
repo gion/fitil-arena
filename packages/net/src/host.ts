@@ -1,12 +1,14 @@
 import { botInput, hashState, step } from '@fitil/sim';
 import type { GameState, Input } from '@fitil/sim';
-import { MODE_IDS, THEMES } from '@fitil/content';
+import { CHAR_IDS, MODE_IDS, THEMES, cleanOutfit } from '@fitil/content';
+import type { ModeId } from '@fitil/content';
 import { buildOnline, cleanName, maxHumans } from './build.ts';
 import { DEFAULT_CFG, END_TICKS, HASH_EVERY, NO_INPUT, decodeInput, encodeInput } from './protocol.ts';
 import type {
   EndMsg,
   FrameMsg,
   LobbyMsg,
+  MeMsg,
   RoomCfg,
   RoomPhase,
   Seat,
@@ -43,8 +45,16 @@ export class ArenaHost {
   private acks: number[] = [];
   private ctl: [number, null | RoomCfg['bots']][] = [];
   private endT = 0;
+  /** Joc rapid: secunde până la pornirea automată (le ține camera, după ceas). */
+  startIn: number | null = null;
 
-  constructor(readonly code: string) {}
+  /** `quick` = cameră publică de joc rapid pe un mod fix (fără gazdă care configurează). */
+  constructor(
+    readonly code: string,
+    readonly quick: { mode: ModeId; theme: string } | null = null,
+  ) {
+    if (quick) this.cfg = { ...this.cfg, mode: quick.mode, theme: quick.theme };
+  }
 
   get host(): string {
     return this.seats[0]?.sid ?? '';
@@ -58,15 +68,40 @@ export class ArenaHost {
       cfg: this.cfg,
       seats: this.seats.map((s) => ({ ...s })),
       max: maxHumans(this.cfg.mode),
+      quick: this.quick !== null,
+      startIn: this.startIn,
     };
   }
 
+  /** Locuri libere în lobby (joc rapid: camera se umple până la maximul modului). */
+  get full(): boolean {
+    return this.seats.length >= maxHumans(this.cfg.mode);
+  }
+
   /** Un om intră în lobby. Întoarce motivul refuzului, dacă e cazul. */
-  join(sid: string, name: unknown): string | null {
+  join(sid: string, me: MeMsg | string = {}): string | null {
     if (this.phase !== 'lobby') return 'The match already started.';
-    if (this.seats.length >= 4) return 'The room is full.';
-    this.seats.push({ sid, name: cleanName(name, `Player ${this.seats.length + 1}`), connected: true });
+    if (this.seats.length >= (this.quick ? maxHumans(this.cfg.mode) : 4)) return 'The room is full.';
+    const m = typeof me === 'string' ? { name: me } : (me ?? {});
+    this.seats.push({
+      sid,
+      name: cleanName(m.name, `Player ${this.seats.length + 1}`),
+      connected: true,
+      ch: 'bubu',
+      outfit: cleanOutfit(null),
+    });
+    this.setMe(sid, { ch: m.ch, outfit: m.outfit });
     return null;
+  }
+
+  /** Un om își schimbă personajul, ținuta sau numele în lobby. */
+  setMe(sid: string, m: MeMsg): boolean {
+    const seat = this.seats.find((s) => s.sid === sid);
+    if (!seat || this.phase !== 'lobby' || !m || typeof m !== 'object') return false;
+    if (typeof m.ch === 'string' && CHAR_IDS.includes(m.ch)) seat.ch = m.ch;
+    if (m.outfit) seat.outfit = cleanOutfit(m.outfit);
+    if (m.name !== undefined) seat.name = cleanName(m.name, seat.name);
+    return true;
   }
 
   /** Conexiunea a căzut: jucătorul stă pe loc până revine (sau până expiră reconectarea). */
@@ -97,26 +132,34 @@ export class ArenaHost {
   }
 
   setCfg(sid: string, c: Partial<RoomCfg>): boolean {
-    if (sid !== this.host || this.phase !== 'lobby') return false;
+    if (sid !== this.host || this.phase !== 'lobby' || this.quick) return false;
     const next = { ...this.cfg };
     if (c.mode && (MODE_IDS as readonly string[]).includes(c.mode)) next.mode = c.mode;
     if (c.theme && THEMES.some((t) => t.id === c.theme)) next.theme = c.theme;
     if (c.bots && (LEVELS as readonly string[]).includes(c.bots)) next.bots = c.bots;
+    if (typeof c.classic === 'boolean') next.classic = c.classic;
+    if (typeof c.extras === 'boolean') next.extras = c.extras;
     this.cfg = next;
     return true;
   }
 
   /** Gazda pornește meciul. `seed` vine de la server; `aspect` e proporția ecranului gazdei. */
   start(sid: string, seed: number, aspect: number): boolean {
-    if (sid !== this.host || this.phase !== 'lobby') return false;
+    if (sid !== this.host || this.phase !== 'lobby' || this.quick) return false;
+    return this.launch(seed, aspect);
+  }
+
+  /** Joc rapid: camera pornește singură (plină sau după numărătoare). */
+  startAuto(seed: number, aspect: number): boolean {
+    if (!this.quick || this.phase !== 'lobby' || !this.seats.length) return false;
+    return this.launch(seed, aspect);
+  }
+
+  private launch(seed: number, aspect: number): boolean {
     const a = Number.isFinite(aspect) ? Math.min(3, Math.max(0.3, aspect)) : 1.6;
     const players = this.seats.slice(0, maxHumans(this.cfg.mode));
-    const b = buildOnline(
-      this.cfg,
-      seed >>> 0,
-      a,
-      players.map((p) => p.name),
-    );
+    this.startIn = null;
+    const b = buildOnline(this.cfg, seed >>> 0, a, players);
     this.s = b.state;
     this.slots = b.slots;
     this.pid.clear();
@@ -155,6 +198,8 @@ export class ArenaHost {
       const next = queue[0]!;
       if (old.inp.bomb && !next.inp.bomb) next.inp.bomb = old.inp.bomb;
       if (old.inp.detonate) next.inp.detonate = true;
+      if (old.inp.super) next.inp.super = true;
+      if (old.inp.swap) next.inp.swap = true;
     }
   }
 

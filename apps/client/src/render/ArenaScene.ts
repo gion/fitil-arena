@@ -7,18 +7,22 @@ import {
   SOFT,
   TICK_HZ,
   U,
+  canSee,
   idx,
   inBounds,
   isGold,
   shiftCells,
   targetAt,
+  tileX,
+  tileY,
 } from '@fitil/sim';
 import type { GameState, ItemType, Player } from '@fitil/sim';
-import { TEAMS } from '@fitil/content';
+import { TEAMS, arenaEventById, charById, shopItem } from '@fitil/content';
 import type { Theme } from '@fitil/content';
 import { DPR } from '../display.ts';
 import type { Match, MatchEvent } from '../game/match.ts';
 import { FRIEND_COL } from './colors.ts';
+import { SPECIAL_COLOR } from './paint.ts';
 import { DizzyFX } from './dizzy.ts';
 import * as paint from './paint.ts';
 import { TexBank } from './textures.ts';
@@ -71,9 +75,24 @@ interface Particle {
   c: number;
   s: number;
   g: number;
+  /** Textură proprie (urme din magazin); altfel un punct colorat. */
+  tex?: { key: string; ox: number; oy: number };
 }
 
 const hexNum = (c: string): number => parseInt(c.slice(1), 16);
+
+/** Culoarea „Curcubeu” (magazin): 12 nuanțe care se rotesc, ca texturile să rămână puține. */
+function rainbow(): string {
+  const h = Math.floor(performance.now() / 120) % 12;
+  const f = (n: number) => {
+    const k = (n + h) % 12;
+    const v = 0.6 - 0.51 * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(v * 255)
+      .toString(16)
+      .padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
 
 const FACE: [number, number][] = [
   [0, -1],
@@ -302,6 +321,36 @@ export class ArenaScene extends Phaser.Scene {
         this.hurtT = 0.5;
         this.shake = Math.min(1.6, this.shake + 0.6);
         break;
+      case 'lifeLost': {
+        const p = this.match?.s.players[e.player];
+        if (p) this.sparkle(Math.round(p.px / U), Math.round(p.py / U), 0xffffff);
+        break;
+      }
+      case 'immune': {
+        const p = this.match?.s.players[e.player];
+        if (p) this.sparkle(Math.round(p.px / U), Math.round(p.py / U), 0x9fe3ff);
+        break;
+      }
+      case 'ghostIn':
+        this.sparkle(e.x, e.y, 0x7dffd8);
+        break;
+      case 'pigeon': {
+        // bomba devine porumbel: pene + porumbelul care zboară
+        this.sparkle(e.x, e.y, 0xffffff);
+        const tex = this.t('pigeon', 0.8, 0.6, 0.4, 0.3, () => paint.pigeon());
+        this.particles.push({
+          x: e.x + 0.5,
+          y: e.y + 0.5,
+          vx: 2.5,
+          vy: -3.5,
+          life: 1.4,
+          c: 0xffffff,
+          s: 0.25,
+          g: 0,
+          tex,
+        });
+        break;
+      }
       case 'death':
         if (e.cause === 'crush') {
           this.crushed.add(e.player);
@@ -392,6 +441,7 @@ export class ArenaScene extends Phaser.Scene {
 
   private color(p: Player): string {
     const c = this.match!.slots[p.id]?.color ?? '#ffffff';
+    if (c === 'rainbow') return rainbow();
     return this.theme.tint[c] ?? c;
   }
 
@@ -552,19 +602,31 @@ export class ArenaScene extends Phaser.Scene {
     return this.t(`hard${v}`, 1, 1, 0, 0, () => paint.hard(st, 5 + v * 3, 5 + v * 5, 0, 0));
   }
 
-  private bombTex(hot: boolean, team: number | null) {
+  /** `own` = culoarea de bombă cumpărată de proprietar (în afara modurilor pe echipe). */
+  private bombTex(hot: boolean, team: number | null, own: string | null = null) {
     const st = this.theme.style;
-    const tcol = team === null ? null : TEAMS[team]!.bomb;
-    return this.t(`bomb${hot ? 1 : 0}${team ?? ''}`, 1.4, 1.6, 0.7, 0.95, () =>
+    const tcol = team === null ? own : TEAMS[team]!.bomb;
+    return this.t(`bomb${hot ? 1 : 0}${team ?? ''}${tcol ?? ''}`, 1.4, 1.6, 0.7, 0.95, () =>
       paint.bomb(st, 0, 0, hot, tcol),
     );
+  }
+
+  /** Culoarea bombei din magazin a unui jucător (sau null). */
+  private bombCol(id: number): string | null {
+    return shopItem(this.match?.slots[id]?.outfit?.bomb)?.col ?? null;
+  }
+
+  private look(p: Player): paint.Look {
+    const sl = this.match?.slots[p.id];
+    return { ch: sl?.ch ?? null, hat: sl?.outfit?.hat ?? null, acc: sl?.outfit?.acc ?? null };
   }
 
   private charTex(p: Player, face: [number, number], expr: paint.Expr) {
     const st = this.theme.style;
     const col = this.color(p);
-    return this.t(`ch${col}${face.join()}${expr}`, 1.8, 2.2, 0.9, 1.45, () =>
-      paint.character(st, col, face, expr),
+    const lk = this.look(p);
+    return this.t(`ch${col}${face.join()}${expr}${lk.ch}${lk.hat}${lk.acc}`, 1.8, 2.2, 0.9, 1.45, () =>
+      paint.character(st, col, face, expr, lk),
     );
   }
 
@@ -715,6 +777,14 @@ export class ArenaScene extends Phaser.Scene {
       this.drawBomb(m, b, time, P.bombs!);
     }
 
+    // uleiul Bucătarului
+    if (!s.inf) {
+      const ot = this.t('oil', 1, 1, 0, 0, () => paint.oil());
+      for (let k = 0; k < s.oil.length; k++)
+        if (s.oil[k]! > 0 && s.flame[k]! <= 0)
+          P.fx!.get(ot, (k % s.W) * T, Math.floor(k / s.W) * T).setAlpha(Math.min(1, s.oil[k]! / 10));
+    }
+
     // flăcări
     const fl = this.t('flame', 1, 1, 0, 0, () => paint.flame(th.flame, th.round, st === 'neon'));
     for (let k = 0; k < s.flame.length; k++) {
@@ -722,7 +792,41 @@ export class ArenaScene extends Phaser.Scene {
       if (f <= 0) continue;
       const fx = inf ? s.inf!.ownX[k]! : k % s.W;
       const fy = inf ? s.inf!.ownY[k]! : Math.floor(k / s.W);
-      P.flames!.get(fl, fx * T, fy * T).setAlpha(Math.min(1, f / (0.2 * TICK_HZ)));
+      const kind = s.flameKind[k]!;
+      const im = P.flames!.get(fl, fx * T, fy * T).setAlpha(Math.min(1, f / (0.2 * TICK_HZ)));
+      if (kind === 1) im.setTint(0x9fe8ff);
+      else if (kind === 2) im.setTint(0xfff6b0);
+      else if (kind === 3) im.setTint(0x9dff6a);
+      else im.clearTint();
+    }
+
+    // nor toxic (otravă)
+    const tox = this.t('toxic', 1, 1, 0, 0, () => paint.toxic());
+    for (let y = V.y0; y <= V.y1; y++)
+      for (let x = V.x0; x <= V.x1; x++) {
+        if (inf && !inBounds(s, x, y)) continue;
+        const v = s.toxic[idx(s, x, y)]!;
+        if (v > 0)
+          P.fx!.get(tox, x * T, y * T).setAlpha(Math.min(0.9, v / 20) * (0.8 + 0.2 * Math.sin(time * 3 + x)));
+      }
+
+    // capcanele lui Robo-Mici (doar proprietarul și coechipierii le văd clar)
+    for (const t of s.traps) {
+      const own = t.owner === m.meId || (m.team && s.players[t.owner]?.team === m.me.team);
+      P.fx!.get(
+        this.t('trap', 0.5, 0.3, 0.25, 0.15, () => paint.trap()),
+        (t.x + 0.5) * T,
+        (t.y + 0.6) * T,
+      ).setAlpha(own ? 0.9 : 0.35 + 0.15 * Math.sin(time * 5));
+    }
+
+    // coroana căzută
+    if (s.crown && s.crown.holder === null) {
+      P.fx!.get(
+        this.t('crown', 0.6, 0.4, 0.3, 0.35, () => paint.crown()),
+        (s.crown.x + 0.5) * T,
+        (s.crown.y + 0.45) * T - Math.abs(Math.sin(time * 3)) * T * 0.08,
+      ).setScale(1.2);
     }
 
     // capturează steagul: baze și steaguri
@@ -746,6 +850,23 @@ export class ArenaScene extends Phaser.Scene {
     // jucători, sortați după y
     const order = s.players.slice().sort((a, b) => a.py - b.py);
     for (const p of order) this.drawPlayer(m, p, time, dt);
+
+    // tufișuri: peste jucători (cine e în tufiș se vede doar pe jumătate, și doar de cine are voie)
+    for (let y = V.y0; y <= V.y1; y++)
+      for (let x = V.x0; x <= V.x1; x++) {
+        if (inf && !inBounds(s, x, y)) continue;
+        if (!s.bush[idx(s, x, y)]) continue;
+        const v = Math.floor(paint.hash(x, y, 41) * 3);
+        const im = P.actors!.get(
+          this.t(`bush${v}`, 1, 1, 0.5, 0.5, () => paint.bush('#b6e35a', '#5c9e2e', v)),
+          (x + 0.5) * T,
+          (y + 0.55) * T,
+        );
+        const inside = s.players.some(
+          (p) => p.alive && tileX(p) === x && tileY(p) === y && canSee(s, this.viewer(m), p),
+        );
+        im.setDepth(DEPTH.actors + y * 0.01 + 0.009).setAlpha(inside ? 0.55 : 1);
+      }
 
     // nori
     for (const c of s.clouds) {
@@ -809,6 +930,10 @@ export class ArenaScene extends Phaser.Scene {
       q.y += q.vy * dt;
       q.life -= dt;
       if (q.life <= 0) continue;
+      if (q.tex) {
+        P.parts!.get(q.tex, q.x * T, q.y * T).setAlpha(Math.min(1, q.life * 2));
+        continue;
+      }
       const im = P.parts!.get(dot, q.x * T, q.y * T);
       im.setTint(q.c)
         .setAlpha(Math.min(1, q.life * 2))
@@ -874,6 +999,25 @@ export class ArenaScene extends Phaser.Scene {
       g.fillRect(V.x0 * T, V.y0 * T, VW, VH);
     }
 
+    // flashbang (orbit) și ceața evenimentului: se vede doar în jurul tău
+    const me = m.me;
+    const fog = arenaEventById(s.rules.event)?.fog === true;
+    if (me.alive && (me.blindT > 0 || fog)) {
+      const blind = me.blindT > 0;
+      const [mx, my] = m.lerp(`p${me.id}`, me.px, me.py);
+      const r = (blind ? 1.6 : 3.2) * T;
+      const cx0 = (mx + 0.5) * T;
+      const cy0 = (my + 0.5) * T;
+      const a = blind ? Math.min(0.94, (me.blindT / TICK_HZ) * 0.6) : 0.62;
+      g.fillStyle(0x05060c, a);
+      const X0 = V.x0 * T;
+      const Y0 = V.y0 * T;
+      g.fillRect(X0, Y0, VW, Math.max(0, cy0 - r - Y0));
+      g.fillRect(X0, cy0 + r, VW, Math.max(0, Y0 + VH - cy0 - r));
+      g.fillRect(X0, cy0 - r, Math.max(0, cx0 - r - X0), 2 * r);
+      g.fillRect(cx0 + r, cy0 - r, Math.max(0, X0 + VW - cx0 - r), 2 * r);
+    }
+
     for (const p of Object.values(P)) p.end();
     for (const tx of this.texts) if (!tx.getData('used')) tx.setVisible(false);
     for (const tx of this.texts) tx.setData('used', false);
@@ -902,6 +1046,7 @@ export class ArenaScene extends Phaser.Scene {
     const hot = hotPhase && Math.sin(time * rate) > 0;
     const owner = s.players[b.owner];
     const team = m.team && owner ? owner.team : null;
+    const big = b.big ? 1.3 : 1;
     const sha = pool.get(
       this.t('shadow', 1, 0.4, 0.5, 0.2, () => paint.disc('rgba(0,0,0,1)', 0.42)),
       cx,
@@ -917,7 +1062,26 @@ export class ArenaScene extends Phaser.Scene {
       r.setAlpha(0.8);
     }
     const by = cy + T * 0.03 - lift;
-    pool.get(this.bombTex(hot, team), cx, by).setScale(pul);
+    const bimg = pool.get(this.bombTex(hot, team, this.bombCol(b.owner)), cx, by).setScale(pul * big);
+    const frozen = s.timeStop !== null && s.timeStop.owner !== b.owner;
+    if (b.kind !== 'normal') bimg.setTint(hexNum(SPECIAL_COLOR[b.kind]));
+    else if (frozen) bimg.setTint(0x8a90a8);
+    else bimg.clearTint();
+    // bombă pusă în tufiș de un adversar: doar o sclipire slabă
+    const hid = s.bush[idx(s, b.x, b.y)] && b.owner !== m.meId && !(m.team && owner?.team === m.me.team);
+    bimg.setAlpha(hid ? 0.18 : 1);
+    if (b.kind !== 'normal' && !hid) {
+      pool.get(
+        this.t(`sp-${b.kind}`, 0.5, 0.5, 0.25, 0.25, () =>
+          paint.specialIcon(b.kind as 'ice', 0, 0, this.T * 0.12),
+        ),
+        cx,
+        by + T * 0.04,
+      );
+    }
+    // Maestrul Fitil vede cronometrul tuturor bombelor
+    if (m.me.kit?.timers && m.me.alive && !hid && !b.remote && b.fly === null)
+      this.label((b.fuse / TICK_HZ).toFixed(1), cx, by - T * 0.62);
     const so = paint.sparkOffset(this.theme.style);
     if (so) {
       const sp = pool.get(
@@ -1099,6 +1263,8 @@ export class ArenaScene extends Phaser.Scene {
     const deadT = p.alive ? 0 : (s.tick - p.deathTick) / TICK_HZ + m.alpha / TICK_HZ;
     const crushed = !p.alive && this.crushed.has(p.id);
     if (!p.alive && deadT > (crushed ? 1.6 : 1.4)) return;
+    // ascuns în tufiș (sau tu ești orbit): nu se desenează deloc
+    if (p.alive && !canSee(s, this.viewer(m), p)) return;
     const [x, y] = m.lerp(`p${p.id}`, p.px, p.py);
     const depth = DEPTH.actors + y * 0.01;
     const hero = m.hero && m.hero.player === p.id && p.alive ? m.hero : null;
@@ -1234,13 +1400,54 @@ export class ArenaScene extends Phaser.Scene {
       } else face = [0, 1];
     }
     if (!p.alive) expr = 'dead';
+    const size = this.match?.slots[p.id]?.ch ? charById(this.match.slots[p.id]!.ch).size : 1;
+    // clipește în timpul invulnerabilității după o viață pierdută; Fantoma e pe jumătate văzută în ladă
+    const inCrate = p.alive && s.grid[tileY(p) * s.W + tileX(p)] === SOFT && !s.inf;
+    const blink = p.alive && p.lives >= 1 && p.graceT > 0 && p.kit && p.kit.lives > p.lives;
     const body = P.actors!.get(this.charTex(p, face, expr), cx, cy + bob * sy);
     body
-      .setScale(sx, sy)
+      .setScale(sx * size, sy * size)
       .setRotation(rot)
-      .setAlpha(alpha)
-      .setDepth(depth + 0.001);
+      .setAlpha(alpha * (inCrate ? 0.45 : 1) * (blink && Math.sin(time * 30) > 0 ? 0.3 : 1))
+      .setDepth(depth + (inCrate ? 0.2 : 0.001));
+    this.trail(p, x, y, dt);
     if (!p.alive) return;
+    // înghețat: bloc de gheață
+    if (p.frozenT > 0)
+      P.actors!.get(
+        this.t('ice', 1, 1.2, 0.5, 0.7, () => paint.iceBlock()),
+        cx,
+        cy,
+      )
+        .setAlpha(0.75 + 0.2 * Math.sin(time * 4))
+        .setDepth(depth + 0.0045);
+    // coroana (modul Coroana)
+    if (s.crown?.holder === p.id)
+      P.actors!.get(
+        this.t('crown', 0.6, 0.4, 0.3, 0.35, () => paint.crown()),
+        cx,
+        cy - T * 0.66 + bob,
+      )
+        .setRotation(Math.sin(time * 4) * 0.08)
+        .setDepth(depth + 0.003);
+    // cartoful fierbinte: o bombă mare deasupra capului, cu secundele rămase
+    if (s.potato?.holder === p.id) {
+      const left = s.potato.fuse / TICK_HZ;
+      const fast = left < 3;
+      P.actors!.get(this.bombTex(fast && Math.sin(time * 24) > 0, null), cx, cy - T * 0.95 + bob)
+        .setScale(1.05 + (fast ? 0.08 * Math.sin(time * 24) : 0))
+        .setDepth(depth + 0.003);
+      this.label(String(Math.ceil(left)), cx, cy - T * 0.9 + bob);
+    }
+    // Blestem: ochiul mov
+    if (p.hexT > 0)
+      P.actors!.get(
+        this.t('hexb', 0.4, 0.4, 0.2, 0.2, () => paint.badge('◉')),
+        cx - T * 0.3,
+        cy - T * 0.72 + bob,
+      )
+        .setTint(0xc27bff)
+        .setDepth(depth + 0.005);
     // bomba ținută deasupra capului
     if (p.carry !== null) {
       const b = s.bombs.find((o) => o.id === p.carry);
@@ -1318,6 +1525,40 @@ export class ArenaScene extends Phaser.Scene {
     }
   }
 
+  /** Cine se uită la arenă (jucătorul local, sau spectator dacă a murit / nu joacă). */
+  private viewer(m: Match): Player | null {
+    const me = m.s.players[m.meId];
+    return me && me.alive ? me : null;
+  }
+
   /** Jucători striviți de rândul mobil (animație turtită). */
   private crushed = new Set<number>();
+
+  private trailT = new Map<number, number>();
+
+  /** Urma cumpărată din magazin: câte o formă la ~0.07s cât timp jucătorul merge. */
+  private trail(p: Player, x: number, y: number, dt: number): void {
+    const it = shopItem(this.match?.slots[p.id]?.outfit?.trail);
+    if (!it || !p.moving || !p.alive || !it.col) return;
+    const t = (this.trailT.get(p.id) ?? 0) - dt;
+    if (t > 0) {
+      this.trailT.set(p.id, t);
+      return;
+    }
+    this.trailT.set(p.id, 0.07);
+    const shape = it.shape ?? 'dot';
+    const col = it.col;
+    const tex = this.t(`trail${shape}${col}`, 0.3, 0.3, 0.15, 0.15, () => paint.trail(shape, col));
+    this.particles.push({
+      x: x + 0.5 + (Math.random() - 0.5) * 0.3,
+      y: y + 0.8,
+      vx: 0,
+      vy: -0.6,
+      life: 0.6,
+      c: 0xffffff,
+      s: 0.1,
+      g: 0,
+      tex,
+    });
+  }
 }

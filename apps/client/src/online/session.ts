@@ -1,7 +1,8 @@
 import { Client } from '@colyseus/sdk';
 import type { Room } from '@colyseus/sdk';
 import { NetClient, lagFromQuery, lagLink } from '@fitil/net';
-import type { LagOpts, Link, RoomCfg } from '@fitil/net';
+import type { LagOpts, Link, MeMsg, RoomCfg } from '@fitil/net';
+import type { ModeId } from '@fitil/content';
 
 /** Adresa serverului de joc: `VITE_SERVER_URL` sau același host ca pagina, portul 2567. */
 export function serverUrl(): string {
@@ -68,12 +69,26 @@ export class OnlineSession {
     return this.net.lobby?.host === this.room.sessionId;
   }
 
-  static async create(name: string): Promise<OnlineSession> {
-    return new OnlineSession(await new Client(serverUrl()).create('arena', { name }));
+  static async create(me: MeMsg): Promise<OnlineSession> {
+    return new OnlineSession(await new Client(serverUrl()).create('arena', me));
   }
 
-  static async join(code: string, name: string): Promise<OnlineSession> {
-    return new OnlineSession(await new Client(serverUrl()).joinById(code.toUpperCase(), { name }));
+  static async join(code: string, me: MeMsg): Promise<OnlineSession> {
+    return new OnlineSession(await new Client(serverUrl()).joinById(code.toUpperCase(), me));
+  }
+
+  /** Joc rapid: intră într-o cameră publică a modului (sau creează una) care pornește singură. */
+  static async quick(mode: ModeId, me: MeMsg, aspect: number): Promise<OnlineSession> {
+    return new OnlineSession(await new Client(serverUrl()).joinOrCreate('quick', { ...me, mode, aspect }));
+  }
+
+  get isQuick(): boolean {
+    return this.net.lobby?.quick === true;
+  }
+
+  /** Personajul sau ținuta s-au schimbat în lobby. */
+  setMe(me: MeMsg): void {
+    this.room.send('me', me);
   }
 
   /** După o reîncărcare: revine în camera de dinainte, dacă au trecut mai puțin de 15s. */

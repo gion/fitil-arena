@@ -99,7 +99,7 @@ export function strike(s: GameState, x: number, y: number): void {
       s.grid[k] = EMPTY;
       s.gold[k] = 0;
       s.cursed[k] = 0;
-      s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold: false, cursed: false });
+      s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold: false, cursed: false, owner: -1 });
     }
     const b = bombAt(s, nx, ny);
     if (b) b.fuse = Math.min(b.fuse, 1);
