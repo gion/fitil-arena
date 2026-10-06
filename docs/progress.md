@@ -288,6 +288,23 @@
 - Emote-urile nu se sincronizează online; fatalitățile nu apar în vederile 3D.
 - Skin-urile de bombă rămân culori (fără forme noi); voice packs-urile existente (Cat/Pirate/Opera) acoperă cerința.
 
-## Faza 6 — Conturi, progres, persistență (în lucru, 2026-10-06)
+## Faza 6 — Conturi, progres, persistență (2026-10-06)
 
 **Mini-plan:** (1) `content/trophies.ts` (trofee per loc / victorie, trepte pentru matchmaking) cu teste; (2) `net`: statistici de meci în `ArenaHost` (locuri, ucideri, lăzi) și `MatchResult` la final; (3) `server`: Drizzle + Postgres (docker-compose local, D-063), schema, migrații, conturi anonime cu token; (4) API: `/auth/anon`, `/me`, import de profil la prima conectare, cumpărături / echipare cu funcțiile din `content`, rezultate de meci scrise doar de server, trofee, provocarea zilei + clasament; (5) camerele Colyseus: autentificare la intrare, recompense + trofee la final, joc rapid pe trepte de trofee; (6) client: cont anonim, token la intrare online, profilul de la server după meci; (7) teste de integrare (Vitest + Postgres), CI cu serviciu Postgres.
+
+**Făcut:**
+
+- **content**: `trophies.ts` (trofee per loc / victorie, trepte de 300), D-065; teste.
+- **net**: `ArenaHost` ține ucideri / lăzi și produce `MatchResult` (locuri, câștigători, cine a plecat); `daily.ts` (provocarea zilei din dată + `replayDaily` determinist); tipul `MatchOutcome`.
+- **server**: Drizzle + Postgres (`apps/server/src/db`, migrații în `apps/server/drizzle/`, aplicate la pornire), `docker-compose.yml` (`pnpm db:up`), conturi anonime cu token (hash SHA-256), API: `/auth/anon`, `/me`, `/me/name`, `/me/import` (o dată, plafon 20 000), `/shop/buy|equip`, `/chars/buy|select`, `/daily`, `/daily/score` (verificat prin reluare), `/daily/leaderboard`; CORS fără cookie-uri. Camerele: `onAuth` cu token, personaj / ținută restrânse la ce deține contul, treaptă de trofee verificată, la final `recordMatch` (monede, XP, trofee, istoric într-o tranzacție) + mesajul `outcome` către fiecare om cu cont. Jocul rapid se filtrează pe `mode` + `bracket`.
+- **client**: cont anonim în fundal (`online/account.ts`, doar dacă `/health` spune `accounts: true`), token + treaptă la intrarea în camere (cu un retry dacă treapta din cache e veche), banner cu trofeele după meci.
+- **teste**: content 39, net 16, server 13 (api, conturi + meci online între două conturi cu Postgres real), e2e online/personaje/fatalități trec; CI cu serviciu Postgres.
+
+**Rămas / cunoscut:**
+
+- **Profilul local și cel de pe server pot diverge**: recompensele meciurilor offline, cumpărăturile și echiparea rămân locale (clientul nu apelează încă `/shop/*`, `/chars/*`). Serverul scrie doar rezultatele meciurilor online. De decis (Q-012, Q-013) cum se unifică înainte de lansare.
+- Provocarea zilei: API gata, **fără ecran în client** (trebuie înregistrate input-urile pe tick și arena 16:9 fixă).
+- Fără limitare de rată pe API, fără ștergere de cont (`DELETE /me`) — de adăugat înainte de publicare (Q-011).
+- Misiunile nu au progres persistent nici local, deci nu sunt pe server.
+- Testele cu Postgres se sar fără `TEST_DATABASE_URL`; aici au rulat pe Postgres 16 instalat în container (Docker nu rulează în sesiunea cloud), nu prin `docker compose`.
+- Pe deploy, directorul `apps/server/drizzle/` trebuie să existe lângă `dist/` (sau la `../../drizzle`).

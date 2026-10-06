@@ -14,7 +14,7 @@ export function buildApp(db?: Db) {
       .header('access-control-allow-methods', 'GET, POST, PUT, OPTIONS');
     if (req.method === 'OPTIONS') return reply.code(204).send();
   });
-  app.get('/health', async () => ({ ok: true, tickHz: TICK_HZ }));
+  app.get('/health', async () => ({ ok: true, tickHz: TICK_HZ, accounts: !!db }));
   if (db) registerApi(app, db);
   return app;
 }

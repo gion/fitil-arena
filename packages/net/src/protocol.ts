@@ -1,5 +1,5 @@
 import type { BotKind, BotLevel, Dir, Input } from '@fitil/sim';
-import type { ModeId, Outfit } from '@fitil/content';
+import type { ModeId, Outfit, Profile, Rewards } from '@fitil/content';
 
 /** Configurația camerei, aleasă de gazdă în lobby. */
 export interface RoomCfg {
@@ -167,4 +167,21 @@ export interface MatchResult {
   seed: number;
   ticks: number;
   players: SeatResult[];
+}
+
+/** Ce primește un jucător la finalul unui meci online (trimis de server; clientul doar îl afișează). */
+export interface MatchOutcome {
+  place: number;
+  won: boolean;
+  ch: string | null;
+  trophyDelta: number;
+  trophies: number;
+  coins: number;
+  xp: number;
+  firstToday: boolean;
+  daily: number;
+  levelUps: Rewards['levelUps'];
+  playerUps: Rewards['playerUps'];
+  /** Profilul nou (sursa de adevăr). */
+  profile: Profile;
 }

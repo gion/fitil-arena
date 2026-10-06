@@ -84,6 +84,7 @@ import type { Renderer3D } from './render3d/Renderer3D.ts';
 import { currentTheme, save, settings } from './settings.ts';
 import type { Quality, View } from './settings.ts';
 import { $, h, show } from './ui/dom.ts';
+import { account } from './online/account.ts';
 import { OnlineSession } from './online/session.ts';
 import { store, today } from './profile.ts';
 import { DEV_TOOLS, now } from './clock.ts';
@@ -238,6 +239,8 @@ export class App {
     });
     this.showScreen(() => this.mainMenu());
     this.setView(settings.view, false);
+    // cont anonim (în fundal): dacă serverul nu răspunde, jocul rămâne offline
+    if (!OFFLINE_ONLY) void account.bootstrap(store.real);
     if (!OFFLINE_ONLY) void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
   }
 
@@ -885,6 +888,14 @@ export class App {
     };
     o.net.onSnap = () => {
       if (this.online === o && this.match?.net !== o.net) this.startOnline(o);
+    };
+    o.onOutcome = (r) => {
+      if (r.trophyDelta !== 0)
+        this.showBanner(
+          `${r.trophyDelta > 0 ? '+' : ''}${r.trophyDelta} trophies · ${r.trophies} with ${charById(r.ch ?? 'bubu').name}`,
+          3200,
+          r.trophyDelta > 0 ? 'gold' : 'bad',
+        );
     };
     o.onStatus = (st, reason) => {
       if (this.online !== o) return;

@@ -1,8 +1,9 @@
 import { Client } from '@colyseus/sdk';
 import type { Room } from '@colyseus/sdk';
 import { NetClient, lagFromQuery, lagLink } from '@fitil/net';
-import type { LagOpts, Link, MeMsg, RoomCfg } from '@fitil/net';
+import type { LagOpts, Link, MatchOutcome, MeMsg, RoomCfg } from '@fitil/net';
 import type { ModeId } from '@fitil/content';
+import { account } from './account.ts';
 
 /** Adresa serverului de joc: `VITE_SERVER_URL` sau același host ca pagina, portul 2567. */
 export function serverUrl(): string {
@@ -34,6 +35,8 @@ export class OnlineSession {
   readonly lag: LagOpts | null;
   status: SessionStatus = 'online';
   onStatus: (s: SessionStatus, reason?: string) => void = () => {};
+  /** Ce ai primit de la server după meci (trofee, monede, XP); doar cu cont. */
+  onOutcome: (o: MatchOutcome) => void = () => {};
 
   private constructor(readonly room: Room) {
     const link: Link = {
@@ -53,6 +56,10 @@ export class OnlineSession {
       store(null);
       this.set('closed', reason);
     });
+    room.onMessage('outcome', (o: MatchOutcome) => {
+      account.trophies = { ...account.trophies, [o.ch ?? '']: o.trophies };
+      this.onOutcome(o);
+    });
     room.send('hello');
   }
 
@@ -70,16 +77,33 @@ export class OnlineSession {
   }
 
   static async create(me: MeMsg): Promise<OnlineSession> {
-    return new OnlineSession(await new Client(serverUrl()).create('arena', me));
+    return new OnlineSession(await new Client(serverUrl()).create('arena', { ...me, token: account.token }));
   }
 
   static async join(code: string, me: MeMsg): Promise<OnlineSession> {
-    return new OnlineSession(await new Client(serverUrl()).joinById(code.toUpperCase(), me));
+    return new OnlineSession(
+      await new Client(serverUrl()).joinById(code.toUpperCase(), { ...me, token: account.token }),
+    );
   }
 
   /** Joc rapid: intră într-o cameră publică a modului (sau creează una) care pornește singură. */
   static async quick(mode: ModeId, me: MeMsg, aspect: number): Promise<OnlineSession> {
-    return new OnlineSession(await new Client(serverUrl()).joinOrCreate('quick', { ...me, mode, aspect }));
+    const join = () =>
+      new Client(serverUrl()).joinOrCreate('quick', {
+        ...me,
+        mode,
+        aspect,
+        token: account.token,
+        bracket: account.bracket(me.ch ?? 'bubu', mode),
+      });
+    try {
+      return new OnlineSession(await join());
+    } catch (e) {
+      // treapta din cache era veche (alt meci, alt dispozitiv): o reîmprospătăm și mai încercăm o dată
+      if (!account.token || !/bracket/i.test(String((e as Error)?.message))) throw e;
+      await account.refresh();
+      return new OnlineSession(await join());
+    }
   }
 
   get isQuick(): boolean {

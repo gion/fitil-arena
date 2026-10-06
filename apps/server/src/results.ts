@@ -1,27 +1,10 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { loadProfile, reward, trophyDelta } from '@fitil/content';
-import type { Profile, Rewards } from '@fitil/content';
-import type { MatchResult, SeatResult } from '@fitil/net';
+import type { Rewards } from '@fitil/content';
+import type { MatchOutcome, MatchResult, SeatResult } from '@fitil/net';
 import { today } from './accounts.ts';
 import type { Db } from './db/index.ts';
 import { matchPlayers, matches, profiles, trophies } from './db/schema.ts';
-
-/** Ce primește un jucător la finalul unui meci online (trimis de server; clientul doar îl afișează). */
-export interface MatchOutcome {
-  place: number;
-  won: boolean;
-  ch: string | null;
-  trophyDelta: number;
-  trophies: number;
-  coins: number;
-  xp: number;
-  firstToday: boolean;
-  daily: number;
-  levelUps: Rewards['levelUps'];
-  playerUps: Rewards['playerUps'];
-  /** Profilul nou (sursa de adevăr). */
-  profile: Profile;
-}
 
 /**
  * Scrie rezultatul unui meci: o singură tranzacție pentru toți oamenii cu cont. Oamenii care au plecat
@@ -125,3 +108,5 @@ async function applySeat(
     profile,
   };
 }
+
+export type { MatchOutcome };

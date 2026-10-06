@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Sonnet 5.5) — Faza 6: conturi, trofee, persistență
+
+- **Cerut:** următoarea fază după merge-ul Fazei 5; hosting cu Docker local (decis cu omul: Fly.io mai târziu, Q-003 rămâne deschisă).
+- **Făcut:** vezi `docs/progress.md` (Faza 6) și D-063–D-066, Q-011–Q-013. Fără PR încă.
+- **Verificat:** lint, typecheck, `pnpm test` (cu `TEST_DATABASE_URL` pe Postgres 16 local), e2e online / personaje / fatalități.
+- **Notă operațională:** Docker nu rulează în containerul cloud; compose-ul nu a fost rulat aici. Pe mașina ta: `pnpm db:up`, apoi `cp .env.example .env`.
+
 ## 2026-10-06 — Claude Code (Sonnet 5.5) — Faza 5: fatalități și cosmetice
 
 - **Cerut:** începerea Fazei 5 din `PLAN.md`.

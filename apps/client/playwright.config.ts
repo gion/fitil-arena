@@ -19,6 +19,8 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm build && pnpm preview',
+      // API-ul serverului de test e pe 3099 (vezi mai jos)
+      env: { VITE_API_URL: 'http://localhost:3099' },
       url: 'http://localhost:4173',
       reuseExistingServer: true,
     },
