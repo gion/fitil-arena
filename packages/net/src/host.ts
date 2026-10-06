@@ -3,11 +3,13 @@ import type { GameState, Input } from '@fitil/sim';
 import { CHAR_IDS, MODE_IDS, THEMES, cleanOutfit } from '@fitil/content';
 import type { ModeId } from '@fitil/content';
 import { buildOnline, cleanName, maxHumans } from './build.ts';
+import { isTeamMode } from '@fitil/sim';
 import { DEFAULT_CFG, END_TICKS, HASH_EVERY, NO_INPUT, decodeInput, encodeInput } from './protocol.ts';
 import type {
   EndMsg,
   FrameMsg,
   LobbyMsg,
+  MatchResult,
   MeMsg,
   RoomCfg,
   RoomPhase,
@@ -45,6 +47,14 @@ export class ArenaHost {
   private acks: number[] = [];
   private ctl: [number, null | RoomCfg['bots']][] = [];
   private endT = 0;
+  private seed = 0;
+  private kills: number[] = [];
+  private boxes: number[] = [];
+  /** Oamenii de la start (sid + id în simulare) și cei care au plecat între timp. */
+  private starters: { sid: string; pid: number; ch: string | null; name: string }[] = [];
+  private left = new Set<string>();
+  /** Rezultatul ultimului meci încheiat (pentru conturi); `finish()` îl umple. */
+  result: MatchResult | null = null;
   /** Joc rapid: secunde până la pornirea automată (le ține camera, după ceas). */
   startIn: number | null = null;
 
@@ -126,6 +136,7 @@ export class ArenaHost {
     if (i >= 0) this.seats.splice(i, 1);
     const pid = this.pid.get(sid);
     if (pid !== undefined && this.s) {
+      this.left.add(sid);
       this.pid.delete(sid);
       this.ctl.push([pid, this.cfg.bots]);
     }
@@ -159,6 +170,7 @@ export class ArenaHost {
     const a = Number.isFinite(aspect) ? Math.min(3, Math.max(0.3, aspect)) : 1.6;
     const players = this.seats.slice(0, maxHumans(this.cfg.mode));
     this.startIn = null;
+    this.seed = seed >>> 0;
     const b = buildOnline(this.cfg, seed >>> 0, a, players);
     this.s = b.state;
     this.slots = b.slots;
@@ -169,8 +181,14 @@ export class ArenaHost {
     this.acks = b.state.players.map(() => -1);
     this.ctl = [];
     this.endT = 0;
+    this.result = null;
+    this.kills = b.state.players.map(() => 0);
+    this.boxes = b.state.players.map(() => 0);
+    this.left.clear();
+    this.starters = [];
     players.forEach((p, k) => {
       const id = b.humans[k]!;
+      this.starters.push({ sid: p.sid, pid: id, ch: b.slots[id]?.ch ?? null, name: p.name });
       this.pid.set(p.sid, id);
       this.queues.set(id, []);
       this.last[id] = NO_INPUT;
@@ -230,6 +248,14 @@ export class ArenaHost {
       return decodeInput(w);
     });
     step(s, inputs);
+    for (const e of s.events) {
+      if (e.type === 'death' && e.killerId !== null && e.killerId !== e.player) {
+        const k = s.players[e.killerId];
+        const v = s.players[e.player];
+        if (k && v && !(isTeamMode(s.rules) && k.team === v.team)) this.kills[e.killerId]!++;
+      } else if (e.type === 'boxDestroyed' && e.owner >= 0)
+        this.boxes[e.owner] = (this.boxes[e.owner] ?? 0) + 1;
+    }
     const f: FrameMsg = { t: s.tick, i: wire, a: this.acks.slice() };
     if (c.length) f.c = c;
     if (s.tick % HASH_EVERY === 0) f.h = hashState(s);
@@ -242,10 +268,41 @@ export class ArenaHost {
     const s = this.s;
     if (!s || this.phase !== 'play' || this.endT < END_TICKS) return null;
     const end = { t: s.tick, h: hashState(s) };
+    this.result = this.summary(s);
     this.phase = 'lobby';
     this.s = null;
     this.pid.clear();
     return end;
+  }
+
+  /** Locuri: în FFA / duel după momentul eliminării (cel rămas primul); în echipe 1 / 2. */
+  private summary(s: GameState): MatchResult {
+    const team = isTeamMode(s.rules);
+    const out = [...s.players].sort(
+      (a, b) => (b.alive ? Infinity : b.deathTick) - (a.alive ? Infinity : a.deathTick) || a.id - b.id,
+    );
+    return {
+      mode: this.cfg.mode,
+      seed: this.seed,
+      ticks: s.tick,
+      players: this.starters.map((st) => {
+        const p = s.players[st.pid]!;
+        const won = team ? s.result?.team === p.team : s.result?.winner === p.id;
+        const place = team ? (won ? 1 : 2) : won ? 1 : Math.max(2, out.findIndex((o) => o.id === p.id) + 1);
+        return {
+          sid: st.sid,
+          pid: st.pid,
+          ch: st.ch,
+          name: st.name,
+          place,
+          won,
+          team,
+          kills: this.kills[st.pid] ?? 0,
+          boxes: this.boxes[st.pid] ?? 0,
+          left: this.left.has(st.sid),
+        };
+      }),
+    };
   }
 
   snapFor(sid: string): SnapMsg | null {

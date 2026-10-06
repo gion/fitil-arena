@@ -287,3 +287,7 @@
 - Verificarea vizuală în arenă nu e confirmată (capturile din e2e nu arată clar victima); de privit în galeria DEV (`pnpm dev` → DEV → Fatalities).
 - Emote-urile nu se sincronizează online; fatalitățile nu apar în vederile 3D.
 - Skin-urile de bombă rămân culori (fără forme noi); voice packs-urile existente (Cat/Pirate/Opera) acoperă cerința.
+
+## Faza 6 — Conturi, progres, persistență (în lucru, 2026-10-06)
+
+**Mini-plan:** (1) `content/trophies.ts` (trofee per loc / victorie, trepte pentru matchmaking) cu teste; (2) `net`: statistici de meci în `ArenaHost` (locuri, ucideri, lăzi) și `MatchResult` la final; (3) `server`: Drizzle + Postgres (docker-compose local, D-063), schema, migrații, conturi anonime cu token; (4) API: `/auth/anon`, `/me`, import de profil la prima conectare, cumpărături / echipare cu funcțiile din `content`, rezultate de meci scrise doar de server, trofee, provocarea zilei + clasament; (5) camerele Colyseus: autentificare la intrare, recompense + trofee la final, joc rapid pe trepte de trofee; (6) client: cont anonim, token la intrare online, profilul de la server după meci; (7) teste de integrare (Vitest + Postgres), CI cu serviciu Postgres.

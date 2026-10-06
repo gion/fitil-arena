@@ -8,3 +8,4 @@ export * from './progression.ts';
 export * from './heroes.ts';
 export * from './arena.ts';
 export * from './fatalities.ts';
+export * from './trophies.ts';

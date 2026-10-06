@@ -9,7 +9,9 @@
     "start": "node dist/main.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json",
-    "serve": "tsx src/main.ts"
+    "serve": "tsx src/main.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts"
   },
   "dependencies": {
     "@colyseus/core": "^0.18.18",
@@ -18,11 +20,14 @@
     "@fitil/content": "workspace:*",
     "@fitil/net": "workspace:*",
     "@fitil/sim": "workspace:*",
-    "fastify": "^5.0.0"
+    "drizzle-orm": "^0.45.3",
+    "fastify": "^5.0.0",
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "@colyseus/sdk": "^0.18.4",
     "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.11",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0"
   }

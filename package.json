@@ -17,7 +17,10 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "sim:bench": "pnpm --filter @fitil/sim bench",
     "mobile:sync": "pnpm --filter @fitil/client cap:sync",
-    "balance": "pnpm --filter @fitil/content balance"
+    "balance": "pnpm --filter @fitil/content balance",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @fitil/server db:migrate"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
