@@ -1,8 +1,12 @@
 # Build-uri native (Faza 8): Android debug APK pornit pe emulator, iOS pentru simulator.
-# Android rulează pe PR-urile care ating clientul; iOS doar manual (runner-ele macOS consumă minute de ~10× mai mult).
+# Android rulează pe PR-urile care ating clientul și după merge pe main (APK-ul de pe main rămâne ca artefact);
+# iOS doar manual (runner-ele macOS consumă minute de ~10× mai mult).
 name: Mobile
 on:
   pull_request:
+    paths: ['apps/client/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/mobile.yml']
+  push:
+    branches: [main]
     paths: ['apps/client/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/mobile.yml']
   workflow_dispatch:
     inputs:
