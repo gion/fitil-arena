@@ -720,10 +720,11 @@ export class Renderer3D {
     } else if (hatId === 'h_party') m(new THREE.ConeGeometry(0.16, 0.4, 14), '#ff5fa8', 0, 0.9, 0);
   }
 
+  /** Figurile jucătorilor (doar cele noi: în Infinit apar jucători pe parcurs). */
   private buildPlayers(s: GameState): void {
     const st = this.theme.style;
     const neon = st === 'neon';
-    for (const p of s.players) {
+    for (const p of s.players.slice(this.players.length)) {
       const grp = new THREE.Group();
       const col = this.pcolor(p.id);
       const slot = this.match?.slots[p.id];
@@ -1428,6 +1429,7 @@ export class Renderer3D {
     const s = m.s;
     const fps = this.view === 'fps';
     const hero = m.hero;
+    if (s.players.length > this.players.length) this.buildPlayers(s);
     s.players.forEach((p, i) => {
       const g = this.players[i];
       if (!g) return;

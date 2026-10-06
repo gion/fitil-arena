@@ -2567,3 +2567,72 @@ canvas.fatprev.big {
   width: 140px;
   height: 120px;
 }
+
+/* Infinit (Faza 7): clasamentul (online) și minimapa, sus-dreapta sub bară */
+.infside {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--hud) + 8px);
+  right: max(10px, calc(var(--sr) + 6px));
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: none;
+}
+.infside .lb {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 3px 6px;
+  list-style: none;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font: 600 11px/1.4 var(--body);
+  color: var(--ink);
+}
+.infside .lb:empty {
+  display: none;
+}
+.infside .lb li {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+}
+.infside .lb li b {
+  width: 16px;
+  font: 400 12px var(--display);
+}
+.infside .lb li i {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--ink);
+  flex: none;
+}
+.infside .lb li span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.infside .lb li em {
+  font: 400 13px var(--display);
+  font-style: normal;
+}
+.infside .lb li.me {
+  background: var(--paper);
+  margin: 0 -6px;
+  padding: 0 6px;
+}
+.infside .lb li.sep {
+  border-top: 2px dashed var(--ink);
+}
+.infside .minimap {
+  width: 132px;
+  height: 132px;
+  background: var(--caption);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}

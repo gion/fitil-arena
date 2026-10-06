@@ -1,6 +1,13 @@
-import { challengeSetup, createGame, createMission, createTutorial, dummiesSetup } from '@fitil/sim';
+import {
+  challengeSetup,
+  createGame,
+  createInfinite,
+  createMission,
+  createTutorial,
+  dummiesSetup,
+} from '@fitil/sim';
 import type { BotLevel, ChallengeId, GameState, Tutorial, TutorialStep } from '@fitil/sim';
-import { ROSTER, charById, missionById } from '@fitil/content';
+import { CHAR_IDS, ROSTER, charById, charSetup, missionById } from '@fitil/content';
 import type { ModeId, Outfit } from '@fitil/content';
 import { DAILY_ASPECT, buildOnline } from '@fitil/net';
 import type { SlotInfo } from '@fitil/net';
@@ -12,7 +19,9 @@ export type PlayKind =
   | { type: 'dummies'; ch?: string }
   /** `daily`: provocarea zilei (seed de la server, arenă 16:9 fixă, input-urile se înregistrează pentru verificare). */
   | { type: 'challenge'; id: ChallengeId; seed?: number; daily?: boolean }
-  | { type: 'mission'; id: string };
+  | { type: 'mission'; id: string }
+  /** Modul Infinit offline (varianta din prototip): tu și boții care apar în jur. */
+  | { type: 'infinite' };
 
 /** Numele, culoarea, vocea (0–3, pentru țipete), personajul și ținuta unui jucător din meci. */
 export type Slot = SlotInfo;
@@ -62,6 +71,15 @@ export function build(kind: PlayKind, bots: BotLevel, seed: number, aspect: numb
       tutorial: null,
     };
   }
+  if (kind.type === 'infinite') {
+    const ch = me && !me.classic ? me.ch : null;
+    const s = createInfinite(seed, ch ? { bot: null, ...charSetup(ch, me!.theme) } : { bot: null });
+    return {
+      s,
+      slots: infiniteSlots({ ...ffaSlots()[0]!, ch, outfit: ch && me ? me.outfit : null }),
+      tutorial: null,
+    };
+  }
   if (kind.type === 'challenge')
     return {
       s: createGame(challengeSetup(kind.id, kind.seed ?? seed, kind.daily ? DAILY_ASPECT : aspect)),
@@ -77,6 +95,28 @@ export function build(kind: PlayKind, bots: BotLevel, seed: number, aspect: numb
     [{ name: 'You', ch: me?.ch ?? null, outfit: me?.outfit ?? null }],
   );
   return { s: b.state, slots: b.slots, tutorial: null };
+}
+
+const BOT_COLORS = ['#f3f1ea', '#9a6436', '#2fd3c6', '#ff7a3d', '#c77dff', '#ffd23f', '#3d8bff', '#ff5d8f'];
+
+/**
+ * Locurile din Infinit: tu, apoi boții (în lumea infinită id-urile cresc pe măsură ce apar boți noi;
+ * locurile se refolosesc, deci 128 ajung). Boții poartă personaje doar ca înfățișare.
+ */
+function infiniteSlots(you: Slot): Slot[] {
+  const out: Slot[] = [you];
+  for (let i = 1; i < 128; i++) {
+    const ch = CHAR_IDS[i % CHAR_IDS.length]!;
+    out.push({
+      name: charById(ch).name,
+      color: BOT_COLORS[i % BOT_COLORS.length]!,
+      bot: true,
+      voice: i % 4,
+      ch,
+      outfit: null,
+    });
+  }
+  return out;
 }
 
 export const isTeamKind = (k: PlayKind): boolean =>

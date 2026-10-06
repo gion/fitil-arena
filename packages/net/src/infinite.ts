@@ -767,7 +767,8 @@ export class InfView {
     this.theme = w.theme;
     this.shard = w.shard;
     this.frames = [];
-    this.slots = [];
+    // același tablou (meciul din client îl ține minte), golit la fiecare bun venit
+    this.slots.length = 0;
     this.applyRoster({ add: w.roster });
     this.ensure(w.me);
     this.onWelcome(w);

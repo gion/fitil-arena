@@ -316,7 +316,7 @@
 - Pe deploy, `apps/server/drizzle/` trebuie să existe lângă `dist/`.
 - e2e: `missions` (3D, fără GPU) pică intermitent și fără modificările din Faza 6; `smoke` FPS nu rulează în container.
 
-## Faza 7 — Modul Infinit (în lucru, 2026-10-06)
+## Faza 7 — Modul Infinit (2026-10-06)
 
 **Mini-plan:**
 
@@ -326,3 +326,28 @@
 4. **server**: camera `infinite` (max 80 de clienți; Colyseus deschide singur o instanță nouă când una e plină = shard-uri), tick 20 Hz, statistici de tick și de trafic.
 5. **client**: Infinit offline în Play (varianta din prototip) și online (Online → Infinite): HUD cu scor / eliminări / distanță, clasament top 10, minimapă, coroană pe lider.
 6. **test de încărcare**: 80 de boți-client conectați la server; tick-ul și traficul per client în raport.
+
+**Făcut:**
+
+- **sim** (`world.ts`, `infinite.ts`): lumea infinită pe chunk-uri 32×32 încărcate în jurul fiecărui om (±26, păstrate până la ±34), refolosite când rămân departe de toți; slotul 0 = vid (perete). Modul Infinit: `createInfinite`, `infiniteRules(online)`, boți care apar la 9–15 pătrățele și dispar la > 24 (mai puternici departe de centru: rază, bombe, viteză, picior), revenire la 3–9 pătrățele de locul morții pe un loc fără pericol, cu 3s de scut, scor (`infScore`), `joinWorld` / `leaveWorld` cu locuri refolosite, 50% din bonusuri pe jos la moarte (online), lăzile cresc la loc spre forma generată. Statistici noi pe `Player`: `kills`, `boxes`, `far`, `lived`, `got`, `out`.
+- **net** (`infinite.ts`, D-069): `InfHost` (server) + `InfView` (client): chunk-urile din zonă ca diferențe față de lumea generată local din seed, schimbări de celule doar pe chunk-urile „calde” (+4 reci pe tick ca plasă de siguranță), jucători și bombe ca delta per client, evenimente filtrate pe zonă, roster, clasament + minimapă la 1 Hz.
+- **server**: camera `infinite` (`InfiniteRoom`, max 80, reconectare 10s); Colyseus deschide singur o instanță nouă când una e plină (shard). Statistici de tick în `infStats`.
+- **client**: Play → **INFINITE WORLD** (offline, cu boți) și Online → **INFINITE WORLD** (lumea comună); HUD: SCORE / KO / FAR / loc (#k of n), ceas ∞, clasament top 10 cu coroana liderului (și coroana pe capul lui în arenă), minimapă cu scară adaptivă. Figurile 3D se creează și pentru jucătorii apăruți pe parcurs.
+- **Teste**: sim 148 (16 noi: chunk-uri, determinism, boți, revenire, scor, bonusuri scăpate, intrare/ieșire, lăzi), net 22 (6 noi: oglinda clientului = serverul în zonă după 600 de tick-uri de luptă, interest management, trafic, roster, instanță plină), server 2 noi (doi oameni se văd, shard nou la instanță plină), e2e `infinite.spec.ts` (offline + online cu doi jucători; capturi în `docs/screens/infinite/`). `missions.spec.ts` adaptat la stocarea nouă.
+
+**Test de încărcare** (`pnpm --filter @fitil/server load:inf`, server într-un proces separat, `NODE_ENV=production`, container cloud cu 4 vCPU; boții-client decodează tot, ca un client real, și trimit input la 20 Hz):
+
+| Scenariu                                         | Tick/s | Tick mediu | p95     | p99     | max     | Trafic per client (mediu / max) |
+| ------------------------------------------------ | ------ | ---------- | ------- | ------- | ------- | ------------------------------- |
+| 80 boți, se răspândesc (dist. medie 78)          | 20.0   | 5.83 ms    | 7.83 ms | 9.83 ms | 16.4 ms | 2.34 / 4.53 KB/s                |
+| 80 boți, `--crowd` (fără tendința spre exterior) | 20.0   | 5.42 ms    | 7.38 ms | 8.95 ms | 11.0 ms | 2.98 / 5.62 KB/s                |
+
+Ambele: 20.0 cadre/s primite de fiecare client, o singură instanță, RSS ~190 MB. Criteriul (tick stabil 20 Hz, < 15 KB/s) e îndeplinit cu marjă: tick-ul folosește ~12% din bugetul de 50 ms.
+
+**Rămas / cunoscut:**
+
+- Online, jucătorul local nu are predicție în Infinit (se mișcă după ~RTT + un cadru); de adăugat dacă se simte greoi pe rețele reale.
+- Infinitul nu dă încă recompense (monede/XP) și nu are clasament persistent; online nu sunt boți (o instanță cu puțini oameni e goală).
+- Emote-urile și fatalitățile nu se sincronizează în Infinit online (fatalitatea se alege din ținuta ucigașului, care e în roster, deci merge; emote-urile nu).
+- Shard-urile sunt per proces: la mai multe procese trebuie Redis presence (Q-003).
+- Testele server cu Postgres s-au sărit (fără `TEST_DATABASE_URL` aici); codul de conturi nu s-a schimbat.

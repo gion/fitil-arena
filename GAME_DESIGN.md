@@ -172,7 +172,7 @@ Idei pentru următoarele: Livrare (bombă specială dusă cu mănușa la seif), 
 - Portalurile (după lanț de 4) apar în jurul tău; aruncarea cu mănușa nu mai face wrap (nu există margini).
 - În 3D: pereții, podeaua și umbrele urmăresc camera (randare doar în jurul jucătorului, restul ascuns de ceață).
 
-**Varianta online (țintă):**
+**Varianta online (implementată în Faza 7, D-069 – D-071; fără boți și fără recompense încă):**
 - Hartă mare generată procedural pe **chunk-uri** 32×32 (seed de server), extinsă pe măsură ce jucătorii o explorează; chunk-urile goale se reciclează.
 - 30–80 jucători pe instanță, **drop-in/drop-out**, respawn după 3s cu upgrade-urile pierdute.
 - Scor = eliminări + lăzi sparte + timp supraviețuit; la moarte îți scapi 50% din bonusuri pe jos (încurajează vânătoarea).
