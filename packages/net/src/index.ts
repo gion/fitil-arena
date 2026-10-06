@@ -4,3 +4,4 @@ export * from './host.ts';
 export * from './client.ts';
 export * from './lag.ts';
 export * from './daily.ts';
+export * from './infinite.ts';
