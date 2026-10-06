@@ -26,7 +26,7 @@ function doomDanger(s: GameState, p: Player): Uint8Array {
  * sau null dacă mai are scăpare. Funcție pură (nu consumă RNG-ul stării).
  */
 export function doomBomb(s: GameState, p: Player): number | null {
-  if (!p.alive || p.shieldT > 0 || p.graceT > 0 || p.moving) return null;
+  if (!p.alive || p.shieldT > 0 || p.guard > 0 || p.lives > 1 || p.graceT > 0 || p.moving) return null;
   const cx = tileX(p);
   const cy = tileY(p);
   const d = doomDanger(s, p);

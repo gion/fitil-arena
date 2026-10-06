@@ -16,11 +16,13 @@ export type PlayKind =
 /** Numele, culoarea, vocea (0–3, pentru țipete), personajul și ținuta unui jucător din meci. */
 export type Slot = SlotInfo;
 
-/** Jucătorul local: personajul ales, ce poartă și dacă joacă varianta clasică (fără personaje). */
+/** Jucătorul local: personajul ales, ce poartă, tema arenei și dacă joacă varianta clasică (fără personaje). */
 export interface Me {
   ch: string;
   outfit: Outfit;
   classic: boolean;
+  /** Tema arenei: afinitățile personajelor și efectele de arenă depind de ea. */
+  theme: string;
 }
 
 export interface Built {
@@ -61,10 +63,14 @@ export function build(kind: PlayKind, bots: BotLevel, seed: number, aspect: numb
   }
   if (kind.type === 'challenge')
     return { s: createGame(challengeSetup(kind.id, seed, aspect)), slots: ffaSlots(), tutorial: null };
-  // modurile de joc: aceeași construcție ca online (un om, restul boți; personaje dacă nu e clasic)
-  const b = buildOnline({ mode: kind.mode, bots, classic: me?.classic ?? true }, seed, aspect, [
-    { name: 'You', ch: me?.ch ?? null, outfit: me?.outfit ?? null },
-  ]);
+  // modurile de joc: aceeași construcție ca online (un om, restul boți; personaje dacă nu e clasic);
+  // offline există și tufișuri
+  const b = buildOnline(
+    { mode: kind.mode, bots, classic: me?.classic ?? true, theme: me?.theme ?? 'clasic', bushes: true },
+    seed,
+    aspect,
+    [{ name: 'You', ch: me?.ch ?? null, outfit: me?.outfit ?? null }],
+  );
   return { s: b.state, slots: b.slots, tutorial: null };
 }
 

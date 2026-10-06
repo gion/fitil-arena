@@ -115,7 +115,7 @@ describe('personaje: pasive', () => {
   it('Tanti Veta: mănușa de start e nelimitată chiar și cu încărcări în arenă', () => {
     const s = arena([kit({ glove: true })], { charges: true });
     const p = s.players[0]!;
-    applyItem(p, 'glove', true);
+    applyItem(p, 'glove', { charged: true });
     expect(p.charges.glove).toBe(0);
     expect(p.glove).toBe(true);
   });
@@ -228,7 +228,7 @@ describe('încărcări (bonusurile din arenă expiră)', () => {
   it('Piciorul din arenă: 3 șuturi, apoi dispare; cel de semnătură rămâne', () => {
     const s = arena([undefined], { charges: true });
     const p = put(s.players[0]!, 1, 1);
-    applyItem(p, 'kick', true);
+    applyItem(p, 'kick', { charged: true });
     expect([p.kick, p.charges.kick]).toEqual([true, CHARGES.kick]);
     let out = 0;
     for (let i = 0; i < 3; i++) {
@@ -250,10 +250,10 @@ describe('încărcări (bonusurile din arenă expiră)', () => {
   it('încărcările se adună (maxim 9); fără `charges` bonusul e permanent', () => {
     const s = arena([undefined], { charges: true });
     const p = s.players[0]!;
-    for (let i = 0; i < 5; i++) applyItem(p, 'remote', true);
+    for (let i = 0; i < 5; i++) applyItem(p, 'remote', { charged: true });
     expect(p.charges.remote).toBe(9);
     const c = arena([undefined]);
-    applyItem(c.players[0]!, 'remote', c.rules.charges);
+    applyItem(c.players[0]!, 'remote', { charged: c.rules.charges });
     expect(c.players[0]!.charges.remote).toBe(0);
     expect(c.players[0]!.remote).toBe(true);
   });
@@ -261,7 +261,7 @@ describe('încărcări (bonusurile din arenă expiră)', () => {
   it('Detonatorul din arenă: 2 detonări', () => {
     const s = arena([undefined], { charges: true });
     const p = put(s.players[0]!, 1, 1);
-    applyItem(p, 'remote', true);
+    applyItem(p, 'remote', { charged: true });
     p.bombs = 3;
     for (let i = 0; i < 2; i++) {
       placeBomb(s, p, 3 + i * 4, 5);

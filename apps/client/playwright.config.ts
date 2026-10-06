@@ -10,8 +10,11 @@ export default defineConfig({
     ...devices['Pixel 7'],
     // landscape, cum se joacă pe telefon
     viewport: { width: 915, height: 412 },
-    // headless-ul nou al Chromium folosește GPU-ul real (Metal/ANGLE); cel vechi randează software
-    channel: 'chromium',
+    // headless-ul nou al Chromium folosește GPU-ul real (Metal/ANGLE); cel vechi randează software.
+    // PW_CHROMIUM = calea unui Chromium deja instalat (ex. containerele cloud, fără descărcare).
+    ...(process.env.PW_CHROMIUM
+      ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } }
+      : { channel: 'chromium' }),
   },
   webServer: [
     {

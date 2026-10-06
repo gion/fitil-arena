@@ -82,4 +82,45 @@ test('online: gazda creează camera, al doilea jucător intră cu codul, meciul 
   expect((await state(host))!.desyncs).toBe(0);
   expect((await state(guest))!.desyncs).toBe(0);
   expect(errors).toEqual([]);
+  await host.context().close();
+  await guest.context().close();
+});
+
+test('joc rapid: doi jucători aleg personaje, camera publică 1 vs 1 se umple și pornește singură', async ({
+  browser,
+}) => {
+  const pages = await Promise.all([0, 1].map(async () => (await browser.newContext()).newPage()));
+  const errors = pages.map(watchErrors);
+  // personaje gratuite de la început (cele blocate ar reveni la Bubu)
+  const heroes = ['zuzu', 'gugu'];
+  for (const [i, page] of pages.entries()) {
+    await page.goto('/');
+    await page.evaluate((h) => {
+      localStorage.setItem('fitil-settings', JSON.stringify({ mode: 'vs', name: `P${h}` }));
+      localStorage.setItem('fitil-profile', JSON.stringify({ ch: h }));
+    }, heroes[i]!);
+    await page.reload();
+    await page.locator('[data-test=online]').click();
+    await expect(page.locator('[data-test=hero]')).toBeVisible();
+    await page.locator('[data-test=quick]').click();
+    // prima pagină așteaptă în lobby până intră a doua
+    if (i === 0) await expect(page.locator('[data-test=lobby-status]')).toContainText(/Starting in|Waiting/);
+  }
+  for (const page of pages)
+    await page.waitForFunction(() => (window as unknown as Win).__fitil.app.phase === 'play');
+  const st = await Promise.all(
+    pages.map((p) =>
+      p.evaluate(() => {
+        const m = (window as unknown as Win).__fitil.app.match!;
+        const s = m.s as unknown as { rules: { mode: string }; players: { hero: { id: string } | null }[] };
+        return { me: m.meId, heroes: s.players.map((x) => x.hero?.id) };
+      }),
+    ),
+  );
+  expect(st[0]!.heroes).toEqual(st[1]!.heroes);
+  expect(new Set(st[0]!.heroes)).toEqual(new Set(heroes));
+  await pages[0]!.waitForTimeout(3000);
+  for (const p of pages) expect((await state(p))!.desyncs).toBe(0);
+  for (const e of errors) expect(e).toEqual([]);
+  for (const p of pages) await p.context().close();
 });
