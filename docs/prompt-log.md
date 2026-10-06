@@ -3,6 +3,12 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code (Sonnet 5.5) — Faza 5: fatalități și cosmetice
+
+- **Cerut:** începerea Fazei 5 din `PLAN.md`.
+- **Făcut:** vezi `docs/progress.md` (Faza 5): content, Match, randare, galerie DEV, teste; D-061.
+- **Verificat:** `pnpm lint`, `typecheck`, `test` verzi; Playwright `fatalities.spec.ts` trece; vizualul în arenă neconfirmat.
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Faza 4b: interfața „Comic”
 
 - **Cerut:** „începe Faza 4b” (PLAN.md): interfața după `docs/design/ui.md` și machetele din `reference/ui/`, doar landscape, fără schimbări de gameplay.

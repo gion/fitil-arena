@@ -13,7 +13,7 @@ import {
   tutorialFailed,
 } from '@fitil/sim';
 import type { ChallengeProgress, Dir, GameEvent, GameState, Input, MaxStat, Tutorial } from '@fitil/sim';
-import { DEATH_MSG, HERO_LINES } from '@fitil/content';
+import { DEATH_MSG, HERO_LINES, emoteById, fatalityById, shopItem } from '@fitil/content';
 import type { NetClient } from '@fitil/net';
 import { build, isTeamKind } from './setup.ts';
 import type { Built, Me, PlayKind, Slot } from './setup.ts';
@@ -29,6 +29,19 @@ export interface Hero {
   dur: number;
 }
 
+/** Ultima eliminare din rundă: slow-motion și zoom pe victimă (D-061). */
+export interface Finale {
+  /** Secunde reale de la început. */
+  t: number;
+  player: number;
+}
+
+/** Cât ține momentul final (s, timp real). */
+export const FINALE_S = 1;
+
+/** Cât ține încetinirea „bye bye” (s, timp real). */
+export const DOOM_S = 1.3;
+
 export interface Doom {
   t: number;
   bomb: number | null;
@@ -39,6 +52,8 @@ export interface Doom {
 export type MatchEvent =
   | GameEvent
   | { type: 'hero'; hero: Hero }
+  | { type: 'fatality'; player: number; killer: number; id: string }
+  | { type: 'emote'; player: number; id: string }
   | { type: 'doomStart' }
   | { type: 'bye' }
   | { type: 'doomEnd' }
@@ -75,6 +90,13 @@ export class Match {
   paused = false;
   doom: Doom | null = null;
   hero: Hero | null = null;
+  finale: Finale | null = null;
+  /** Bomba pentru care „bye bye” a rulat deja (nu se reia pentru aceeași). */
+  private lastDoom: number | null = null;
+  /** Fatalitatea jucată pe fiecare victimă (aleasă din ținuta ucigașului). */
+  readonly fats = new Map<number, string>();
+  /** Emote-urile de pe ecran (id + secunde scurse). */
+  readonly emotes = new Map<number, { id: string; t: number }>();
   private overT = 0;
   private done = false;
   private koShown = false;
@@ -157,8 +179,9 @@ export class Match {
   /** Viteza timpului: 40% la „bye bye”, 30% la maxime, 100% altfel. */
   private get scale(): number {
     if (this.net) return 1; // online simularea nu se încetinește (D-017)
-    if (this.doom) return this.me.alive ? 0.4 : 0.7;
-    if (this.hero && this.hero.kind !== 'win' && this.hero.kind !== 'team') return 0.3;
+    if (this.doom) return this.me.alive ? 0.55 : 0.7;
+    if (this.finale) return 0.35;
+    if (this.hero && this.hero.kind !== 'win' && this.hero.kind !== 'team') return 0.5;
     return 1;
   }
 
@@ -270,6 +293,8 @@ export class Match {
     const s = this.s;
     if (e.type === 'maxed' && e.player === this.meId) this.startHero(e.stat, this.meId);
     if (e.type === 'capture' && e.player === this.meId) this.startHero('team', this.meId, 1.8);
+    if (e.type === 'death') this.onDeath(e);
+    if (e.type === 'respawn') this.fats.delete(e.player);
     if (e.type === 'roundEnd') {
       if (this.won()) {
         const cel = this.me.alive ? this.me : s.players.find((p) => p.alive && p.team === this.me.team);
@@ -302,7 +327,24 @@ export class Match {
     }
   }
 
-  private startHero(kind: HeroKind, player: number, dur = 1.7): void {
+  /** Fatalitatea ucigașului (doar pentru o lovitură de flacără dată altcuiva) și momentul final al rundei. */
+  private onDeath(e: Extract<GameEvent, { type: 'death' }>): void {
+    const s = this.s;
+    const k = e.killerId;
+    if (e.cause === 'flame' && k !== null && k !== e.player) {
+      const fat = fatalityById(shopItem(this.slots[k]?.outfit?.fatality)?.fatality);
+      if (fat) {
+        this.fats.set(e.player, fat.id);
+        this.emit({ type: 'fatality', player: e.player, killer: k, id: fat.id });
+      }
+    }
+    if (this.tutorial || s.mission || s.inf || s.rules.respawnTicks || this.doom) return;
+    const alive = s.players.filter((p) => p.alive);
+    const sides = new Set(alive.map((p) => (isTeamMode(s.rules) ? p.team : p.id)));
+    if (s.players.length > 1 && sides.size <= 1) this.finale = { t: 0, player: e.player };
+  }
+
+  private startHero(kind: HeroKind, player: number, dur = 1): void {
     const p = this.s.players[player];
     if (!p || !p.alive || this.doom) return;
     const lines = HERO_LINES[kind];
@@ -319,13 +361,37 @@ export class Match {
     if (this.s.mission && me.hp > 35) return;
     const b = doomBomb(this.s, me);
     if (b === null) return;
+    if (b === this.lastDoom) return;
+    this.lastDoom = b;
     this.doom = { t: 0, bomb: b, said: false };
     this.hero = null;
     this.emit({ type: 'doomStart' });
   }
 
-  private updateCinematics(dt: number): void {
+  /** Emote-ul echipat de jucătorul local (doar offline: online nu se sincronizează încă). */
+  get myEmote(): string | undefined {
+    return this.net ? undefined : (shopItem(this.slots[this.meId]?.outfit?.emote)?.emote ?? undefined);
+  }
+
+  emote(): void {
+    const id = this.myEmote;
+    if (!id || !this.me.alive || this.paused) return;
+    this.emotes.set(this.meId, { id, t: 0 });
+    this.emit({ type: 'emote', player: this.meId, id });
+  }
+
+  private updateCinematics(scaled: number): void {
     const me = this.me;
+    // momentele cinematice se măsoară în timp real, ca încetinirea să nu le lungească
+    const dt = scaled / (this.net ? 1 : this.scale);
+    for (const [k, e] of this.emotes) {
+      e.t += dt;
+      if (e.t > (emoteById(e.id)?.dur ?? 0)) this.emotes.delete(k);
+    }
+    if (this.finale) {
+      this.finale.t += dt;
+      if (this.finale.t >= FINALE_S) this.finale = null;
+    }
     const d = this.doom;
     if (d) {
       d.t += dt;
@@ -334,7 +400,10 @@ export class Match {
         d.said = true;
         this.emit({ type: 'bye' });
       }
-      if ((me.alive && d.t > 0.1 && !inDoomDanger(this.s, me)) || (!me.alive && deadFor >= 1.3)) {
+      if (
+        (me.alive && (d.t > DOOM_S || (d.t > 0.1 && !inDoomDanger(this.s, me)))) ||
+        (!me.alive && deadFor >= 1)
+      ) {
         this.doom = null;
         this.emit({ type: 'doomEnd' });
       }

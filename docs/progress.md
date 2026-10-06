@@ -263,3 +263,27 @@
 - Bangers nu a fost verificat pentru „ș/ț” (subsetul latin-ext e inclus); contează doar dacă apar texte în română.
 - Duratele de vibrație și volumele sunetelor de interfață sunt cele propuse în `docs/design/ui.md`, nereglate pe telefon real.
 - Machetele de login (Faza 6) și clasament rămân neimplementate; wordmark-ul așteaptă Q-010.
+
+## Faza 5 — Fatalități & cosmetice (în lucru, 2026-10-06)
+
+**Mini-plan:**
+
+1. **content**: `fatalities.ts` (cele 7 din `GAME_DESIGN.md`, zod: durată ≤ 1.2s, raritate, preț) și `emotes.ts`; categoriile noi `fatality` și `emote` în magazin/`Outfit` (cumpărate cu Fitile, fără aleator); teste.
+2. **client – logică**: `Match` alege fatalitatea din ținuta **ucigașului** (sim-ul rămâne neatins: cosmeticele nu sunt gameplay) și emite `fatality`; slow-motion + zoom 1s la ultima eliminare din rundă (offline; online doar zoom, D-017).
+3. **client – randare**: `render/fatality.ts` (poză pură în funcție de timp + recuzită), folosit de `ArenaScene` și de galerie; emote-uri deasupra capului (buton în HUD, offline).
+4. **galeria DEV**: fiecare fatalitate în buclă pe personajul ales, cu durata afișată; test Playwright.
+5. **colecție locală**: ecran „Collection” cu tot ce ai (skin-uri, bombe, urme, voci, fatalități, emote-uri) + deblocare de test din panoul DEV; skin-urile de bombă primesc forme.
+
+**Făcut:**
+
+- **content**: `fatalities.ts` (cele 7, zod, durată ≤ 1.2s, raritate, preț în Fitile) și 6 emote-uri; categoriile `fatality` și `emote` în magazin și în `Outfit` (+ `cleanOutfit`); teste.
+- **client**: `Match` alege fatalitatea din ținuta ucigașului (doar lovitură de flacără, nu pe sine) și emite `fatality`; slow-motion 35% + zoom 1s la ultima eliminare din rundă (offline; online doar zoom); `render/fatality.ts` (poze pure) + recuzită în `paint.fatProp`; sunete în `sfx.fat`; emote deasupra capului cu buton în HUD (offline); previzualizare în buclă în magazin și galeria DEV (`ui/fatPreview.ts`, panoul DEV: colecție + galerie).
+- **Teste**: client 15 (vitest, pozele), content 37, e2e `fatalities.spec.ts` (toate cele 7 în arenă, emote, finale, 0 erori).
+
+**Decizii:** sim-ul rămâne neatins (cosmeticele nu sunt gameplay; fatalitatea se alege pe client din ținuta ucigașului, care e deja în sloturi online) — D-061.
+
+**Rămas / cunoscut:**
+
+- Verificarea vizuală în arenă nu e confirmată (capturile din e2e nu arată clar victima); de privit în galeria DEV (`pnpm dev` → DEV → Fatalities).
+- Emote-urile nu se sincronizează online; fatalitățile nu apar în vederile 3D.
+- Skin-urile de bombă rămân culori (fără forme noi); voice packs-urile existente (Cat/Pirate/Opera) acoperă cerința.

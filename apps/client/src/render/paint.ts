@@ -2044,6 +2044,188 @@ export function pigeon(): void {
   ctx.fill();
 }
 
+/* ---------- Faza 5: recuzita fatalităților (centrată în (0,0), ~1 pătrățel) ---------- */
+
+export function fatProp(kind: string, v = 0): void {
+  const ink = '#12131c';
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = T * 0.035;
+  ctx.lineJoin = 'round';
+  switch (kind) {
+    case 'anvil': {
+      ctx.fillStyle = '#5c6070';
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.5, -T * 0.3);
+      ctx.lineTo(T * 0.5, -T * 0.3);
+      ctx.lineTo(T * 0.3, -T * 0.05);
+      ctx.lineTo(T * 0.18, T * 0.05);
+      ctx.lineTo(T * 0.3, T * 0.3);
+      ctx.lineTo(-T * 0.3, T * 0.3);
+      ctx.lineTo(-T * 0.18, T * 0.05);
+      ctx.lineTo(-T * 0.3, -T * 0.05);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#8b90a3';
+      ctx.fillRect(-T * 0.42, -T * 0.26, T * 0.8, T * 0.07);
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${T * 0.18}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('1000 kg', 0, T * 0.22);
+      break;
+    }
+    case 'star': {
+      ctx.fillStyle = '#fff6a8';
+      glow('#fff6a8', 18);
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const r = i % 2 ? T * 0.1 : T * 0.42;
+        const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+        ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      ctx.closePath();
+      ctx.fill();
+      noGlow();
+      break;
+    }
+    case 'corn': {
+      ctx.fillStyle = '#fff4d0';
+      for (const [dx, dy, r] of [
+        [-0.1, 0.04, 0.12],
+        [0.1, 0.02, 0.11],
+        [0, -0.1, 0.12],
+      ] as const) {
+        circle(dx * T, dy * T, r * T);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.fillStyle = v === 0 ? '#ffd35a' : v === 1 ? '#ffe9a8' : '#ffc13a';
+      circle(0, T * 0.02, T * 0.07);
+      ctx.fill();
+      break;
+    }
+    case 'ghost': {
+      ctx.fillStyle = 'rgba(245,248,255,.95)';
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.22, T * 0.28);
+      ctx.lineTo(-T * 0.22, -T * 0.06);
+      ctx.arc(0, -T * 0.06, T * 0.22, Math.PI, 0);
+      ctx.lineTo(T * 0.22, T * 0.28);
+      ctx.lineTo(T * 0.11, T * 0.2);
+      ctx.lineTo(0, T * 0.28);
+      ctx.lineTo(-T * 0.11, T * 0.2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = ink;
+      circle(-T * 0.08, -T * 0.08, T * 0.035);
+      ctx.fill();
+      circle(T * 0.08, -T * 0.08, T * 0.035);
+      ctx.fill();
+      // harpa
+      ctx.strokeStyle = '#c98a1a';
+      ctx.lineWidth = T * 0.04;
+      ctx.beginPath();
+      ctx.arc(T * 0.3, T * 0.1, T * 0.16, -Math.PI * 0.6, Math.PI * 0.45);
+      ctx.moveTo(T * 0.2, -T * 0.03);
+      ctx.lineTo(T * 0.2, T * 0.26);
+      ctx.stroke();
+      break;
+    }
+    case 'note': {
+      ctx.fillStyle = ['#ff6fb0', '#6fd0ff', '#ffe14a'][v % 3]!;
+      ctx.strokeStyle = ctx.fillStyle;
+      ellipse(-T * 0.04, T * 0.1, T * 0.07, T * 0.05, -0.4);
+      ctx.fill();
+      ctx.lineWidth = T * 0.03;
+      ctx.beginPath();
+      ctx.moveTo(T * 0.02, T * 0.08);
+      ctx.lineTo(T * 0.02, -T * 0.16);
+      ctx.stroke();
+      break;
+    }
+    case 'folder': {
+      ctx.fillStyle = '#e9c46a';
+      rr(-T * 0.45, -T * 0.3, T * 0.9, T * 0.6, T * 0.04);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f4d98c';
+      rr(-T * 0.45, -T * 0.38, T * 0.4, T * 0.1, T * 0.03);
+      ctx.fill();
+      ctx.stroke();
+      break;
+    }
+    case 'stamp': {
+      ctx.strokeStyle = '#d6322b';
+      ctx.fillStyle = '#d6322b';
+      ctx.lineWidth = T * 0.05;
+      rr(-T * 0.5, -T * 0.16, T, T * 0.32, T * 0.04);
+      ctx.stroke();
+      ctx.font = `bold ${T * 0.2}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('REJECTED', 0, T * 0.07);
+      break;
+    }
+    case 'spit': {
+      ctx.strokeStyle = '#8a6a3a';
+      ctx.lineWidth = T * 0.05;
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.6, 0);
+      ctx.lineTo(T * 0.6, 0);
+      ctx.stroke();
+      ctx.fillStyle = '#7b7f92';
+      for (const x of [-0.6, 0.6]) {
+        ctx.fillRect((x - 0.04) * T, -T * 0.22, T * 0.08, T * 0.44);
+      }
+      break;
+    }
+    case 'bell': {
+      ctx.fillStyle = '#ffd24a';
+      ctx.beginPath();
+      ctx.arc(0, 0, T * 0.14, Math.PI, 0);
+      ctx.lineTo(T * 0.18, T * 0.1);
+      ctx.lineTo(-T * 0.18, T * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      circle(0, T * 0.14, T * 0.035);
+      ctx.fill();
+      ctx.fillStyle = ink;
+      ctx.font = `bold ${T * 0.17}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('ding!', 0, -T * 0.2);
+      break;
+    }
+    case 'bubble': {
+      ctx.fillStyle = '#fff';
+      rr(-T * 0.32, -T * 0.3, T * 0.64, T * 0.5, T * 0.16);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.08, T * 0.19);
+      ctx.lineTo(0, T * 0.34);
+      ctx.lineTo(T * 0.1, T * 0.19);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(-T * 0.06, T * 0.17, T * 0.14, T * 0.05);
+      break;
+    }
+    case 'jet': {
+      const g = ctx.createLinearGradient(0, -T * 0.1, 0, T * 0.5);
+      g.addColorStop(0, '#fff6a8');
+      g.addColorStop(0.5, '#ff9a2a');
+      g.addColorStop(1, 'rgba(255,60,20,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(-T * 0.14, -T * 0.1);
+      ctx.quadraticCurveTo(0, T * 0.62, T * 0.14, -T * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+  }
+}
+
 /* ---------- Faza 4: personaje, tufișuri, gheață, otravă, capcane ---------- */
 
 /**

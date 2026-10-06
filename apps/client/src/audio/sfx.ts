@@ -229,6 +229,46 @@ export class Sfx {
     }
   }
 
+  /** Sunetele fatalităților și ale emote-urilor (sintetizate, fără debounce). */
+  fat(kind: 'whoosh' | 'thud' | 'pop' | 'harp' | 'blow' | 'ding' | 'stamp'): void {
+    const c = this.on();
+    if (!c) return;
+    const now = c.currentTime;
+    switch (kind) {
+      case 'whoosh':
+        this.tone(200, 1800, 0.55, 'sawtooth', 0.07);
+        this.noiseHit(now, 0.5, 1200, 0.1, 'bandpass');
+        break;
+      case 'thud':
+        this.tone(240, 50, 0.25, 'sine', 0.35);
+        this.noiseHit(now, 0.12, 500, 0.25, 'lowpass');
+        this.tone(900, 300, 0.18, 'square', 0.05, 0.28);
+        break;
+      case 'pop':
+        for (let i = 0; i < 6; i++) {
+          this.noiseHit(now + 0.06 + i * 0.07 + (i % 2) * 0.02, 0.03, 1400, 0.12, 'bandpass');
+          this.tone(500 + i * 90, 250, 0.05, 'triangle', 0.08, 0.06 + i * 0.07);
+        }
+        break;
+      case 'harp':
+        [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, f, 0.35, 'triangle', 0.09, i * 0.1));
+        break;
+      case 'blow':
+        this.tone(900, 180, 0.7, 'sawtooth', 0.08);
+        this.tone(130, 90, 0.5, 'square', 0.05, 0.2);
+        break;
+      case 'ding':
+        this.tone(1568, 1568, 0.5, 'sine', 0.14, 0.7);
+        this.tone(2093, 2093, 0.5, 'sine', 0.06, 0.7);
+        this.noiseHit(now, 0.4, 2200, 0.03, 'highpass');
+        break;
+      case 'stamp':
+        this.tone(220, 90, 0.1, 'square', 0.12, 0.55);
+        this.noiseHit(now + 0.55, 0.08, 600, 0.3, 'lowpass');
+        break;
+    }
+  }
+
   /** Fitilul care arde (start de meci): sfârâit cât durează, oprit de `stop()`. */
   sizzle(dur: number): { stop(): void } {
     const c = this.on();

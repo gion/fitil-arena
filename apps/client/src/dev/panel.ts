@@ -1,6 +1,10 @@
 import {
   CHARACTERS,
   CHAR_IDS,
+  FATALITIES,
+  FATALITY_MAX_S,
+  SHOP_CATS,
+  CAT_NAMES,
   CHAR_RELEASE,
   SHOP,
   THEMES,
@@ -17,6 +21,7 @@ import type { Sfx } from '../audio/sfx.ts';
 import { devDate, now, setDevDate } from '../clock.ts';
 import { store, today } from '../profile.ts';
 import { h } from '../ui/dom.ts';
+import { FatPreviews } from '../ui/fatPreview.ts';
 
 /**
  * Panoul DEV (D-039): doar în `pnpm dev` și în build-urile interne (`VITE_DEV_TOOLS=1`); în build-ul
@@ -41,6 +46,8 @@ const veteran = (): Profile => ({
   coins: 5000,
   xp: { bubu: xpForPlayerLevel(15) },
 });
+
+const previews = new FatPreviews();
 
 export function devScreen(ctx: DevCtx): HTMLElement {
   const p = store.profile;
@@ -189,6 +196,29 @@ export function devScreen(ctx: DevCtx): HTMLElement {
         .join(', ')}`,
     ),
     h('p', {}, `Releases: ${upcoming.join(' · ')}`),
+    h('h2', { class: 'sub-title' }, 'Collection'),
+    h(
+      'p',
+      { 'data-test': 'dev-collection' },
+      SHOP_CATS.map((c) => {
+        const all = SHOP.filter((i) => i.cat === c);
+        return `${CAT_NAMES[c]} ${all.filter((i) => p.owned.includes(i.id)).length}/${all.length}`;
+      }).join(' · '),
+    ),
+    h('h2', { class: 'sub-title' }, 'Fatalities (looping, ≤ 1.2s)'),
+    h(
+      'div',
+      { class: 'fatgal', 'data-test': 'dev-fatalities' },
+      ...FATALITIES.map((f) =>
+        h(
+          'div',
+          { class: 'card', 'data-fat-card': f.id },
+          previews.add({ id: f.id, ch: p.ch }, 'fatprev big'),
+          h('b', {}, f.name),
+          h('small', {}, `${f.rarity} · ${f.dur.toFixed(1)}s${f.dur <= FATALITY_MAX_S ? ' ✓' : ' ✗'}`),
+        ),
+      ),
+    ),
     h('button', { class: 'b main', 'data-test': 'dev-close', onclick: () => ctx.back() }, 'Done'),
   );
 }

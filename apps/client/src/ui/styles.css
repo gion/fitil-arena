@@ -1101,6 +1101,11 @@ input:focus-visible {
   height: 56px;
   flex: none;
 }
+.sitem canvas.fatprev {
+  width: 64px;
+  height: 56px;
+  flex: none;
+}
 .sitem .sicon {
   width: 40px;
   height: 40px;
@@ -2544,4 +2549,21 @@ input:focus-visible {
 .fuse .spark svg {
   width: 36px;
   height: 36px;
+}
+
+.fatgal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.fatgal .card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+}
+canvas.fatprev.big {
+  width: 140px;
+  height: 120px;
 }
