@@ -1,4 +1,4 @@
-# Fitil Arena
+# Fuse Arena
 
 Monorepo: `packages/sim` (simulare deterministă), `packages/content` (date), `apps/client` (Phaser + Capacitor), `apps/server` (Fastify, Colyseus din Faza 3).
 

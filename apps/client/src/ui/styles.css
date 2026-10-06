@@ -23,15 +23,16 @@
   --sr: env(safe-area-inset-right, 0px);
   --st: env(safe-area-inset-top, 0px);
   --sb: env(safe-area-inset-bottom, 0px);
-  /* spațiul sigur: 56px stânga/dreapta (breton), 14–20px sus/jos */
-  --gx: max(56px, calc(var(--sl) + 12px));
-  --gxr: max(56px, calc(var(--sr) + 12px));
+  /* spațiul sigur: 56px stânga/dreapta (breton), 14–20px sus/jos; pe ecranele cu notch,
+     zona sigură + 24px, ca să nu muște colțurile rotunjite */
+  --gx: max(56px, calc(var(--sl) + 24px));
+  --gxr: max(56px, calc(var(--sr) + 24px));
   --hud: 44px;
 }
 @media (max-width: 700px) {
   :root {
-    --gx: max(24px, calc(var(--sl) + 8px));
-    --gxr: max(24px, calc(var(--sr) + 8px));
+    --gx: max(24px, calc(var(--sl) + 16px));
+    --gxr: max(24px, calc(var(--sr) + 16px));
   }
 }
 html,
@@ -1563,8 +1564,9 @@ input:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 0 0 max(12px, var(--sl));
-  padding-right: var(--sr);
+  /* min(--s, 16px): +16px doar dacă ecranul are zonă sigură (notch), 0 altfel */
+  padding: 0 0 0 max(12px, calc(var(--sl) + min(var(--sl), 16px)));
+  padding-right: calc(var(--sr) + min(var(--sr), 16px));
   background: var(--ink);
   color: var(--white);
   white-space: nowrap;

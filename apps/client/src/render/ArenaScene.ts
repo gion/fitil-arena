@@ -19,7 +19,7 @@ import {
 import type { GameState, ItemType, Player } from '@fitil/sim';
 import { TEAMS, arenaEventById, charById, emoteById, fatalityById, shopItem } from '@fitil/content';
 import type { Theme } from '@fitil/content';
-import { DPR } from '../display.ts';
+import { DPR, safeInsets } from '../display.ts';
 import type { Match, MatchEvent } from '../game/match.ts';
 import { FRIEND_COL } from './colors.ts';
 import { SPECIAL_COLOR } from './paint.ts';
@@ -122,6 +122,8 @@ const DEPTH = {
 /** Bara HUD (px CSS, D-053) și chenarul cadrului arenei. */
 const HUD = 44;
 const FRAME = 4;
+/** Margine în plus peste zona sigură (px CSS), doar pe ecranele care au una. */
+const SAFE_PAD = 8;
 
 export class ArenaScene extends Phaser.Scene {
   match: Match | null = null;
@@ -223,13 +225,19 @@ export class ArenaScene extends Phaser.Scene {
   area(): { x: number; y: number; w: number; h: number } {
     const { width, height } = this.scale;
     const top = (HUD + 2 + FRAME) * DPR;
+    // pe ecranele cu notch / colțuri rotunjite: arena stă în zona sigură, plus o mică margine
+    const si = safeInsets();
+    const side = (v: number): number => (v > 0 ? v + SAFE_PAD : 0);
     if (this.mini) {
       const w = Math.round(Math.min(width * 0.22, 200 * DPR));
       const h = Math.round(Math.min((height - top) * 0.3, 110 * DPR));
-      return { x: Math.round(56 * DPR), y: Math.round((HUD + 10) * DPR), w, h };
+      return { x: Math.round(Math.max(56, side(si.l)) * DPR), y: Math.round((HUD + 10) * DPR), w, h };
     }
-    const f = FRAME * DPR;
-    return { x: f, y: top, w: width - 2 * f, h: height - top - f };
+    const l = (FRAME + side(si.l)) * DPR;
+    const r = (FRAME + side(si.r)) * DPR;
+    // jos: doar jumătate din zona barei „home” (e doar vizuală), ca să nu pierdem prea mult din hartă
+    const b = (FRAME + si.b / 2) * DPR;
+    return { x: Math.round(l), y: top, w: Math.round(width - l - r), h: Math.round(height - top - b) };
   }
 
   /** Cadrul arenei (pixeli CSS), pentru chenarul din DOM; `null` fără meci. */
