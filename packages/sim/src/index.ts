@@ -16,6 +16,7 @@ export * from './modes.ts';
 export * from './doom.ts';
 export * from './practice.ts';
 export * from './world.ts';
+export * from './infinite.ts';
 export * from './missions.ts';
 export * from './heroes.ts';
 export * from './vision.ts';

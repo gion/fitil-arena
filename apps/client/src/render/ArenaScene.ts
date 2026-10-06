@@ -9,6 +9,7 @@ import {
   U,
   canSee,
   idx,
+  cellXY,
   inBounds,
   isGold,
   shiftCells,
@@ -815,8 +816,10 @@ export class ArenaScene extends Phaser.Scene {
     for (let k = 0; k < s.flame.length; k++) {
       const f = s.flame[k]!;
       if (f <= 0) continue;
-      const fx = inf ? s.inf!.ownX[k]! : k % s.W;
-      const fy = inf ? s.inf!.ownY[k]! : Math.floor(k / s.W);
+      const at = inf ? cellXY(s, k) : null;
+      if (inf && !at) continue;
+      const fx = at ? at[0] : k % s.W;
+      const fy = at ? at[1] : Math.floor(k / s.W);
       const kind = s.flameKind[k]!;
       const im = P.flames!.get(fl, fx * T, fy * T).setAlpha(Math.min(1, f / (0.2 * TICK_HZ)));
       if (kind === 1) im.setTint(0x9fe8ff);

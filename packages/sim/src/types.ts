@@ -203,6 +203,15 @@ export interface Player {
   hexT: number;
   /** Coroana: cât a ținut-o (tick-uri). */
   crownT: number;
+  /** Lumea infinită: locul e liber (jucătorul a plecat / botul a dispărut); se poate refolosi. */
+  out: boolean;
+  /** Statistici pe toată sesiunea (păstrate la revenire): eliminări, lăzi sparte, cea mai mare distanță de centru, tick-uri trăite. */
+  kills: number;
+  boxes: number;
+  far: number;
+  lived: number;
+  /** Bonusurile pozitive culese de la ultima revenire (o parte cad pe jos la moarte, `Rules.infDrop`). */
+  got: ItemType[];
 }
 
 export interface Fly {
@@ -371,6 +380,10 @@ export type GameEvent =
   | { type: 'flagReturn'; team: number; player: number | null }
   | { type: 'capture'; team: number; player: number; caps: [number, number] }
   | { type: 'respawn'; player: number }
+  /** Modul Infinit: bonusurile scăpate la moarte, boții care apar / dispar. */
+  | { type: 'lootDrop'; player: number; x: number; y: number; n: number }
+  | { type: 'botSpawn'; player: number; x: number; y: number }
+  | { type: 'botGone'; player: number }
   | { type: 'hurt'; player: number; amount: number; hp: number }
   | { type: 'missionHit'; x: number; y: number; kind: TargetKind; done: boolean }
   | { type: 'missionProgress'; count: number; need: number }
@@ -437,6 +450,10 @@ export interface Rules {
   rotate: boolean;
   /** Lume fără margini, generată din coordonate (misiuni, modul Infinit). */
   infinite: boolean;
+  /** Modul Infinit: câți boți se țin în jurul fiecărui om (0 = fără boți). */
+  infBots: number;
+  /** Modul Infinit: procentul din bonusurile culese care cad pe jos la moarte. */
+  infDrop: number;
   /** Bară de viață în loc de moarte la prima atingere. */
   health: boolean;
   /** Inimi printre drop-uri (misiuni). */
@@ -528,16 +545,16 @@ export interface GameState {
 }
 
 /**
- * Lume infinită: stocare circulară S×S (S putere a lui 2) care se regenerează în jurul camerei.
- * `ownX/ownY[k]` = coordonata de lume care ocupă acum celula k din stocare.
+ * Lume infinită pe chunk-uri 32×32 (`world.ts`): stocarea e un șir de sloturi de câte 1024 de celule,
+ * încărcate în jurul oamenilor și refolosite când rămân departe de toți. Slotul 0 e vidul (perete).
  */
 export interface InfWorld {
-  S: number;
-  ownX: number[];
-  ownY: number[];
-  /** Centrul ferestrei generate (pătrățelul jucătorului). */
-  cx: number;
-  cy: number;
+  /** slot → cheia chunk-ului (`chunkKey`), -1 = liber. */
+  keys: number[];
+  /** cheia chunk-ului → slot. */
+  slots: Record<number, number>;
+  /** Sloturi libere (ultimul e cel mai mic). */
+  free: number[];
 }
 
 export type MissionKind = 'collect' | 'demolish' | 'rescue' | 'race';

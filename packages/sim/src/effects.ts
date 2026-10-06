@@ -8,6 +8,7 @@ import {
   TRAP_LIFE,
 } from './constants.ts';
 import { idx, tileX, tileY } from './grid.ts';
+import { dropLoot } from './infinite.ts';
 import type { DeathCause, GameState, Player } from './types.ts';
 
 /**
@@ -82,7 +83,12 @@ export function kill(s: GameState, p: Player, killerId: number | null, cause: De
     }
     p.carry = null;
   }
-  if (killerId !== null && killerId !== p.id) addCharge(s.players[killerId], CHARGE_HIT);
+  if (killerId !== null && killerId !== p.id) {
+    addCharge(s.players[killerId], CHARGE_HIT);
+    const k = s.players[killerId];
+    if (k) k.kills++;
+  }
+  dropLoot(s, p);
   if (p.hero?.passive === 'trap') {
     const x = tileX(p);
     const y = tileY(p);

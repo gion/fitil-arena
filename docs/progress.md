@@ -315,3 +315,14 @@
 - Testele cu Postgres se sar fără `TEST_DATABASE_URL`; aici au rulat pe Postgres 16 instalat în container (Docker nu rulează în sesiunea cloud).
 - Pe deploy, `apps/server/drizzle/` trebuie să existe lângă `dist/`.
 - e2e: `missions` (3D, fără GPU) pică intermitent și fără modificările din Faza 6; `smoke` FPS nu rulează în container.
+
+## Faza 7 — Modul Infinit (în lucru, 2026-10-06)
+
+**Mini-plan:**
+
+1. **sim — lumea pe chunk-uri**: stocarea circulară 64×64 (D-024) devine un șir de chunk-uri 32×32 încărcate în jurul **fiecărui om** (pătratul ±26) și descărcate când rămân departe de toți (cu 8 pătrățele de histerezis); slotul 0 e „vidul” (perete). Misiunile merg pe aceeași lume.
+2. **sim — modul Infinit**: boți care apar la 9–15 pătrățele și dispar la > 24, mai puternici departe de centru (offline); revenire lângă locul morții pe un loc sigur, cu 3s de scut; scor (eliminări, lăzi, distanță, timp trăit); 50% din bonusuri pe jos la moarte (online); intrare / ieșire din lume cu locuri refolosite; lăzile cresc la loc spre forma generată. Teste deterministe.
+3. **net — protocol de stare filtrată** pentru Infinit (D-030 nu merge: 80 de oameni, lume nemărginită): serverul trimite fiecărui client doar chunk-urile din jurul lui (diferențele față de lumea generată, pe care clientul o generează singur din seed), schimbările de celule, jucătorii și bombele din zonă, evenimentele din zonă; clasament + minimapă o dată pe secundă.
+4. **server**: camera `infinite` (max 80 de clienți; Colyseus deschide singur o instanță nouă când una e plină = shard-uri), tick 20 Hz, statistici de tick și de trafic.
+5. **client**: Infinit offline în Play (varianta din prototip) și online (Online → Infinite): HUD cu scor / eliminări / distanță, clasament top 10, minimapă, coroană pe lider.
+6. **test de încărcare**: 80 de boți-client conectați la server; tick-ul și traficul per client în raport.
