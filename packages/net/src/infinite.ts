@@ -441,6 +441,21 @@ export class InfHost {
     this.rosterDel.push(p.pid);
   }
 
+  /** Clientul își reface oglinda (bun venit nou, reconectare): următorul cadru îi trimite totul de la zero. */
+  resync(sid: string): void {
+    const p = this.peers.get(sid);
+    if (!p) return;
+    p.zone = new Set();
+    p.sentP.clear();
+    p.sentB.clear();
+    p.meJson = '';
+    p.padsJson = '[]';
+  }
+
+  rosterList(): InfRosterEntry[] {
+    return [...this.roster.values()];
+  }
+
   pidOf(sid: string): number | undefined {
     return this.peers.get(sid)?.pid;
   }

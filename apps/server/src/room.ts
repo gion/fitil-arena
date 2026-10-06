@@ -68,7 +68,7 @@ function quickTheme(): string {
 }
 
 /** Personajul și ținuta cerute, restrânse la ce deține contul (profilul de pe server e adevărul). */
-function ownedMe(p: Profile, o: JoinOpts): MeMsg {
+export function ownedMe(p: Profile, o: MeMsg): MeMsg {
   const r = o.ch ? selectChar(p, o.ch, accessOf(p, today(), false)) : null;
   const ch = r?.ok ? r.profile.ch : p.ch;
   const outfit: Partial<Outfit> = {};
