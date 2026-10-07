@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-06 — Claude Code — Faza 8: mobil & store readiness
+
+- **Cerut:** „next phase?” → „Dap”: Faza 8 din PLAN.md, partea care nu cere conturi / bani / decizii finale; PR la final.
+- **Făcut:** pluginuri Capacitor (app, splash-screen, status-bar, filesystem, share, keep-awake) și `native.ts` (înapoi, fundal, ecran aprins, splash); deep links `fusearena://join/…` și `?join=` pe web; „Save clip” (`clip.ts`); PostHog + Sentry prin clienți proprii (`telemetry.ts`); „GET THE APP” pe web; workflow `mobile.yml` (Android emulator, iOS simulator manual); `docs/store-checklist.md`; `store:shots`. Decizii D-073 – D-076, întrebări Q-014 – Q-016.
+- **Verificat:** `pnpm lint`, `format`, `typecheck`, `test` (client 24, sim 148, net 22, content 39, server 7 + 11 sărite fără Postgres), `build`; e2e `mobile`, `online`, `ui`, `infinite`, `account`, `missions` (`smoke` FPS nu rulează în container, cunoscut); clipurile 2D și 3D verificate cadru cu cadru (ffmpeg).
+- **Notă operațională:** Android SDK nu se poate descărca din containerul cloud (dl.google.com blocat): build-urile native rulează doar în workflow-ul `Mobile`. Capturile de store: `pnpm --filter @fitil/client store:shots` (cu `PW_CHROMIUM` în container).
+
 ## 2026-10-06 — Claude Code (Opus 5.5) — Înghețări când se întâmplă multe pe ecran
 
 - **Cerut:** jocul „începe să meargă mai greu, se blochează uneori când sunt multe lucruri care se întâmplă simultan” (fără alte detalii: dispozitiv, vedere, mod).

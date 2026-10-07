@@ -61,6 +61,17 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>ro.fitil.arena.join</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fusearena</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIRequiresFullScreen</key>
 	<true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>

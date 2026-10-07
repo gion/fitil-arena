@@ -14,13 +14,20 @@
     "android": "vite build && cap sync android && cap open android",
     "brand": "node scripts/brand.mjs",
     "screens": "SCREENS=1 playwright test e2e/screens.spec.ts",
-    "test": "vitest run test"
+    "test": "vitest run test",
+    "store:shots": "STORE=1 playwright test e2e/store.spec.ts"
   },
   "dependencies": {
+    "@capacitor-community/keep-awake": "^8.0.1",
     "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.0.0",
+    "@capacitor/filesystem": "^8.1.4",
     "@capacitor/haptics": "^8.0.0",
     "@capacitor/ios": "^8.0.0",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
     "@colyseus/sdk": "^0.18.4",
     "@fitil/content": "workspace:*",
     "@fitil/net": "workspace:*",

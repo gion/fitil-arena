@@ -91,6 +91,9 @@ import { $, h, show } from './ui/dom.ts';
 import { account } from './online/account.ts';
 import type { Op } from './online/account.ts';
 import { OnlineSession } from './online/session.ts';
+import { initNative, installLinks, inviteUrl, keepAwake, minimize } from './native.ts';
+import { ClipRecorder, shareClip } from './clip.ts';
+import { telemetry } from './telemetry.ts';
 import { InfiniteSession } from './online/infinite.ts';
 import { store, today } from './profile.ts';
 import { DEV_TOOLS, now } from './clock.ts';
@@ -138,6 +141,9 @@ export class App {
   theme: Theme = this.allowedTheme();
   match: Match | null = null;
   online: OnlineSession | null = null;
+  /** „Save clip”: arena înregistrată continuu în meci. */
+  private clip = new ClipRecorder();
+  private matchT0 = 0;
   /** Lumea Infinit online (D-070). */
   inf: InfiniteSession | null = null;
   private onlineErr = '';
@@ -247,8 +253,22 @@ export class App {
     scene.setTheme(this.theme);
     scene.motion = settings.motion;
     this.applyTheme();
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && this.phase === 'play') this.pause();
+    telemetry.enabled = settings.stats;
+    telemetry.init();
+    initNative({
+      back: () => this.back(),
+      background: () => {
+        telemetry.background();
+        if (this.phase === 'play') this.pause();
+        void this.sfx.ctx?.suspend().catch(() => {});
+      },
+      foreground: () => {
+        telemetry.foreground();
+        if (this.sfx.ctx) void this.sfx.ctx.resume().catch(() => {});
+        // Wake Lock-ul din browser se pierde când pagina e ascunsă
+        if (this.match) keepAwake(true);
+      },
+      join: (code) => void this.joinByCode(code),
     });
     this.showScreen(() => this.mainMenu());
     this.setView(settings.view, false);
@@ -527,6 +547,7 @@ export class App {
         ),
         caption(season ? `Meanwhile, in the arena… it’s ${season.name} season!` : 'Meanwhile, in the arena…'),
         h('div', { class: 'push' }),
+        this.installBtn(),
         coins(p.coins),
         sq(icon.gear(), 'Settings', () => this.go(() => this.settingsMenu()), { 'data-test': 'settings' }),
       ),
@@ -604,6 +625,30 @@ export class App {
             }),
         ),
       ),
+    );
+  }
+
+  /** Pe web (jocul deschis dintr-un link): îndemnul la instalarea aplicației, dacă există pagini de store. */
+  private installBtn(): HTMLElement | null {
+    const links = installLinks(navigator.userAgent);
+    if (!links.length) return null;
+    const open = (url: string) => window.open(url, '_blank', 'noopener');
+    return btn(
+      'cyan',
+      'GET THE APP',
+      () =>
+        links.length === 1
+          ? open(links[0]!.url)
+          : this.openSheet(
+              'GET THE APP',
+              h(
+                'div',
+                { class: 'col', style: 'gap:12px' },
+                h('div', {}, 'Smoother, full screen, and your progress comes with you.'),
+                ...links.map((l) => btn('main', l.label, () => open(l.url))),
+              ),
+            ),
+      { 'data-test': 'install', style: 'min-height:44px;font-size:20px;padding:0 14px' },
     );
   }
 
@@ -956,6 +1001,59 @@ export class App {
       }
     };
     this.go(() => this.lobbyScreen());
+  }
+
+  /** Înregistrarea arenei (canvasul vizibil: Phaser în 2D, Three.js în 1P/3P). */
+  private recordClip(): void {
+    if (!settings.clips) return this.clip.stop();
+    const cv = this.view === '2d' ? this.game.canvas : document.querySelector<HTMLCanvasElement>('#cv3');
+    if (cv) this.clip.start(cv);
+  }
+
+  /** „Save clip”: ultimele 10–20s din arenă, partajate sau descărcate. */
+  private async saveClip(): Promise<void> {
+    try {
+      const b = await this.clip.take();
+      if (!b) return this.showBanner('No clip yet. Play a few seconds first!', 1800);
+      const how = await shareClip(b);
+      telemetry.track('clip_saved', { how });
+      this.showBanner(how === 'saved' ? 'Clip saved!' : 'Clip ready!', 1400, 'gold');
+    } catch {
+      /* anulat */
+    }
+  }
+
+  private clipBtn(): HTMLElement | null {
+    return this.clip.recording
+      ? sq(icon.clip(), 'Save clip', () => void this.saveClip(), { 'data-test': 'clip' })
+      : null;
+  }
+
+  /** Butonul „înapoi” (Android): pauză în meci, înapoi din pauză, ecranul anterior în meniuri. */
+  private back(): void {
+    if (this.phase === 'play') return this.pause();
+    if (this.phase === 'paused') return this.resume();
+    const sheet = this.ui.querySelector<HTMLElement>('.sheet .head [aria-label=Close]');
+    if (sheet) return sheet.click();
+    const b = [...this.ui.querySelectorAll<HTMLElement>('[data-test=back]')].find(
+      (e) => e.offsetParent !== null,
+    );
+    if (b) b.click();
+    else minimize();
+  }
+
+  /** Link de invitație (deep link sau `?join=` pe web): intri direct în camera privată. */
+  private async joinByCode(code: string): Promise<void> {
+    if (OFFLINE_ONLY || this.online?.code === code) return;
+    telemetry.track('invite_opened');
+    if (this.match || this.online || this.inf) this.toMenu();
+    this.onlineErr = '';
+    try {
+      this.enterRoom(await OnlineSession.join(code, this.meMsg(settings.name)));
+    } catch (e) {
+      this.onlineErr = e instanceof Error && e.message ? e.message : `Could not join room ${code}.`;
+      this.go(() => this.onlineMenu());
+    }
   }
 
   /* ---------- Infinit online ---------- */
@@ -1351,11 +1449,13 @@ export class App {
         h('span', { 'data-test': 'lobby-status', class: 'hidden' }, status),
       );
     const share = async () => {
-      const text = `Join my Fuse Arena room: ${o.code}`;
+      const url = inviteUrl(o.code);
+      const text = `Join my Fuse Arena room ${o.code}!`;
       try {
-        if (navigator.share) await navigator.share({ text });
-        else await navigator.clipboard.writeText(o.code);
-        this.showBanner('Code copied!', 1200);
+        telemetry.track('invite_shared');
+        if (navigator.share) await navigator.share({ text, url });
+        else await navigator.clipboard.writeText(`${text} ${url}`);
+        this.showBanner('Invite link copied!', 1200);
       } catch {
         /* anulat */
       }
@@ -2361,6 +2461,21 @@ export class App {
             this.scene.motion = settings.motion;
             this.applyMotion();
           }),
+          (telemetry.analytics || telemetry.crashes || !settings.stats) &&
+            this.toggle(
+              'Anonymous stats',
+              'Crash reports and play stats, no personal data',
+              settings.stats,
+              () => {
+                settings.stats = !settings.stats;
+                telemetry.enabled = settings.stats;
+              },
+            ),
+          this.clip.supported &&
+            this.toggle('Record clips', 'Keeps the last seconds of a match to share', settings.clips, () => {
+              settings.clips = !settings.clips;
+              if (this.match) this.recordClip();
+            }),
         ),
         panel(
           'tr col side',
@@ -2515,6 +2630,7 @@ export class App {
                 'data-test': 'quit',
                 style: 'transform:none;box-shadow:none',
               }),
+              this.clipBtn(),
             ),
           ),
         ),
@@ -2597,6 +2713,7 @@ export class App {
               'data-test': 'quit',
               style: 'transform:none;box-shadow:none;font-size:19px',
             }),
+            this.clipBtn(),
             sq(icon.gear(), 'All settings', () =>
               this.showScreen(() => this.settingsMenu(() => this.hideOverlay())),
             ),
@@ -2713,13 +2830,7 @@ export class App {
     this.loadVoice();
     this.applyAudio();
     this.music.start();
-    try {
-      void (navigator as Navigator & { wakeLock?: { request(t: string): Promise<unknown> } }).wakeLock
-        ?.request('screen')
-        .catch(() => {});
-    } catch {
-      /* ignorat */
-    }
+    keepAwake(true);
     this.hideOverlay();
     show(this.drawer, false);
     show(this.toast, false);
@@ -2739,6 +2850,13 @@ export class App {
     this.controls.enabled = true;
     this.music.playing = true;
     this.hudKey = '';
+    this.recordClip();
+    this.matchT0 = performance.now();
+    telemetry.track('match_start', {
+      kind: m.kind.type,
+      mode: m.kind.type === 'mode' ? m.kind.mode : null,
+      online: m.net !== null,
+    });
     if (!this.hintsHidden) setTimeout(() => this.hideHints(), 6000);
   }
 
@@ -2804,6 +2922,8 @@ export class App {
 
   /** Online, după meci: înapoi în lobby-ul camerei (camera rămâne deschisă). */
   private toLobby(): void {
+    keepAwake(false);
+    this.clip.stop();
     this.match = null;
     this.scene.setMatch(null);
     this.r3?.setMatch(null);
@@ -2817,6 +2937,8 @@ export class App {
   }
 
   toMenu(): void {
+    keepAwake(false);
+    this.clip.stop();
     if (this.online) this.leaveOnline();
     if (this.inf) this.leaveInf();
     show(this.side, false);
@@ -2895,6 +3017,7 @@ export class App {
       save();
     }
     this.viewBtn.textContent = VIEW_LBL[v];
+    if (this.match) this.recordClip();
     this.controls.view = v;
     this.scene.mini = v !== '2d';
     this.r3?.setView(v);
@@ -3044,6 +3167,18 @@ export class App {
   private onEvent(e: MatchEvent): void {
     const m = this.match;
     if (!m) return;
+    if (e.type === 'over')
+      telemetry.track('match_end', {
+        kind: m.kind.type,
+        mode: m.kind.type === 'mode' ? m.kind.mode : null,
+        online: m.net !== null,
+        won: e.win,
+        duration_s: Math.round((performance.now() - this.matchT0) / 1000),
+      });
+    if (e.type === 'tutorialDone' || e.type === 'tutorialFail')
+      telemetry.track(e.type === 'tutorialDone' ? 'tutorial_done' : 'tutorial_fail', {
+        step: m.kind.type === 'tutorial' ? m.kind.step : null,
+      });
     const me = m.me;
     const mine = (id: number | null) => id === m.meId;
     switch (e.type) {
@@ -3450,6 +3585,7 @@ export class App {
 
   private showTut(step: TutorialStep): void {
     const i = TUTORIAL_STEPS.indexOf(step);
+    telemetry.track('tutorial_step', { step, index: i + 1 });
     const t = TUTORIAL_TEXT[step];
     this.tut.replaceChildren(h('b', {}, `${i + 1}/6 ${t.title}`), t.hint);
     show(this.tut, true);
@@ -3776,6 +3912,7 @@ export class App {
           btn('sec', this.online ? 'LEAVE ROOM' : 'MENU', () => this.wipe(() => this.toMenu()), {
             'data-test': 'menu',
           }),
+          this.clipBtn(),
         ),
       ),
     );
