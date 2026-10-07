@@ -60,9 +60,9 @@ function explodes(s: GameState) {
 const has = (tiles: [number, number][], x: number, y: number) => tiles.some(([a, b]) => a === x && b === y);
 
 describe('bombă în arie (Nova)', () => {
-  it('raza ariei = raza bombei + 1, cu plafon', () => {
-    expect(burstRadius(1)).toBe(2);
-    expect(burstRadius(2)).toBe(BURST_CAP);
+  it('raza ariei = raza bombei, cu plafon', () => {
+    expect(burstRadius(1)).toBe(1);
+    expect(burstRadius(2)).toBe(2);
     expect(burstRadius(8)).toBe(BURST_CAP);
   });
 
@@ -92,7 +92,7 @@ describe('bombă în arie (Nova)', () => {
     const b = put(s.players[1]!, 9, 9);
     placeBomb(s, a);
     placeBomb(s, b);
-    expect(s.bombs.map((x) => x.area)).toEqual([2, 0]);
+    expect(s.bombs.map((x) => x.area)).toEqual([1, 0]);
   });
 
   it('flacăra ajunge pe diagonală, unde crucea de rază 1 nu ajunge', () => {
@@ -106,7 +106,7 @@ describe('bombă în arie (Nova)', () => {
     put(s.players[0]!, 1, 1);
     s.bombs[0]!.fuse = 1;
     const seen = explodes(s);
-    expect(seen[0]).toMatchObject({ area: 2 });
+    expect(seen[0]).toMatchObject({ area: 1 });
     expect(victim.alive).toBe(false);
   });
 
@@ -123,6 +123,7 @@ describe('bombă în arie (Nova)', () => {
 
   it('harta de pericol (boți) include aria', () => {
     const s = game([{ kit: BURST_KIT }]);
+    s.players[0]!.range = 2; // după un bonus de rază aria are raza 2
     placeBomb(s, put(s.players[0]!, 5, 5));
     const d = computeDanger(s);
     expect(d[idx(s, 7, 6)]).toBe(1);

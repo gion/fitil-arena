@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-07 — Claude Code (Sonnet 5.5) — Nova: rază mică la început, cerc vizibil; Nova și Shade gratuite
+
+- **Cerut:** raza lui Nova prea mare din start (mai mică, cel puțin la început); animația să arate clar că explodează în jur: un cerc vizibil și peste stâlpi și lăzi, nu doar pătrățele pe un labirint; Nova și Shade gratuite, ca să le poată încerca.
+- **Făcut:** `burstRadius(range) = min(range, 3)` (crește cu bonusurile de rază; Supernova rămâne 4); cerc pulsatoriu în jurul bombei și undă de șoc la explozie, desenate peste tot (2D: Phaser graphics la `DEPTH.top`; 3D: inele fără test de adâncime); `FREE_CHARS` include provizoriu `nova` și `shade` (`FREE_FOR_TESTING`), scoase din rotația săptămânală; teste și documente actualizate.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm sim:bench` (0 excepții, 0 desync). Cercul și unda nu au fost văzute pe ecran (fără browser aici); Playwright nerulat.
+- **Notă operațională:** înainte de lansare, de golit `FREE_FOR_TESTING` din `characters.ts`.
+
 ## 2026-10-07 — Claude Code (Sonnet 5.5) — Nova (bombă în arie) și Shade (bombă fumigenă)
 
 - **Cerut:** un erou ale cărui bombe acoperă o arie (rază mai mică, dar nu doar cruce) și un alt erou cu Ultimate de tip bombă fumigenă (arie plină de fum care ascunde ce e în ea); PR după ce e gata.

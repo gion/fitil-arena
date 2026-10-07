@@ -107,7 +107,7 @@ export const WARP_MIN = 5;
 /** Super-uri noi: cutremur (raza în pătrățele), invizibilitate. */
 export const QUAKE_REACH = 2;
 export const BOO = sec(2);
-/** Bomba în arie: raza ariei = raza bombei + 1, cel mult atât (în pătrățele, pe Chebyshev). */
+/** Bomba în arie: raza ariei = raza bombei, cel mult atât (în pătrățele, pe Chebyshev). */
 export const BURST_CAP = 3;
 /** Bomba fumigenă: cât stă fumul, raza norului și cât de departe zboară (pătrățele). */
 export const SMOKE_T = sec(10);

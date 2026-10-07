@@ -65,6 +65,9 @@ export class Renderer3D {
   private hemi = new THREE.HemisphereLight(0xdfefff, 0x3a3326, 0.55);
   private sun = new THREE.DirectionalLight(0xfff0d8, 1.25);
   private expLights: { l: THREE.PointLight; t: number }[] = [];
+  /** Cercurile bombelor în arie (peste tot, și peste stâlpi) și undele de șoc. */
+  private areaRings: THREE.Mesh[] = [];
+  private shocks: { x: number; y: number; r: number; t: number }[] = [];
   private match: Match | null = null;
   private view: View = 'chase';
   private built: GameState | null = null;
@@ -221,6 +224,7 @@ export class Renderer3D {
     const m = this.match;
     if (!m) return;
     if (e.type === 'explode') {
+      if (e.area > 0) this.shocks.push({ x: e.x, y: e.y, r: e.area, t: 0 });
       let best = this.expLights[0]!;
       for (const x of this.expLights) if (x.t > best.t) best = x;
       best.t = 0;
@@ -1319,6 +1323,7 @@ export class Renderer3D {
       }
     }
     for (let i = nb; i < this.bombPool.length; i++) this.bombPool[i]!.visible = false;
+    this.renderAreaRings(m, time, dt);
     this.renderSpiders(m);
     this.renderClouds(m, dt);
     // steaguri
@@ -1443,6 +1448,55 @@ export class Renderer3D {
     g.visible = false;
     this.root.add(g);
     this.clouds.push(g);
+  }
+
+  /** Un cerc plat, mereu deasupra (fără test de adâncime), de la `i`; întoarce mesh-ul pregătit. */
+  private ring(i: number): THREE.Mesh {
+    let r = this.areaRings[i];
+    if (!r) {
+      const geo = new THREE.RingGeometry(0.9, 1, 48);
+      geo.rotateX(-Math.PI / 2);
+      r = new THREE.Mesh(
+        geo,
+        new THREE.MeshBasicMaterial({
+          color: '#ffd23f',
+          transparent: true,
+          depthTest: false,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        }),
+      );
+      r.renderOrder = 50;
+      r.frustumCulled = false;
+      this.root.add(r);
+      this.areaRings[i] = r;
+    }
+    r.visible = true;
+    return r;
+  }
+
+  /** Bombele în arie: cerc care pulsează cât arde fitilul + unda de șoc la explozie. */
+  private renderAreaRings(m: Match, time: number, dt: number): void {
+    const s = m.s;
+    let n = 0;
+    for (const b of s.bombs) {
+      if (b.area <= 0 || b.held !== null || b.fly) continue;
+      const left = Math.max(0, Math.min(1, b.fuse / (s.rules.fuse + 10)));
+      const pulse = 0.5 + 0.5 * Math.sin(time * (6 + 14 * (1 - left)));
+      const r = this.ring(n++);
+      r.position.set(b.x, 0.9, b.y);
+      r.scale.setScalar(b.area + 0.5);
+      (r.material as THREE.MeshBasicMaterial).opacity = 0.5 + 0.4 * pulse;
+    }
+    this.shocks = this.shocks.filter((w) => (w.t += dt) < 0.5);
+    for (const w of this.shocks) {
+      const u = w.t / 0.5;
+      const r = this.ring(n++);
+      r.position.set(w.x, 0.9, w.y);
+      r.scale.setScalar((w.r + 0.5) * (0.35 + 0.75 * Math.sqrt(u)));
+      (r.material as THREE.MeshBasicMaterial).opacity = 0.9 * (1 - u);
+    }
+    for (let i = n; i < this.areaRings.length; i++) this.areaRings[i]!.visible = false;
   }
 
   private renderClouds(m: Match, dt: number): void {

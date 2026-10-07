@@ -151,6 +151,8 @@ export class ArenaScene extends Phaser.Scene {
   private bolts: { x: number; y: number; t: number; seed: number }[] = [];
   private flash = 0;
   private shake = 0;
+  /** Undele de șoc ale bombelor în arie (pătrățele, secunde de la explozie). */
+  private shocks: { x: number; y: number; r: number; t: number }[] = [];
   private zoomK = 1;
   private walk = new Map<number, number>();
   private dizzy: DizzyFX | null = null;
@@ -274,6 +276,7 @@ export class ArenaScene extends Phaser.Scene {
     const me = m.me;
     switch (e.type) {
       case 'explode': {
+        if (e.area > 0) this.shocks.push({ x: e.x, y: e.y, r: e.area, t: 0 });
         const [hx, hy] = [me.px / U, me.py / U];
         if (me.alive) {
           const d = Math.hypot(hx - e.x, hy - e.y);
@@ -806,6 +809,34 @@ export class ArenaScene extends Phaser.Scene {
     for (const b of s.bombs) {
       if (b.held !== null || b.fly) continue;
       this.drawBomb(m, b, time, P.bombs!);
+    }
+
+    // bombe în arie: cercul ariei se vede peste stâlpi și lăzi, ca să se vadă că explodează în jur
+    for (const b of s.bombs) {
+      if (b.area <= 0 || b.held !== null || b.fly) continue;
+      const left = Math.max(0, Math.min(1, b.fuse / (s.rules.fuse + 10)));
+      const pulse = 0.5 + 0.5 * Math.sin(time * (6 + 14 * (1 - left)));
+      const cx = (b.x + 0.5) * T;
+      const cy = (b.y + 0.5) * T;
+      const rad = (b.area + 0.5) * T;
+      g.fillStyle(0xff8a3d, 0.1 + 0.12 * (1 - left) + 0.05 * pulse);
+      g.fillCircle(cx, cy, rad);
+      g.lineStyle(T * 0.06, 0xffd23f, 0.55 + 0.35 * pulse);
+      g.strokeCircle(cx, cy, rad);
+      g.lineStyle(T * 0.03, 0xffffff, 0.3 + 0.3 * pulse);
+      g.strokeCircle(cx, cy, rad * (0.55 + 0.45 * (1 - left)));
+    }
+    // unda de șoc a exploziei în arie
+    this.shocks = this.shocks.filter((w) => (w.t += dt) < 0.5);
+    for (const w of this.shocks) {
+      const u = w.t / 0.5;
+      const cx = (w.x + 0.5) * T;
+      const cy = (w.y + 0.5) * T;
+      const rad = (w.r + 0.5) * T * (0.35 + 0.75 * Math.sqrt(u));
+      g.lineStyle(T * (0.14 * (1 - u) + 0.03), 0xfff0b0, 0.9 * (1 - u));
+      g.strokeCircle(cx, cy, rad);
+      g.fillStyle(0xffb347, 0.22 * (1 - u));
+      g.fillCircle(cx, cy, rad);
     }
 
     // uleiul Bucătarului
