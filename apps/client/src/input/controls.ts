@@ -28,6 +28,10 @@ export interface ControlEls {
 
 /** Glisarea în sus pe butonul BOMB (3D) schimbă bomba specială. */
 const SWIPE = 36;
+/** Swipe puternic pe joystick (alunecarea lui Slick): cel puțin atâția px într-o fereastră de atâtea ms. */
+const FLICK_PX = 56;
+const FLICK_MS = 110;
+const FLICK_PAUSE_MS = 350;
 
 /**
  * Controalele de pe ecran (după GAME_DESIGN „Interfață & controale”):
@@ -55,6 +59,10 @@ export class Controls {
   onDetonate: () => void = () => {};
   onSuper: () => void = () => {};
   onSwap: () => void = () => {};
+  /** Mișcare puternică a joystick-ului (sau Shift + săgeată): alunecare. */
+  onSlide: () => void = () => {};
+  private trail: { t: number; x: number; y: number }[] = [];
+  private lastFlick = 0;
   onFirstTouch: () => void = () => {};
   onKey: (code: string) => void = () => {};
 
@@ -70,6 +78,7 @@ export class Controls {
       }
       this.ox = e.clientX;
       this.oy = e.clientY;
+      this.trail = [{ t: e.timeStamp, x: e.clientX, y: e.clientY }];
       this.place();
       el.base.classList.remove('hidden');
       el.knob.style.transform = 'translate(-50%,-50%)';
@@ -77,7 +86,9 @@ export class Controls {
       this.move(e);
     });
     left.addEventListener('pointermove', (e) => {
-      if (e.pointerId === this.joyId) this.move(e);
+      if (e.pointerId !== this.joyId) return;
+      this.move(e);
+      this.checkFlick(e);
     });
     const end = (e: PointerEvent) => {
       if (e.pointerId !== this.joyId) return;
@@ -183,6 +194,7 @@ export class Controls {
       if (e.code === 'KeyE' && this.enabled) this.onDetonate();
       if (e.code === 'KeyQ' && !e.repeat && this.enabled) this.onSuper();
       if (e.code === 'KeyR' && !e.repeat && this.enabled) this.onSwap();
+      if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && !e.repeat && this.enabled) this.onSlide();
       this.onKey(e.code);
     });
     addEventListener('keyup', (e) => {
@@ -197,6 +209,18 @@ export class Controls {
       this.keyStack = [];
     });
     document.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  /** O mișcare rapidă a degetului (cel puțin `FLICK_PX` în `FLICK_MS`) e un swipe: alunecare. */
+  private checkFlick(e: PointerEvent): void {
+    this.trail.push({ t: e.timeStamp, x: e.clientX, y: e.clientY });
+    while (this.trail.length > 1 && e.timeStamp - this.trail[0]!.t > FLICK_MS) this.trail.shift();
+    const a = this.trail[0]!;
+    if (Math.hypot(e.clientX - a.x, e.clientY - a.y) < FLICK_PX) return;
+    if (!this.enabled || e.timeStamp - this.lastFlick < FLICK_PAUSE_MS) return;
+    this.lastFlick = e.timeStamp;
+    this.trail = [];
+    this.onSlide();
   }
 
   private place(): void {

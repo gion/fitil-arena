@@ -218,6 +218,7 @@ export class ArenaHost {
       if (old.inp.detonate) next.inp.detonate = true;
       if (old.inp.super) next.inp.super = true;
       if (old.inp.swap) next.inp.swap = true;
+      if (old.inp.slide) next.inp.slide = true;
     }
   }
 

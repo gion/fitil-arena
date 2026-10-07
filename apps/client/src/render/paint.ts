@@ -1826,6 +1826,24 @@ function extras(look: Look, face: [number, number], alive: boolean): void {
       ctx.fillStyle = '#a78bfa';
       ctx.fillRect(-r * 0.98, ey + r * 0.2, r * 1.96, r * 0.05);
       break;
+    case 'portia':
+      // inel de portal violet deasupra capului
+      ctx.strokeStyle = '#b388ff';
+      ctx.lineWidth = T * 0.05;
+      ellipse(0, top - r * 0.1, r * 0.55, r * 0.2);
+      ctx.stroke();
+      ctx.strokeStyle = '#e8dcff';
+      ctx.lineWidth = T * 0.02;
+      ellipse(0, top - r * 0.1, r * 0.38, r * 0.12);
+      ctx.stroke();
+      break;
+    case 'slick':
+      // bentiță de gheață și două dungi de viteză pe lateral
+      ctx.fillStyle = '#e6f7ff';
+      ctx.fillRect(-r * 0.96, top + r * 0.3, r * 1.92, r * 0.16);
+      ctx.fillStyle = '#4aa8ff';
+      ctx.fillRect(-r * 0.96, top + r * 0.36, r * 1.92, r * 0.04);
+      break;
     case 'striker':
       // bentiță albă cu dungă și o minge lângă picior
       ctx.fillStyle = '#ffffff';

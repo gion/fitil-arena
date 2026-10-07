@@ -95,6 +95,8 @@ export class Renderer3D {
   private walk = new Map<number, number>();
   private hardCount = -1;
   private padKey = '';
+  private gateObjs: THREE.Object3D[] = [];
+  private gateKey = '';
   private cineDir: [number, number] | null = null;
   private time = 0;
 
@@ -345,6 +347,9 @@ export class Renderer3D {
     this.mis = null;
     this.hardCount = -1;
     this.padKey = '';
+    this.gateObjs = [];
+    this.gateKey = '';
+    this.areaRings = [];
     if (this.builtTheme !== this.theme.id) {
       for (const t of this.texCache.values()) t.dispose();
       this.texCache.clear();
@@ -1103,6 +1108,46 @@ export class Renderer3D {
     if (fl) o.flag.position.set(fl.x, 0, fl.y);
   }
 
+  /** Porțile eroilor (Portia): inel violet + strălucire, recreate când se schimbă. */
+  private refreshGates(s: GameState, time: number): void {
+    const key = JSON.stringify(s.gates.map((g) => [g.a, g.b]));
+    if (key !== this.gateKey) {
+      this.gateKey = key;
+      for (const o of this.gateObjs) this.root.remove(o);
+      this.gateObjs = [];
+      for (const g of s.gates)
+        for (const [x, y] of [g.a, g.b]) {
+          const t = new THREE.Mesh(
+            new THREE.TorusGeometry(0.36, 0.06, 10, 32),
+            new THREE.MeshBasicMaterial({ color: '#b388ff' }),
+          );
+          t.rotation.x = -Math.PI / 2;
+          t.position.set(x, 0.08, y);
+          const sp = new THREE.Sprite(
+            new THREE.SpriteMaterial({
+              map: this.glowTex(),
+              color: '#b388ff',
+              blending: THREE.AdditiveBlending,
+              depthWrite: false,
+              transparent: true,
+              opacity: 0.6,
+            }),
+          );
+          sp.scale.set(1, 1.4, 1);
+          sp.position.set(x, 0.5, y);
+          this.root.add(t, sp);
+          this.gateObjs.push(t, sp);
+        }
+    }
+    const low = s.gates.length > 0 && Math.min(...s.gates.map((g) => g.t)) < 2.5 * TICK_HZ;
+    this.gateObjs.forEach((o, i) => {
+      o.visible = !(low && Math.sin(time * 18) > 0);
+      if (o instanceof THREE.Sprite)
+        (o.material as THREE.SpriteMaterial).opacity = 0.4 + 0.2 * Math.sin(time * 4);
+      else o.rotation.z = time * (i % 4 ? -2.4 : 2.4);
+    });
+  }
+
   private refreshPads(s: GameState): void {
     const key = JSON.stringify(s.pads);
     if (key === this.padKey) return;
@@ -1263,6 +1308,7 @@ export class Renderer3D {
       if (i.mesh.instanceColor) i.mesh.instanceColor.needsUpdate = true;
     }
     this.refreshPads(s);
+    this.refreshGates(s, time);
     this.pads.forEach((t, i) => {
       t.visible = !(s.portalT < 2.5 * TICK_HZ && Math.sin(time * 18) > 0);
       if (t instanceof THREE.Sprite)

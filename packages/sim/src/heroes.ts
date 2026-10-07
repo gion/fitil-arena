@@ -4,10 +4,14 @@ import {
   BOO,
   BURST_CAP,
   DASH_TILES,
+  GATE_MAX,
+  GATE_MIN,
+  GATE_T,
   MAX_RANGE,
   PURSE_MAX,
   PURSE_MIN,
   QUAKE_REACH,
+  SMASH_T,
   SMOKE_RADIUS,
   SMOKE_T,
   SMOKE_THROW,
@@ -251,6 +255,44 @@ function smokeBomb(s: GameState, p: Player): boolean {
   return true;
 }
 
+/**
+ * Portia: o poartă doar a ei (și a bombelor ei): prima ușă în fața ei, a doua la 4–7 pătrățele
+ * în direcția privirii, pe primul loc liber. Stă 10s; o poartă nouă o înlocuiește pe cea veche.
+ */
+function gate(s: GameState, p: Player): boolean {
+  const sx = tileX(p);
+  const sy = tileY(p);
+  const dir = p.face;
+  const ax = sx + DX[dir]!;
+  const ay = sy + DY[dir]!;
+  if (!freeTile(s, ax, ay)) return false;
+  for (let steps = GATE_MAX; steps >= GATE_MIN; steps--) {
+    const bx = sx + DX[dir]! * steps;
+    const by = sy + DY[dir]! * steps;
+    if (!freeTile(s, bx, by) || padIndex(s, bx, by) >= 0 || padIndex(s, ax, ay) >= 0) continue;
+    if (
+      s.gates.some(
+        (g) =>
+          g.owner !== p.id && [g.a, g.b].some(([x, y]) => (x === ax && y === ay) || (x === bx && y === by)),
+      )
+    )
+      continue;
+    if (s.gates.some((g) => g.owner === p.id)) s.events.push({ type: 'gateClose', owner: p.id });
+    s.gates = s.gates.filter((g) => g.owner !== p.id);
+    s.gates.push({ a: [ax, ay], b: [bx, by], owner: p.id, t: GATE_T });
+    p.tpLock = -1;
+    s.events.push({ type: 'gateOpen', owner: p.id, a: [ax, ay], b: [bx, by] });
+    return true;
+  }
+  return false;
+}
+
+/** Slick: armează Smash — următoarea alunecare (swipe) sparge lăzile din cale, până la 5 pătrățele. */
+function smash(p: Player): boolean {
+  p.smashT = SMASH_T;
+  return true;
+}
+
 /** Magicianul: schimbă locul cu cel mai apropiat adversar. */
 function swap(s: GameState, p: Player): boolean {
   const cx = tileX(p);
@@ -303,7 +345,11 @@ export function useSuper(s: GameState, p: Player): boolean {
                         ? swap(s, p)
                         : h.super === 'smoke'
                           ? smokeBomb(s, p)
-                          : warp(s, p);
+                          : h.super === 'gate'
+                            ? gate(s, p)
+                            : h.super === 'smash'
+                              ? smash(p)
+                              : warp(s, p);
   if (!ok) return false;
   p.charge = 0;
   s.events.push({ type: 'super', player: p.id, kind: h.super });

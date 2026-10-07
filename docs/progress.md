@@ -436,3 +436,15 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 - Echilibrul (fitil, raza, 10s de fum) e provizoriu: de jucat cu oameni. `sim:bench` nu măsoară pe personaj.
 - Aspectul lui Nova și Shade e doar un accesoriu peste corpul generic; direcția artistică finală așteaptă proprietarul.
 - Playwright nerulat în containerul de lucru (numărul de carduri din `characters.spec.ts` a fost actualizat la 13).
+
+## Portia și Slick: poartă privată și alunecare (2026-10-07)
+
+**Mini-plan:** sim (poartă + alunecare + Smash, cu teste), apoi `net` (câmpul `slide`), `content`, apoi client (swipe, porți, accesorii).
+
+**Făcut:** vezi D-079. Teste noi: `packages/sim/test/gate-slide.test.ts` (12).
+
+**Rămas / cunoscut:**
+
+- Boții nu alunecă și nu folosesc Ultimate-urile `gate`/`smash`; porțile nu sunt sincronizate în Infinit.
+- Pragul swipe-ului (56 px în 110 ms) e o primă estimare: de reglat pe telefon real.
+- Pe telefon nu există încă un indiciu în joc pentru swipe (doar descrierea personajului).

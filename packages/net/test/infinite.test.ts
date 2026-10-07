@@ -172,6 +172,6 @@ describe('Infinit online: stare filtrată pe chunk-uri', () => {
     let f: InfFrame | undefined;
     for (let t = 0; t < 30; t++) f = tick().get('c0');
     expect(JSON.stringify(f).length).toBeLessThan(120);
-    expect(encodeInput({ dir: null })).toHaveLength(6);
+    expect(encodeInput({ dir: null })).toHaveLength(7);
   });
 });

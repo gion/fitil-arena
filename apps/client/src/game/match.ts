@@ -119,6 +119,7 @@ export class Match {
   private detonateReq = false;
   private superReq = false;
   private swapReq = false;
+  private slideReq = false;
   private listeners: ((e: MatchEvent) => void)[] = [];
   private tutDone = false;
   /** Online: poziția prezisă a jucătorului local, înainte și după ultimul tick. */
@@ -185,6 +186,11 @@ export class Match {
 
   swapSpecial(): void {
     this.swapReq = true;
+  }
+
+  /** Swipe puternic pe joystick: alunecare (doar pentru personajele care o au). */
+  slide(): void {
+    if (this.me.kit?.slide) this.slideReq = true;
   }
 
   /** Are jucătorul bombe cu detonator pe hartă? (arată butonul BUM!) */
@@ -280,11 +286,13 @@ export class Match {
       : { dir: this.control.dir(), bomb, detonate: this.detonateReq };
     if (!this.paused && this.superReq) inp.super = true;
     if (!this.paused && this.swapReq) inp.swap = true;
+    if (!this.paused && this.slideReq) inp.slide = true;
     const face = this.control.face();
     if (face !== undefined && !this.paused) inp.face = face;
     this.detonateReq = false;
     this.superReq = false;
     this.swapReq = false;
+    this.slideReq = false;
     return inp;
   }
 

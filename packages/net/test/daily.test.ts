@@ -41,7 +41,7 @@ describe('provocarea zilei', () => {
     expect(
       replayDaily(
         d,
-        Array.from({ length: 200 }, () => [-1, 0, 0, -1, 0, 0] as WireInput),
+        Array.from({ length: 200 }, () => [-1, 0, 0, -1, 0, 0, 0] as WireInput),
       ).done,
     ).toBe(false);
   });

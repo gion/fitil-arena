@@ -118,7 +118,7 @@ describe('teme', () => {
       'theme:halloween',
       'theme:neon',
     ]);
-    // 3 comuni + 2 gratuite provizoriu (Nova, Shade) + 2 din rotație
-    expect(keys.filter((k) => k.startsWith('char:'))).toHaveLength(7);
+    // 3 comuni + 4 gratuite provizoriu (Nova, Shade, Portia, Slick) + 2 din rotație
+    expect(keys.filter((k) => k.startsWith('char:'))).toHaveLength(9);
   });
 });
