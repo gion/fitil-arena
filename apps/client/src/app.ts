@@ -237,6 +237,9 @@ export class App {
     this.controls.onSwap = () => {
       if (this.match && this.match.me.specials.length) this.match.swapSpecial();
     };
+    this.controls.onSlide = () => {
+      if (this.match) this.match.slide();
+    };
     this.controls.onTap = () => this.humanTap();
     this.controls.onDetonate = () => {
       if (this.match?.hasRemote) {
@@ -3301,6 +3304,14 @@ export class App {
         break;
       case 'smokeBomb':
         this.sfx.tp();
+        break;
+      case 'gateOpen':
+        this.sfx.tp();
+        break;
+      case 'slide':
+        this.sfx.kick();
+        if (mine(e.player)) vibrate(25);
+        if (e.smash && mine(e.player)) this.showBanner('Smash!', 700, 'gold');
         break;
       case 'timeStop':
         this.sfx.tp();

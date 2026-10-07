@@ -60,6 +60,8 @@ const SUPERS = [
   'swap',
   'smoke',
   'nova',
+  'gate',
+  'smash',
 ] as const satisfies readonly SuperKind[];
 
 const KitSchema = z.object({
@@ -84,6 +86,7 @@ const KitSchema = z.object({
   ghost: z.boolean().optional(),
   pigeon: z.boolean().optional(),
   burst: z.boolean().optional(),
+  slide: z.boolean().optional(),
 }) satisfies z.ZodType<CharKit>;
 
 const CharSchema = z.object({
@@ -422,6 +425,54 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     win: ['Vanished into victory!', 'You never saw me.'],
     kill: ['Poof!', 'Gone in smoke!'],
   },
+  {
+    id: 'portia',
+    name: 'Portia',
+    rarity: 'legendary',
+    tagline: 'Why walk around when you can step through?',
+    kit: { speed: 165, range: 1, bombs: 1, maxBombs: 6, lives: 1, kick: true },
+    signature: 'Starts with the boot: kicks bombs from the first second.',
+    pros: ['Kicks bombs from the start', 'Her Ultimate makes shortcuts only she can use'],
+    cons: ['At most 6 bombs', 'No shield or health tricks'],
+    ultimate: {
+      name: 'Private Portal',
+      desc: 'Opens a gate in front of her and its twin 4–7 tiles away for 10 seconds. Only she and her bombs can use it.',
+      kind: 'gate',
+      pct: 90,
+    },
+    color: '#3dd6c8',
+    signatureColor: '#b388ff',
+    size: 1,
+    walk: 'float',
+    voice: 'opera',
+    quips: ['Wrong door!', 'Portal closed!', 'I saw that coming… somewhere else.'],
+    win: ['Right on time, wherever!', 'Gate to victory!'],
+    kill: ['Step through!', 'Gone through the gap!'],
+  },
+  {
+    id: 'slick',
+    name: 'Slick',
+    rarity: 'epic',
+    tagline: 'Fast hands, faster feet, and a lot of ice.',
+    kit: { speed: 175, range: 1, bombs: 1, maxBombs: 6, lives: 1, slide: true },
+    signature: 'Flick the joystick (Shift + arrow on keyboard) to slide 3 tiles. No steering mid-slide.',
+    pros: ['Fast', 'A long slide gets him out of trouble'],
+    cons: ['Can’t steer during a slide', 'Slide has a 2s pause'],
+    ultimate: {
+      name: 'Crate Crusher',
+      desc: 'For 6 seconds, your next slide smashes through crates in its way, up to 5 tiles.',
+      kind: 'smash',
+      pct: 100,
+    },
+    color: '#4aa8ff',
+    signatureColor: '#e6f7ff',
+    size: 1,
+    walk: 'dash',
+    voice: 'whistle',
+    quips: ['Whoa, whoa, whoa!', 'Slipped up!', 'Cold floor…'],
+    win: ['Smooth victory!', 'Slid right in!'],
+    kill: ['Slide into this!', 'Ice to meet you!'],
+  },
 ]);
 
 export const CHAR_IDS = CHARACTERS.map((c) => c.id);
@@ -430,7 +481,7 @@ export const charById = (id: string | null | undefined): Character =>
 export const charPrice = (c: Character): number => RARITY[c.rarity].price;
 /** Personajele gratuite de la început. */
 /** Provizoriu: Nova și Shade sunt gratuite, ca proprietarul să le poată încerca (de scos la lansare). */
-const FREE_FOR_TESTING = ['nova', 'shade'];
+const FREE_FOR_TESTING = ['nova', 'shade', 'portia', 'slick'];
 export const FREE_CHARS = CHARACTERS.filter(
   (c) => c.rarity === 'common' || FREE_FOR_TESTING.includes(c.id),
 ).map((c) => c.id);

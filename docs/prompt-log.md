@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-07 — Claude Code (Sonnet 5.5) — Portia (portal privat) și Slick (alunecare + Smash)
+
+- **Cerut:** două personaje noi: unul cu Ultimate de portal (a doua ușă automată, folosită doar de el și de bombele lui) și unul care alunecă 3–4 pătrățele la un swipe mai puternic al mâinii stângi, cu Ultimate care sparge lăzi cu swipe; testabile gratuit.
+- **Făcut:** `sim`: `GameState.gates`, `gateExit`, Super-urile `gate` și `smash`, `Input.slide`, alunecarea în `move()`, `breakCrate` extras din `explode`; `net`: al 7-lea câmp `slide` în `WireInput`; `content`: `portia` (legendar) și `slick` (epic), gratuite provizoriu; client: detectare swipe (joystick + Shift), porți 2D/3D, accesorii, sunete. D-079, `GAME_DESIGN.md`, teste în `packages/sim/test/gate-slide.test.ts`.
+- **Verificat:** vezi `docs/progress.md`; swipe-ul pe telefon și porțile pe ecran nu au putut fi încercate în containerul de lucru.
+- **Notă operațională:** ramura pornește peste `feat/nova-smaller-area-ring` (PR #17); PR-ul acesta trebuie îmbinat după #17.
+
 ## 2026-10-07 — Claude Code (Sonnet 5.5) — Nova: rază mică la început, cerc vizibil; Nova și Shade gratuite
 
 - **Cerut:** raza lui Nova prea mare din start (mai mică, cel puțin la început); animația să arate clar că explodează în jur: un cerc vizibil și peste stâlpi și lăzi, nu doar pătrățele pe un labirint; Nova și Shade gratuite, ca să le poată încerca.

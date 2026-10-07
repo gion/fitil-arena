@@ -104,6 +104,8 @@ Raritate: Comun · Rar · Epic · Legendar — raritatea aduce abilități mai n
 | Maestrul Fitil | Legendar | Vede timerul bombelor | Oprește timpul pentru bombele lui 1.5s |
 | Robo-Mici | Legendar | Lasă o capcană la moarte | Teleport pe orice portal |
 | Nova | Epic | Bombele explodează **în arie**, nu în cruce (rază = raza bombei (crește cu bonusurile de rază), maxim 3; cercul ariei se vede deasupra stâlpilor și lăzilor; ocolește stâlpii, lăzile o opresc); fitil +0.5s, maxim 6 bombe | Supernova: bombă uriașă cu aria cu o treaptă peste plafon |
+| Portia | Legendar | Pornește cu bocancul (șutează bombe de la început); maxim 6 bombe | Portal privat: o poartă în fața ei și geamăna la 4–7 pătrățele, 10s; o folosesc doar ea și bombele ei |
+| Slick | Epic | Rapid (175); la un swipe puternic pe joystick (Shift + săgeată pe tastatură) alunecă 3 pătrățele fără control, pauză 2s | Zdrobitorul de lăzi: 6s în care următoarea alunecare sparge lăzile din cale (până la 5 pătrățele) |
 | Shade | Legendar | Cel mai rapid (185), maxim 5 bombe | Bomba fumigenă: la 3 pătrățele în față, nor de rază 3, 10s; cine e în fum nu se vede de la mai mult de 1 pătrățel, iar cine e în fum nu vede de departe (coechipierii se văd mereu) |
 
 ### Afinități de arenă

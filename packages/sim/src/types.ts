@@ -41,7 +41,9 @@ export type SuperKind =
   | 'boo'
   | 'swap'
   | 'smoke'
-  | 'nova';
+  | 'nova'
+  | 'gate'
+  | 'smash';
 /** Abilitățile pasive care cer reguli în sim (statisticile de start sunt separate). */
 export type PassiveKind = 'none' | 'bounce' | 'guard' | 'timers' | 'trap';
 
@@ -81,6 +83,8 @@ export interface Input {
   swap?: boolean;
   /** Direcția privirii (vederile 3D: bomba, aruncarea și linia merg unde se uită camera). */
   face?: Dir;
+  /** Mișcare puternică (swipe) a joystick-ului: pornește alunecarea (personajele cu `kit.slide`). */
+  slide?: boolean;
 }
 
 /**
@@ -125,6 +129,8 @@ export interface CharKit {
   pigeon?: boolean;
   /** Bombele lui explodează în arie (pătrat umplut în jurul bombei), nu în cruce. */
   burst?: boolean;
+  /** Alunecare la mișcare puternică a joystick-ului (`Input.slide`): câteva pătrățele fără control. */
+  slide?: boolean;
 }
 
 /** Încărcări pentru abilitățile luate din arenă (0 = nelimitat, dacă abilitatea e activă). */
@@ -147,6 +153,12 @@ export interface Player {
   bigBomb: boolean;
   /** Tick-uri până poate trece iar printr-o ladă (Fantoma). */
   ghostT: number;
+  /** Alunecarea (Slick): pătrățele rămase, direcția, pauza dintre alunecări, dacă sparge lăzi și cât mai e armat Smash. */
+  slideLeft: number;
+  slideDir: Dir;
+  slideCd: number;
+  smashing: boolean;
+  smashT: number;
   /** Porumbelul a fost folosit în runda asta (Magicianul). */
   pigeonUsed: boolean;
   team: number;
@@ -261,6 +273,14 @@ export interface Bomb {
 export type BombKind = 'normal' | SpecialKind;
 /** Tipul flăcării pe pătrățel: 0 normală, 1 gheață, 2 flashbang, 3 otravă. */
 export const FLAME_KIND: Record<BombKind, number> = { normal: 0, ice: 1, flash: 2, poison: 3 };
+
+/** Poarta unui erou: două capete, `t` tick-uri rămase; doar `owner` și bombele lui o folosesc. */
+export interface Gate {
+  a: [number, number];
+  b: [number, number];
+  owner: number;
+  t: number;
+}
 
 /** Capcana lăsată de Robo-Mici la moarte: explodează când calcă un adversar pe ea. */
 export interface Trap {
@@ -431,6 +451,9 @@ export type GameEvent =
   | { type: 'trapFire'; x: number; y: number; owner: number }
   | { type: 'timeStop'; owner: number }
   | { type: 'smokeBomb'; player: number; x: number; y: number }
+  | { type: 'gateOpen'; owner: number; a: [number, number]; b: [number, number] }
+  | { type: 'gateClose'; owner: number }
+  | { type: 'slide'; player: number; dir: Dir; smash: boolean }
   | { type: 'bushBurn'; x: number; y: number }
   | { type: 'crownTake'; player: number }
   | { type: 'crownDrop'; x: number; y: number }
@@ -543,6 +566,8 @@ export interface GameState {
   boxTimer: number;
   pads: [number, number][];
   portalT: number;
+  /** Porțile eroilor (Portia): o pereche pe jucător, folosită doar de el și de bombele lui. */
+  gates: Gate[];
   chainSeq: number;
   chainCount: Record<number, number>;
   hurryIdx: number;

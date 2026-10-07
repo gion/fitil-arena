@@ -792,6 +792,21 @@ export class ArenaScene extends Phaser.Scene {
       }
     }
 
+    // porțile eroilor (Portia): doar ale ei; clipesc în ultimele 2.5s
+    for (const g of s.gates) {
+      if (g.t < 2.5 * TICK_HZ && Math.sin(time * 18) > 0) continue;
+      const outer = this.t('gateO', 1, 1, 0.5, 0.5, () => paint.portalRing('#b388ff', false));
+      const inner = this.t('gateI', 1, 1, 0.5, 0.5, () => paint.portalRing('#b388ff', true));
+      const glowT = this.t('gateG', 1, 1, 0.5, 0.5, () => paint.disc('#b388ff', 0.3));
+      for (const [x, y] of [g.a, g.b]) {
+        const cx = (x + 0.5) * T;
+        const cy = (y + 0.5) * T;
+        P.fx!.get(glowT, cx, cy).setAlpha(0.25 + 0.15 * Math.sin(time * 4));
+        P.fx!.get(outer, cx, cy).setRotation(time * 2.4);
+        P.fx!.get(inner, cx, cy).setRotation(-time * 3.4);
+      }
+    }
+
     // zonele de fulger anunțate (cruce galbenă care clipește)
     for (const c of s.clouds) {
       if (c.charge < 0) continue;

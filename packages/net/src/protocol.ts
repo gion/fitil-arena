@@ -65,8 +65,8 @@ export interface SlotInfo {
   outfit: Outfit | null;
 }
 
-/** Input compact pe fir: [dir, bomb, detonate, face, super, swap], -1 = lipsă. */
-export type WireInput = [number, number, number, number, number, number];
+/** Input compact pe fir: [dir, bomb, detonate, face, super, swap, slide], -1 = lipsă. */
+export type WireInput = [number, number, number, number, number, number, number];
 
 /** Server → client: starea completă (start, reconectare, desync). */
 export interface SnapMsg {
@@ -125,6 +125,7 @@ export function encodeInput(inp: Input): WireInput {
     inp.face ?? -1,
     inp.super ? 1 : 0,
     inp.swap ? 1 : 0,
+    inp.slide ? 1 : 0,
   ];
 }
 
@@ -133,13 +134,14 @@ const asDir = (v: number): Dir | null => (v >= 0 && v <= 3 ? (v as Dir) : null);
 /** Decodează (și validează) un input venit de pe fir. */
 export function decodeInput(w: unknown): Input {
   if (!Array.isArray(w)) return { dir: null };
-  const [d, b, x, f, su, sw] = w as unknown[];
+  const [d, b, x, f, su, sw, sl] = w as unknown[];
   const inp: Input = { dir: asDir(Number(d)) };
   const bomb = Number(b);
   if (bomb === 1 || bomb === 2) inp.bomb = bomb;
   if (x === 1) inp.detonate = true;
   if (su === 1) inp.super = true;
   if (sw === 1) inp.swap = true;
+  if (sl === 1) inp.slide = true;
   const face = asDir(Number(f));
   if (face !== null) inp.face = face;
   return inp;

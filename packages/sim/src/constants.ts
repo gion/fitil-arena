@@ -109,6 +109,16 @@ export const QUAKE_REACH = 2;
 export const BOO = sec(2);
 /** Bomba în arie: raza ariei = raza bombei, cel mult atât (în pătrățele, pe Chebyshev). */
 export const BURST_CAP = 3;
+/** Slick: alunecarea (pătrățele, viteză pe tick, pauză) și Smash (cât stă armat, pătrățele). */
+export const SLIDE_TILES = 3;
+export const PLAYER_SLIDE_SPEED = 420;
+export const SLIDE_CD = sec(2);
+export const SMASH_T = sec(6);
+export const SMASH_TILES = 5;
+/** Portia: cât stă poarta și la ce distanță (pătrățele) apare a doua ușă. */
+export const GATE_T = sec(10);
+export const GATE_MIN = 4;
+export const GATE_MAX = 7;
 /** Bomba fumigenă: cât stă fumul, raza norului și cât de departe zboară (pătrățele). */
 export const SMOKE_T = sec(10);
 export const SMOKE_RADIUS = 3;

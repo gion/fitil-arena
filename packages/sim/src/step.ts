@@ -4,25 +4,29 @@ import {
   BLIND,
   CARRIER_SPEED_PCT,
   CHAIN_DELAY,
-  FLAME,
-  GHOST_CD,
-  OIL,
-  OIL_SPEED_PCT,
   CHARGE_BOX,
   CHARGE_TICK,
+  CURSE_DELAY,
+  FLAME,
   FREEZE,
+  GHOST_CD,
+  GRACE,
+  HICCUP_EVERY,
+  HURT_FLAME,
+  MAX_RANGE,
+  OIL,
+  OIL_SPEED_PCT,
+  PORTAL,
+  PLAYER_SLIDE_SPEED,
+  SLIDE_CD,
+  SLIDE_SPEED,
+  SLIDE_TILES,
+  SMASH_TILES,
+  SPEED_MAX,
   STICKY_FUSE,
   TOXIC,
   TOXIC_HURT,
   TRAP_RANGE,
-  HURT_FLAME,
-  CURSE_DELAY,
-  GRACE,
-  HICCUP_EVERY,
-  MAX_RANGE,
-  PORTAL,
-  SLIDE_SPEED,
-  SPEED_MAX,
 } from './constants.ts';
 import { addCharge, addFlame, damage, kill, shieldSave } from './effects.ts';
 import { useSuper } from './heroes.ts';
@@ -111,8 +115,29 @@ function handleActions(s: GameState, inputs: readonly (Input | undefined)[]): vo
   }
 }
 
+/** Capătul de poartă de la (x, y) al jucătorului `owner` și celălalt capăt (null = nu e o poartă a lui). */
+export function gateExit(s: GameState, x: number, y: number, owner: number): [number, number] | null {
+  for (const g of s.gates) {
+    if (g.owner !== owner) continue;
+    if (g.a[0] === x && g.a[1] === y) return g.b;
+    if (g.b[0] === x && g.b[1] === y) return g.a;
+  }
+  return null;
+}
+
 function teleportBomb(s: GameState, b: Bomb): void {
   const k = idx(s, b.x, b.y);
+  const ge = gateExit(s, b.x, b.y, b.owner);
+  if (ge && b.tpLock !== k) {
+    const [tx, ty] = ge;
+    if (!s.bombs.some((o) => o !== b && o.x === tx && o.y === ty && o.held === null && o.fly === null)) {
+      b.x = tx;
+      b.y = ty;
+      b.tpLock = idx(s, tx, ty);
+      s.events.push({ type: 'teleport', kind: 'bomb', id: b.id, x: tx, y: ty });
+      return;
+    }
+  }
   const pi = padIndex(s, b.x, b.y);
   if (pi >= 0 && b.tpLock !== k) {
     const [tx, ty] = s.pads[1 - pi]!;
@@ -234,6 +259,22 @@ function openPortals(s: GameState, cx: number, cy: number): void {
   }
 }
 
+/** Sparge o ladă: o scoate din grilă, dă încărcare pe Ultimate și lasă bonusul (sau blestemul). */
+function breakCrate(s: GameState, nx: number, ny: number, ownerId: number): void {
+  const k = idx(s, nx, ny);
+  const owner = s.players[ownerId];
+  s.grid[k] = EMPTY;
+  addCharge(owner, CHARGE_BOX);
+  if (owner) owner.boxes++;
+  const gold = s.gold[k] === 1;
+  const cursed = s.cursed[k] === 1;
+  s.gold[k] = 0;
+  s.cursed[k] = 0;
+  if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
+  else s.drops[k] = gold ? rollGold(s.rng) : rollDrop(s.rng, s.rules.hearts, s.rules.extras, s.rules.dropPct);
+  s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed, owner: ownerId });
+}
+
 function explode(s: GameState, b: Bomb, dead: Set<number>): void {
   dead.add(b.id);
   if (!b.chain) b.chain = ++s.chainSeq;
@@ -273,24 +314,11 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
   const hit = (nx: number, ny: number): boolean => {
     const g = tileAt(s, nx, ny);
     if (g === HARD) return true;
-    const k = idx(s, nx, ny);
     if (g === SOFT && !lethal) return true; // gheața și flashbang-ul nu sparg lăzi
     if (g === SOFT && s.mission && hitTarget(s, nx, ny, b.owner, b.via)) return true;
     if (g === SOFT) {
-      s.grid[k] = EMPTY;
       fire(nx, ny);
-      addCharge(owner, CHARGE_BOX);
-      if (owner) owner.boxes++;
-      const gold = s.gold[k] === 1;
-      const cursed = s.cursed[k] === 1;
-      s.gold[k] = 0;
-      s.cursed[k] = 0;
-      if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
-      else
-        s.drops[k] = gold
-          ? rollGold(s.rng)
-          : rollDrop(s.rng, s.rules.hearts, s.rules.extras, s.rules.dropPct);
-      s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed, owner: b.owner });
+      breakCrate(s, nx, ny, b.owner);
       return true;
     }
     for (const o of s.bombs) {
@@ -372,6 +400,19 @@ function updateFlames(s: GameState): void {
 
 function arrive(s: GameState, p: Player): boolean {
   const k = idx(s, p.tx, p.ty);
+  const ge = gateExit(s, p.tx, p.ty, p.id);
+  if (ge && p.tpLock !== k) {
+    const [dx, dy] = ge;
+    if (!bombAt(s, dx, dy)) {
+      p.px = dx * U;
+      p.py = dy * U;
+      p.fx = p.tx = dx;
+      p.fy = p.ty = dy;
+      p.tpLock = idx(s, dx, dy);
+      s.events.push({ type: 'teleport', kind: 'player', id: p.id, x: dx, y: dy });
+      return true;
+    }
+  }
   const pi = padIndex(s, p.tx, p.ty);
   if (pi >= 0 && p.tpLock !== k) {
     const [dx, dy] = s.pads[1 - pi]!;
@@ -422,10 +463,29 @@ function pickup(s: GameState, p: Player, x: number, y: number): void {
 
 const magnetable = (it: ItemType | null): boolean => !!it && !isNegative(it) && it !== 'crystal';
 
+/** Slick: o mișcare puternică a joystick-ului pornește alunecarea (cu Smash armat, sparge lăzile din cale). */
+function startSlide(s: GameState, p: Player, dir: Dir): void {
+  if (!p.kit?.slide || p.slideLeft > 0 || p.slideCd > 0 || p.carry !== null) return;
+  if (p.moving && dir !== p.dir && dir !== opposite(p.dir)) return;
+  p.smashing = p.smashT > 0;
+  p.smashT = 0;
+  p.slideDir = dir;
+  p.slideLeft = p.smashing ? SMASH_TILES : SLIDE_TILES;
+  p.slideCd = SLIDE_CD;
+  s.events.push({ type: 'slide', player: p.id, dir, smash: p.smashing });
+}
+
 /** Mișcare pe grilă, pătrățel cu pătrățel (portat din `move()` din prototip). */
-function move(s: GameState, p: Player, want: Dir | null): void {
-  let rem = carriedFlag(s, p) ? Math.floor((p.speed * CARRIER_SPEED_PCT) / 100) : p.speed;
-  if (onOil(s, p)) rem = Math.floor((rem * OIL_SPEED_PCT) / 100);
+function move(s: GameState, p: Player, input: Dir | null): void {
+  // alunecarea (Slick) nu se mai poate îndrepta: merge înainte, mai repede, un număr de pătrățele
+  const sliding = p.slideLeft > 0;
+  const want = sliding ? p.slideDir : input;
+  let rem = sliding
+    ? PLAYER_SLIDE_SPEED
+    : carriedFlag(s, p)
+      ? Math.floor((p.speed * CARRIER_SPEED_PCT) / 100)
+      : p.speed;
+  if (!sliding && onOil(s, p)) rem = Math.floor((rem * OIL_SPEED_PCT) / 100);
   if (want !== null) p.face = want;
   if (p.moving && want !== null && want === opposite(p.dir)) {
     [p.tx, p.fx] = [p.fx, p.tx];
@@ -436,13 +496,26 @@ function move(s: GameState, p: Player, want: Dir | null): void {
   while (rem > 0 && guard-- > 0) {
     if (!p.moving) {
       if (want === null) break;
+      if (sliding && p.slideLeft <= 0) break;
       const cx = p.tx;
       const cy = p.ty;
       const nx = cx + DX[want]!;
       const ny = cy + DY[want]!;
       if (!walkable(s, nx, ny)) {
-        // Fantoma trece printr-o ladă, o dată la 20s
-        if (p.kit?.ghost && p.ghostT === 0 && tileAt(s, nx, ny) === SOFT && !bombAt(s, nx, ny)) {
+        if (sliding) {
+          // Smash: lada din calea alunecării se sparge și drumul continuă
+          if (
+            p.smashing &&
+            tileAt(s, nx, ny) === SOFT &&
+            !bombAt(s, nx, ny) &&
+            !(s.mission && hitTarget(s, nx, ny, p.id, 0))
+          ) {
+            breakCrate(s, nx, ny, p.id);
+          } else {
+            p.slideLeft = 0;
+            break;
+          }
+        } else if (p.kit?.ghost && p.ghostT === 0 && tileAt(s, nx, ny) === SOFT && !bombAt(s, nx, ny)) {
           p.ghostT = GHOST_CD;
           s.events.push({ type: 'ghostIn', player: p.id, x: nx, y: ny });
         } else {
@@ -456,6 +529,7 @@ function move(s: GameState, p: Player, want: Dir | null): void {
       p.ty = ny;
       p.dir = want;
       p.moving = true;
+      if (sliding) p.slideLeft--;
     }
     const ddx = p.tx * U - p.px;
     const ddy = p.ty * U - p.py;
@@ -480,8 +554,15 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
     if (!p.alive) continue;
     let want: Dir | null = inputs[p.id]?.dir ?? null;
     if (want !== null && p.revT > 0) want = opposite(want);
-    if (p.frozenT > 0) p.frozenT--;
-    else move(s, p, want);
+    if (p.slideCd > 0) p.slideCd--;
+    if (p.smashT > 0) p.smashT--;
+    if (p.frozenT > 0) {
+      p.frozenT--;
+      p.slideLeft = 0;
+    } else {
+      if (inputs[p.id]?.slide && want !== null) startSlide(s, p, want);
+      move(s, p, want);
+    }
 
     const k = idx(s, tileX(p), tileY(p));
     const friendlyTo = (ownerId: number) => {
@@ -566,6 +647,15 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
 }
 
 function updatePortals(s: GameState): void {
+  for (const g of s.gates) g.t--;
+  const gone = s.gates.filter((g) => g.t <= 0);
+  if (gone.length) {
+    s.gates = s.gates.filter((g) => g.t > 0);
+    for (const g of gone) {
+      for (const p of s.players) if (p.id === g.owner) p.tpLock = -1;
+      s.events.push({ type: 'gateClose', owner: g.owner });
+    }
+  }
   if (!s.pads.length) return;
   if (--s.portalT > 0) return;
   s.pads = [];
@@ -591,7 +681,8 @@ function updateBoxRespawn(s: GameState): void {
       s.items[k] ||
       s.drops[k] ||
       bombAt(s, x, y) ||
-      padIndex(s, x, y) >= 0
+      padIndex(s, x, y) >= 0 ||
+      s.gates.some((g) => (g.a[0] === x && g.a[1] === y) || (g.b[0] === x && g.b[1] === y))
     )
       continue;
     if (s.players.some((p) => p.alive && Math.abs(tileX(p) - x) + Math.abs(tileY(p) - y) < 3)) continue;
