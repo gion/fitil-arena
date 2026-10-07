@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Transitions (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+@keyframes az-rise{from{transform:translateY(105%)}to{transform:translateY(-105%)}}
+@keyframes az-burn{from{width:420px}to{width:0}}
+@keyframes az-count{0%{transform:scale(0.2) rotate(-12deg);opacity:0}20%{transform:scale(1.15) rotate(4deg);opacity:1}70%{transform:scale(1) rotate(0deg);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes az-boom{0%{transform:scale(0) rotate(0deg);opacity:1}50%{transform:scale(14) rotate(25deg);opacity:1}100%{transform:scale(16) rotate(30deg);opacity:0}}
+@keyframes az-pop{0%{transform:scale(0) rotate(-20deg);opacity:1}40%{transform:scale(1.25) rotate(6deg);opacity:1}75%{transform:scale(1) rotate(-4deg);opacity:1}100%{transform:scale(1.1) rotate(-4deg);opacity:0}}
+@keyframes az-spark{from{transform:scale(0.7) rotate(0deg)}to{transform:scale(1.25) rotate(90deg)}}
+@keyframes az-shake{0%,100%{transform:translate(0,0) rotate(0deg)}25%{transform:translate(-2px,1px) rotate(-3deg)}75%{transform:translate(2px,-1px) rotate(3deg)}}
+@keyframes az-dim{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:1ms !important;animation-delay:0s !important}}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif">
+
+  <sc-if value="{{pageHome}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; box-sizing: border-box; padding: 18px 56px 24px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <h1 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040">HOME</h1>
+        <div style="font-weight: 800; font-size: 13px; color: #D9D2FF">Tap a button to see how the page changes</div>
+      </div>
+      <div style="flex-grow: 1; display: flex; gap: 18px; min-height: 0; padding-bottom: 6px">
+        <button type="button" onClick="{{startMatch}}" style="flex-grow: 1; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #1A1040; background: #FFC531; border: 3px solid #1A1040; border-radius: 30px; box-shadow: inset 0 -12px 0 #E09A00, inset 0 5px 0 #FFE08A, 0 6px 0 #1A1040; cursor: pointer">
+          <span style="font-family: 'Lilita One', sans-serif; font-size: 92px; line-height: 1; letter-spacing: 3px">PLAY</span>
+          <span style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px">match start · fuse countdown, then boom</span>
+        </button>
+        <button type="button" onClick="{{openRankings}}" style="width: 250px; flex-shrink: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 30px; box-shadow: inset 0 -10px 0 #D5D0EA, 0 6px 0 #1A1040; cursor: pointer">
+          <span style="font-family: 'Lilita One', sans-serif; font-size: 38px; line-height: 1; letter-spacing: 1px">Rankings</span>
+          <span style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px">everyday page · quick curtain</span>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{pageGame}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background-color: #679D48; background-image: linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%), linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%); background-size: 96px 96px; background-position: 0 0, 48px 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px">
+      <div style="font-family: 'Lilita One', sans-serif; font-size: 24px; letter-spacing: 2px; color: #1A1040; background: #2FD4FF; border: 3px solid #1A1040; border-radius: 14px; padding: 2px 20px; box-shadow: 0 4px 0 #1A1040; transform: rotate(-3deg)">ROUND 1</div>
+      <div style="font-family: 'Lilita One', sans-serif; font-size: 104px; line-height: 1; letter-spacing: 3px; color: #FFC531; -webkit-text-stroke: 12px #1A1040; paint-order: stroke fill; text-shadow: 0 8px 0 #1A1040; transform: rotate(-3deg)">FIGHT!</div>
+      <button type="button" onClick="{{goHome}}" style="height: 50px; padding: 0 20px; font-family: 'Lilita One', sans-serif; font-size: 17px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 18px; box-shadow: inset 0 -6px 0 #D5D0EA, 0 5px 0 #1A1040; cursor: pointer">Back to home</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{pageRank}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; box-sizing: border-box; padding: 16px 56px 20px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <button type="button" onClick="{{goHome}}" aria-label="Back" style="width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; background: #FF4F8B; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #D12863, 0 4px 0 #1A1040; cursor: pointer">
+          <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: #1A1040; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <h1 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040">RANKINGS</h1>
+      </div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; font-family: 'Lilita One', sans-serif; font-size: 17px">1 · BoomBoom_King</div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; font-family: 'Lilita One', sans-serif; font-size: 17px">2 · TantiVetaFan</div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; font-family: 'Lilita One', sans-serif; font-size: 17px">3 · Sparky</div>
+      <div style="height: 46px; display: flex; align-items: center; padding: 0 14px; background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; font-family: 'Lilita One', sans-serif; font-size: 17px">4 · NoBrakes</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isWipe}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: -20px; top: 0; width: 884px; height: 390px; box-sizing: border-box; background: #1F1259; border-top: 24px solid #FFC531; border-bottom: 24px solid #FFC531; border-radius: 60px; animation: az-rise 0.520s cubic-bezier(0.6, 0, 0.4, 1) both"></div>
+  </sc-if>
+
+  <sc-if value="{{isFuse}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(26,16,64,0.82); animation: az-dim 0.200s both"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 40px; height: 180px; display: flex; align-items: center; justify-content: center">
+      <span style="position: absolute; font-family: 'Lilita One', sans-serif; font-size: 160px; line-height: 1; color: #FFC531; -webkit-text-stroke: 14px #1A1040; paint-order: stroke fill; text-shadow: 0 10px 0 #1A1040; opacity: 0; animation: az-count 0.700s 0s both">3</span>
+      <span style="position: absolute; font-family: 'Lilita One', sans-serif; font-size: 160px; line-height: 1; color: #FFC531; -webkit-text-stroke: 14px #1A1040; paint-order: stroke fill; text-shadow: 0 10px 0 #1A1040; opacity: 0; animation: az-count 0.700s 0.700s both">2</span>
+      <span style="position: absolute; font-family: 'Lilita One', sans-serif; font-size: 160px; line-height: 1; color: #FF4F8B; -webkit-text-stroke: 14px #1A1040; paint-order: stroke fill; text-shadow: 0 10px 0 #1A1040; opacity: 0; animation: az-count 0.700s 1.400s both">1</span>
+    </div>
+    <div style="position: absolute; left: 150px; bottom: 44px; width: 560px; height: 90px; display: flex; align-items: center; justify-content: flex-end">
+      <div style="position: relative; height: 12px; box-sizing: border-box; background: #C98A4B; border: 3px solid #1A1040; border-right: 0; border-radius: 6px 0 0 6px; animation: az-burn 2.100s linear both">
+        <div style="position: absolute; left: -18px; top: -16px; width: 36px; height: 36px; animation: az-spark 0.180s linear infinite alternate">
+          <svg viewBox="0 0 100 100" style="width: 36px; height: 36px" aria-hidden="true"><path d="M50 4 l11 30 32 2 -25 20 9 32 -27 -18 -27 18 9 -32 -25 -20 32 -2z" style="fill: #FFC531; stroke: #1A1040; stroke-width: 8; stroke-linejoin: round"/></svg>
+        </div>
+      </div>
+      <div style="position: relative; width: 84px; height: 84px; flex-shrink: 0; animation: az-shake 0.160s linear infinite">
+        <div style="position: absolute; left: -6px; top: 30px; width: 18px; height: 24px; background: #1A1040; border-radius: 6px"></div>
+        <div style="position: absolute; left: 4px; top: 4px; width: 76px; height: 76px; box-sizing: border-box; border-radius: 50%; background: #1B1C26; border: 4px solid #1A1040; box-shadow: inset 8px 8px 0 rgba(255,255,255,0.2)"></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isBoom}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 618px; top: 254px; width: 100px; height: 100px; animation: az-boom 0.900s ease-out both">
+      <svg viewBox="0 0 100 100" style="width: 100px; height: 100px" aria-hidden="true"><path d="M50 4 l11 30 32 2 -25 20 9 32 -27 -18 -27 18 9 -32 -25 -20 32 -2z" style="fill: #FFC531; stroke: #1A1040; stroke-width: 2; stroke-linejoin: round"/></svg>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; top: 110px; text-align: center; font-family: 'Lilita One', sans-serif; font-size: 150px; line-height: 1; letter-spacing: 4px; color: #FFFFFF; -webkit-text-stroke: 16px #1A1040; paint-order: stroke fill; text-shadow: 0 10px 0 #1A1040; animation: az-pop 0.900s ease-out both">BOOM!</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const page = st.page || 'home';
+const phase = st.phase || 'idle';
+const busy = phase !== 'idle';
+const later = (ms, patch) => setTimeout(() => this.setState(patch), ms);
+const wipeTo = (target) => () => {
+  if (busy) return;
+  this.setState({ phase: 'wipe' });
+  later(260, { page: target });
+  later(540, { phase: 'idle' });
+};
+const startMatch = () => {
+  if (busy) return;
+  this.setState({ phase: 'fuse' });
+  later(2100, { phase: 'boom' });
+  later(2500, { page: 'game' });
+  later(3000, { phase: 'idle' });
+};
+return {
+  pageHome: page === 'home',
+  pageGame: page === 'game',
+  pageRank: page === 'rank',
+  isWipe: phase === 'wipe',
+  isFuse: phase === 'fuse',
+  isBoom: phase === 'boom',
+  startMatch,
+  openRankings: wipeTo('rank'),
+  goHome: wipeTo('home')
+};
+}
+}
+</script>
+</body>
+</html>

@@ -3,7 +3,11 @@ import { App } from './app.ts';
 import { DPR, viewportSize } from './display.ts';
 import { hideSplash } from './native.ts';
 import { ArenaScene } from './render/ArenaScene.ts';
+import { applySkin } from './settings.ts';
 import './ui/styles.css';
+import './ui/toy.css';
+
+applySkin();
 
 // plasa de siguranță: ecranul de pornire nu rămâne blocat dacă ceva pică la încărcare
 setTimeout(hideSplash, 5000);

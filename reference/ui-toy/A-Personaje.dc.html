@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Characters (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:ital,wght@0,600;0,700;0,800;0,900;1,700&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; gap: 12px; padding: 16px 56px 20px">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <a href="A-Home.dc.html" aria-label="Back" style="width: 48px; height: 48px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #FF4F8B; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #D12863, 0 4px 0 #1A1040">
+      <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: #1A1040; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <h1 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040">CHARACTERS</h1>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px 0 6px; background: #1F1259; border: 3px solid #1A1040; border-radius: 20px; font-family: 'Lilita One', sans-serif; font-size: 16px">
+      <span style="width: 24px; height: 24px; border-radius: 50%; background: #FFC531; border: 3px solid #1A1040; box-sizing: border-box"></span>850 <span style="font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px; color: #D9D2FF">Fitile</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+    <sc-for list="{{roster}}" as="c" hint-placeholder-count="11">
+      <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.selected}}" aria-label="{{c.name}}" style="height: 86px; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; font-family: 'Nunito', sans-serif; color: #FFFFFF; background: {{c.bg}}; border: 3px solid {{c.ring}}; border-top: 7px solid {{c.rarityColor}}; border-radius: 16px; box-shadow: 0 4px 0 #1A1040; cursor: pointer">
+        <svg viewBox="0 -8 100 118" style="width: 38px; height: 45px; opacity: {{c.opacity}}" aria-hidden="true">
+          <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+          <path d="M50 20 Q60 -4 72 3" style="fill: none; stroke: #12131C; stroke-width: 5; stroke-linecap: round"/>
+          <circle cx="72" cy="4" r="6" fill="{{c.color}}" style="stroke: #12131C; stroke-width: 4"/>
+          <circle cx="50" cy="58" r="38" fill="{{c.color}}" style="stroke: #12131C; stroke-width: 6"/>
+          <ellipse cx="36" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/><ellipse cx="64" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/>
+          <circle cx="38" cy="55" r="4" style="fill: #12131C"/><circle cx="66" cy="55" r="4" style="fill: #12131C"/>
+        </svg>
+        <span style="font-family: 'Lilita One', sans-serif; font-size: 13px; line-height: 1; white-space: nowrap">{{c.short}}</span>
+        <span style="font-weight: 800; font-size: 10.500px; line-height: 1.1; color: {{c.stateColor}}; white-space: nowrap">{{c.state}}</span>
+      </button>
+    </sc-for>
+    <div style="height: 86px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Lilita One', sans-serif; font-size: 13px; color: #D9D2FF; border: 3px dashed #6B58C9; border-radius: 16px">more soon</div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; align-items: stretch; gap: 14px; min-height: 0; padding-bottom: 5px">
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; background: #3A259A; border: 3px solid #1A1040; border-radius: 20px; padding: 6px 14px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-family: 'Lilita One', sans-serif; font-size: 24px; line-height: 1">{{sel.name}}</span>
+        <span style="font-family: 'Lilita One', sans-serif; font-size: 12px; letter-spacing: 1px; color: #1A1040; border: 3px solid #1A1040; border-radius: 10px; padding: 0 8px; background: {{sel.rarityColor}}">{{sel.rarity}}</span>
+        <span style="font-style: italic; font-weight: 700; font-size: 13px; color: #E4DEFF">“{{sel.tagline}}”</span>
+      </div>
+      <div style="font-weight: 700; font-size: 13px; line-height: 1.3"><span style="font-family: 'Lilita One', sans-serif; color: #FFC531">Ultimate · {{sel.ult}}:</span> {{sel.ultDesc}}</div>
+    </div>
+    <a href="A-Character.dc.html" style="align-self: center; flex-shrink: 0; width: 180px; height: 62px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 22px; letter-spacing: 1px; color: #1A1040; background: #FFC531; border: 3px solid #1A1040; border-radius: 22px; box-shadow: inset 0 -8px 0 #E09A00, inset 0 4px 0 #FFE08A, 0 5px 0 #1A1040">OPEN PAGE</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const rar = { Common: '#9AA3C0', Rare: '#4F9DFF', Epic: '#B169FF', Legendary: '#FFC21A', Mythic: '#FF4D6D' };
+const data = [
+  { id: 'bubu', name: 'Bubu', rarity: 'Common', color: '#5AD15A', tagline: 'Round, cheerful, starts with a bang.', ult: 'Big Bang', ultDesc: 'Drops a giant bomb (+2 range) on top of your normal ones.', state: 'Selected · Lv 3' },
+  { id: 'gugu', name: 'Gugu', rarity: 'Common', color: '#B08A5A', tagline: 'Heavy, stubborn, hard to get rid of.', ult: 'Earthquake', ultDesc: 'Shoves every bomb within 2 tiles away from him.', state: 'Lv 2' },
+  { id: 'zuzu', name: 'Zuzu', rarity: 'Common', color: '#E0A35A', tagline: 'Blink and you missed her.', ult: 'Dash', ultDesc: 'Dashes up to 3 tiles in the direction she faces.', state: 'Lv 1' },
+  { id: 'striker', name: 'Striker', rarity: 'Rare', color: '#2FB4FF', tagline: 'Every bomb is a ball.', ult: 'Penalty', ultDesc: 'Kicks every bomb in his line of sight, all at once.', state: 'Free this week', hot: true },
+  { id: 'fifi', name: 'Fifi', rarity: 'Epic', color: '#FF9AD0', tagline: 'Graceful, and grabs everything.', ult: 'Cluster', ultDesc: 'Four mini-bombs in a cross, two tiles away.', state: '600 Fitile', dim: true },
+  { id: 'veta', name: 'Auntie Veta', rarity: 'Epic', color: '#FFB870', tagline: 'Handbag, headscarf, zero patience.', ult: 'The Handbag', ultDesc: 'Swings a bomb 4 to 9 tiles away, over walls.', state: '600 Fitile', dim: true },
+  { id: 'chef', name: 'Chef', rarity: 'Epic', color: '#F4F4F8', tagline: 'Cooks with fire. Literally.', ult: 'Sticky Sauce', ultDesc: 'Kicks a sticky bomb that glues itself to the first player it hits.', state: 'Player Lv 6', dim: true },
+  { id: 'maestru', name: 'Master Fitil', rarity: 'Legendary', color: '#9AD7FF', tagline: 'Knows every fuse by heart.', ult: 'Time Stop', ultDesc: 'For 1.5s everyone else’s bombs freeze. His keep ticking.', state: 'Player Lv 8', dim: true },
+  { id: 'robo', name: 'Robo-Mici', rarity: 'Legendary', color: '#C8CCD8', tagline: 'Beep. Boop. Boom.', ult: 'Portal Jump', ultDesc: 'Teleports to the farther portal, or to a safe spot far away.', state: 'Player Lv 10', dim: true },
+  { id: 'ghost', name: 'Ghost', rarity: 'Mythic', color: '#E8F0FF', tagline: 'Crates? What crates?', ult: 'Boo!', ultDesc: 'Invisible to opponents for 2 seconds.', state: 'In 12 days', dim: true },
+  { id: 'magician', name: 'Magician', rarity: 'Mythic', color: '#8A5CFF', tagline: 'Now you see the bomb… now it’s a pigeon.', ult: 'Switcheroo', ultDesc: 'Swaps places with the nearest opponent.', state: 'In 40 days', dim: true }
+];
+const picked = (this.state && this.state.picked) || 'bubu';
+const roster = data.map((c) => ({
+  ...c,
+  short: c.name,
+  selected: c.id === picked,
+  rarityColor: rar[c.rarity],
+  bg: c.id === picked ? '#4A33B8' : '#1F1259',
+  ring: c.id === picked ? '#FFC531' : '#1A1040',
+  opacity: c.dim ? 0.45 : 1,
+  stateColor: c.hot ? '#5BE36A' : '#FFC531',
+  pick: () => this.setState({ picked: c.id })
+}));
+const s = data.find((c) => c.id === picked);
+return { roster, sel: { ...s, rarityColor: rar[s.rarity] } };
+}
+}
+</script>
+</body>
+</html>

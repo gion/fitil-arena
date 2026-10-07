@@ -3,6 +3,25 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-07 — Claude Code (Opus 5.5) — Toy pe toate ecranele; comutatorul vizibil peste tot
+
+- **Cerut:** verificate și ecranele rămase în Toy; comutatorul să nu fie doar în build-urile de dezvoltare.
+- **Făcut:** rândul „Look” e din nou în Settings în orice build, iar setarea salvată contează peste tot. `e2e/skin.spec.ts` parcurge acum în Toy și Online, camera privată, foaia de opțiuni, jocul rapid, HUD-ul FFA / echipe / steag / 3D, pauza, reconectarea, finalul și textele legale (21 de capturi în `docs/screens/ui-toy/`). Două ajustări în `toy.css` (titlul panourilor modale, butoanele secundare din ele). D-077 și `docs/design/ui.md` actualizate.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts`; capturile Toy privite una câte una.
+
+## 2026-10-07 — Claude Code (Opus 5.5) — Comutatorul de skin, doar în build-urile de dezvoltare
+
+- **Cerut:** ambele skin-uri rămân în paralel până la decizie; comutatorul să nu ajungă în build-urile de store.
+- **Făcut:** rândul „Look” din Settings apare doar cu `__DEV_TOOLS__`; setarea salvată contează doar acolo; `?skin=` merge oriunde, pentru sesiunea curentă. `e2e/skin.spec.ts` rescris pentru build-ul de producție (fără „Look”, Comic implicit, Toy prin URL). D-077 și `docs/design/ui.md` actualizate.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts`.
+
+## 2026-10-07 — Claude Code (Opus 5.5) — Skin-ul „Toy”, comutabil din Settings
+
+- **Cerut:** încă o versiune a interfeței, pe alt branch, cu tema A din canvas; ales: skin în cod, comutator în joc, fonturile Lilita One și Nunito descărcate din `@fontsource`.
+- **Făcut:** machetele A aduse la zi pe canvas și copiate în `reference/ui-toy/`; `ui/toy.css` (strat peste `styles.css`, activ la `data-skin="toy"`), `settings.skin`, rândul „Look” în Settings, `?skin=`; fonturile împachetate local; două stiluri inline mutate în clase; `e2e/skin.spec.ts`; secțiunea „Skin-uri” în `docs/design/ui.md`, D-077, credite, progres. Branch `design/ui-toy`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts` (8 teste trecute, pe un build proaspăt); capturi Toy comparate vizual pentru 11 ecrane.
+- **Notă operațională:** pe mașina asta portul 4173 era ocupat de alt proces cu un build vechi, așa că Playwright a fost rulat cu o configurație temporară pe 4199 (neadăugată în repo). `ui.spec.ts` rescrie capturile din `docs/screens/ui/`; a fost păstrată doar `settings.jpg` (ecranul are acum rândul „Look”).
+
 ## 2026-10-06 — Claude Code — Faza 8: mobil & store readiness
 
 - **Cerut:** „next phase?” → „Dap”: Faza 8 din PLAN.md, partea care nu cere conturi / bani / decizii finale; PR la final.

@@ -5,6 +5,9 @@ import type { BotLevel } from '@fitil/sim';
 
 export type View = '2d' | 'fps' | 'chase';
 export type Quality = 'low' | 'medium' | 'high';
+/** Aspectul interfeței: „Comic” (implicit) sau „Toy” (`ui/toy.css`). Doar aspect, același DOM. */
+export type Skin = 'comic' | 'toy';
+const SKINS: readonly Skin[] = ['comic', 'toy'];
 
 export interface Settings {
   sound: boolean;
@@ -13,6 +16,7 @@ export interface Settings {
   /** Efecte de mișcare (tremurat, valuri, zoom). Implicit oprite la `prefers-reduced-motion`. */
   motion: boolean;
   quality: Quality;
+  skin: Skin;
   view: View;
   /** Tema aleasă explicit (null = tema de sezon sau Clasic). */
   theme: string | null;
@@ -50,6 +54,7 @@ function load(): Settings {
     vibration: true,
     motion: !reduce(),
     quality: 'medium',
+    skin: 'comic',
     view: '2d',
     theme: null,
     mode: 'ffa',
@@ -79,6 +84,24 @@ export function save(): void {
   } catch {
     /* stocare indisponibilă: setările rămân doar în memorie */
   }
+}
+
+/** Skin-ul din URL (`?skin=toy`), dacă e valid: doar pentru sesiunea curentă, nu se salvează. */
+function urlSkin(): Skin | null {
+  try {
+    const v = new URLSearchParams(location.search).get('skin');
+    return SKINS.includes(v as Skin) ? (v as Skin) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Skin-ul afișat acum: cel din URL, altfel cel din setări. */
+export const currentSkin = (): Skin => urlSkin() ?? (SKINS.includes(settings.skin) ? settings.skin : 'comic');
+
+/** Pune skin-ul pe `<html data-skin>`; CSS-ul face restul. */
+export function applySkin(): void {
+  document.documentElement.dataset.skin = currentSkin();
 }
 
 /** Tema curentă: cea aleasă, altfel cea de sezon, altfel Clasic. */

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — In game (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 2px">
+  <div style="align-self: stretch; height: 44px; box-sizing: border-box; background: #1F1259; border-bottom: 3px solid #1A1040; display: flex; align-items: center; gap: 8px; padding: 0 56px">
+    <sc-if value="{{isFfa}}" hint-placeholder-val="{{true}}">
+      <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+        <div style="display: flex; align-items: center; gap: 5px; height: 30px; box-sizing: border-box; padding: 0 10px 0 4px; background: {{c.bg}}; color: {{c.fg}}; border: 3px solid #1A1040; border-radius: 15px; font-weight: 900; font-size: 12px">
+          <span style="width: 16px; height: 16px; box-sizing: border-box; border-radius: 50%; background: {{c.color}}; border: 2px solid #12131C"></span>
+          <span>{{c.name}}</span>
+          <span style="font-family: 'Lilita One', sans-serif; font-size: 16px; line-height: 1">{{c.wins}}</span>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{isCtf}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; align-items: center; gap: 8px; height: 30px; box-sizing: border-box; padding: 0 12px; background: #2FD4FF; color: #1A1040; border: 3px solid #1A1040; border-radius: 15px; font-weight: 900; font-size: 12px">
+        <span>Blue</span>
+        <span style="font-family: 'Lilita One', sans-serif; font-size: 18px; line-height: 1">1</span>
+        <span style="display: flex; gap: 3px">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #1A1040"></span>
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #1A1040"></span>
+          <span style="width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; border: 2px solid #1A1040"></span>
+        </span>
+      </div>
+    </sc-if>
+    <div style="margin: 0 auto; font-family: 'Lilita One', sans-serif; font-size: 26px; line-height: 1; letter-spacing: 1px; color: #FFC531; -webkit-text-stroke: 4px #1A1040; paint-order: stroke fill">1:42</div>
+    <sc-if value="{{isCtf}}" hint-placeholder-val="{{false}}">
+      <div style="height: 30px; box-sizing: border-box; display: flex; align-items: center; padding: 0 10px; background: #FFC531; color: #1A1040; border: 3px solid #1A1040; border-radius: 15px; font-family: 'Lilita One', sans-serif; font-size: 13px">Flag out!</div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 30px; box-sizing: border-box; padding: 0 12px; background: #FF8FB6; color: #1A1040; border: 3px solid #1A1040; border-radius: 15px; font-weight: 900; font-size: 12px">
+        <span style="display: flex; gap: 3px">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #1A1040"></span>
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #1A1040"></span>
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: #1A1040"></span>
+        </span>
+        <span style="font-family: 'Lilita One', sans-serif; font-size: 18px; line-height: 1">0</span>
+        <span>Red</span>
+      </div>
+    </sc-if>
+    <div style="display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 12px">
+      <span aria-label="2 lives" style="display: flex; gap: 3px">
+        <svg viewBox="0 0 24 22" style="width: 18px; height: 16px" aria-hidden="true"><path d="M12 21 L2 10 a5.500 5.500 0 0 1 10 -5 a5.500 5.500 0 0 1 10 5z" style="fill: #FF4F8B; stroke: #1A1040; stroke-width: 2.500; stroke-linejoin: round"/></svg>
+        <svg viewBox="0 0 24 22" style="width: 18px; height: 16px" aria-hidden="true"><path d="M12 21 L2 10 a5.500 5.500 0 0 1 10 -5 a5.500 5.500 0 0 1 10 5z" style="fill: #FF4F8B; stroke: #1A1040; stroke-width: 2.500; stroke-linejoin: round"/></svg>
+      </span>
+      <span>Bombs <span style="font-family: 'Lilita One', sans-serif; font-size: 16px; color: #FFC531">1/2</span></span>
+      <span style="height: 26px; box-sizing: border-box; display: flex; align-items: center; padding: 0 8px; background: #3A259A; border: 3px solid #1A1040; border-radius: 13px">Kick ×2</span>
+    </div>
+    <sc-if value="{{isFfa}}" hint-placeholder-val="{{true}}">
+      <div style="height: 30px; box-sizing: border-box; display: flex; align-items: center; padding: 0 10px; background: #2FD4FF; color: #1A1040; border: 3px solid #1A1040; border-radius: 15px; font-weight: 900; font-size: 12px">Shield 6s</div>
+    </sc-if>
+    <button type="button" onClick="{{cycleView}}" aria-label="Change camera view" style="width: 48px; height: 44px; padding: 0; background: transparent; border: 0; cursor: pointer">
+      <span style="display: flex; align-items: center; justify-content: center; height: 32px; font-family: 'Lilita One', sans-serif; font-size: 16px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 12px; box-shadow: inset 0 -4px 0 #D5D0EA">{{view}}</span>
+    </button>
+    <a href="A-Pauza.dc.html" aria-label="Pause" style="width: 48px; height: 44px; display: flex; align-items: center; justify-content: center">
+      <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 32px; background: #FF4F8B; border: 3px solid #1A1040; border-radius: 12px; box-shadow: inset 0 -4px 0 #D12863">
+        <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: #1A1040; stroke-width: 5; stroke-linecap: round" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+      </span>
+    </a>
+  </div>
+
+  <div style="position: relative; width: 728px; height: 344px; box-sizing: border-box; border: 4px solid #1A1040; border-radius: 18px; background: {{t.ground}}; overflow: hidden">
+    <div style="width: 720px; display: grid; grid-template-columns: repeat(15, minmax(0, 1fr))">
+      <sc-for list="{{tiles}}" as="tile" hint-placeholder-count="105">
+        <div style="height: 48px; box-sizing: border-box; background: {{tile.bg}}; border: {{tile.border}}; border-radius: {{tile.radius}}; box-shadow: {{tile.shadow}}"></div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{isCtf}}" hint-placeholder-val="{{false}}">
+      <div style="position: absolute; left: 4px; top: 196px; width: 40px; height: 40px; box-sizing: border-box; border-radius: 50%; border: 4px solid #2FD4FF; box-shadow: 0 0 0 2px #1A1040"></div>
+      <svg viewBox="0 0 24 30" style="position: absolute; left: 14px; top: 178px; width: 26px; height: 32px" aria-hidden="true"><path d="M4 2v27" style="stroke: #1A1040; stroke-width: 3; stroke-linecap: round"/><path d="M5 3h16l-5 6 5 6H5z" style="fill: #2FD4FF; stroke: #1A1040; stroke-width: 2.500; stroke-linejoin: round"/></svg>
+      <div style="position: absolute; left: 676px; top: 196px; width: 40px; height: 40px; box-sizing: border-box; border-radius: 50%; border: 4px dashed #FF4F8B; box-shadow: 0 0 0 2px #1A1040"></div>
+      <svg viewBox="0 0 24 30" style="position: absolute; left: 222px; top: 164px; width: 26px; height: 32px" aria-hidden="true"><path d="M4 2v27" style="stroke: #1A1040; stroke-width: 3; stroke-linecap: round"/><path d="M5 3h16l-5 6 5 6H5z" style="fill: #FF4F8B; stroke: #1A1040; stroke-width: 2.500; stroke-linejoin: round"/></svg>
+      <div style="position: absolute; left: 0; right: 190px; bottom: 12px; display: flex; justify-content: center">
+        <div style="font-family: 'Lilita One', sans-serif; font-size: 18px; color: #1A1040; background: #FFC531; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #E09A00, 0 4px 0 #1A1040; padding: 2px 16px 6px">You stole the red flag! Run home!</div>
+      </div>
+    </sc-if>
+
+    <div style="position: absolute; left: 288px; top: 96px; width: 240px; height: 48px; box-sizing: border-box; background: {{t.flameOuter}}; border: 3px solid {{t.flameLine}}; border-radius: 24px"></div>
+    <div style="position: absolute; left: 384px; top: 0; width: 48px; height: 240px; box-sizing: border-box; background: {{t.flameOuter}}; border: 3px solid {{t.flameLine}}; border-radius: 0 0 24px 24px"></div>
+    <div style="position: absolute; left: 298px; top: 108px; width: 220px; height: 24px; background: {{t.flameMid}}; border-radius: 12px"></div>
+    <div style="position: absolute; left: 396px; top: 6px; width: 24px; height: 222px; background: {{t.flameMid}}; border-radius: 12px"></div>
+    <div style="position: absolute; left: 392px; top: 104px; width: 32px; height: 32px; border-radius: 50%; background: {{t.flameCore}}"></div>
+    <div style="position: absolute; left: 446px; top: 6px; font-family: 'Lilita One', sans-serif; font-size: 40px; line-height: 1; letter-spacing: 1px; color: #FFC531; -webkit-text-stroke: 7px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040; transform: rotate(8deg)">BOOM!</div>
+
+    <div style="position: absolute; left: 151px; top: 199px; width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%; background: {{t.bombFill}}; border: 3px solid {{t.bombLine}}; box-shadow: inset 4px 4px 0 rgba(255,255,255,0.2)"></div>
+    <div style="position: absolute; left: 174px; top: 190px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; background: #FFC531; border: 2px solid #1A1040"></div>
+
+    <div style="position: absolute; left: 246px; top: 102px; width: 36px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Lilita One', sans-serif; font-size: 17px; color: #1A1040; background: #5BE36A; border: 3px solid #1A1040; border-radius: 10px; box-shadow: inset 0 -4px 0 #2FB843">+1</div>
+    <div style="position: absolute; left: 630px; top: 102px; width: 36px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Lilita One', sans-serif; font-size: 22px; color: #FFFFFF; background: #7A1A1A; border: 3px dashed #FF6B6B; border-radius: 10px">−</div>
+
+    <sc-for list="{{players}}" as="p" hint-placeholder-count="4">
+      <div style="position: absolute; left: {{p.left}}; top: {{p.top}}; width: 44px; height: 52px">
+        <sc-if value="{{p.teamRing}}" hint-placeholder-val="{{false}}">
+          <div style="position: absolute; left: -2px; bottom: -4px; width: 48px; height: 16px; box-sizing: border-box; border-radius: 50%; border: 3px solid {{p.ring}}; box-shadow: 0 0 0 2px #1A1040"></div>
+        </sc-if>
+        <sc-if value="{{p.me}}" hint-placeholder-val="{{false}}">
+          <div style="position: absolute; left: -2px; bottom: -4px; width: 48px; height: 16px; box-sizing: border-box; border-radius: 50%; border: 3px solid #FFC531; box-shadow: 0 0 0 2px #1A1040"></div>
+          <div style="position: absolute; left: 4px; top: -22px; font-family: 'Lilita One', sans-serif; font-size: 12px; letter-spacing: 1px; color: #1A1040; background: #FFC531; border: 2px solid #1A1040; border-radius: 8px; padding: 0 6px">YOU</div>
+        </sc-if>
+        <svg viewBox="0 -8 100 118" style="position: relative; width: 44px; height: 52px" aria-hidden="true">
+          <ellipse cx="36" cy="100" rx="11" ry="6" fill="{{p.feet}}"/><ellipse cx="64" cy="100" rx="11" ry="6" fill="{{p.feet}}"/>
+          <path d="M50 20 Q60 -4 72 3" stroke="{{p.stroke}}" style="fill: none; stroke-width: 5; stroke-linecap: round"/>
+          <circle cx="72" cy="4" r="6" fill="{{p.fill}}" stroke="{{p.stroke}}" style="stroke-width: 4"/>
+          <circle cx="50" cy="58" r="38" fill="{{p.fill}}" stroke="{{p.stroke}}" style="stroke-width: 6"/>
+          <ellipse cx="36" cy="53" rx="8" ry="10" fill="{{p.eye}}"/><ellipse cx="64" cy="53" rx="8" ry="10" fill="{{p.eye}}"/>
+          <circle cx="38" cy="55" r="4" fill="{{p.pupil}}"/><circle cx="66" cy="55" r="4" fill="{{p.pupil}}"/>
+        </svg>
+      </div>
+    </sc-for>
+    <div style="position: absolute; left: 566px; top: 56px; background: #FFFFFF; color: #1A1040; border: 3px solid #1A1040; border-radius: 14px 14px 14px 4px; padding: 2px 10px; font-weight: 900; font-size: 13px; box-shadow: 0 3px 0 #1A1040">Uh-oh.</div>
+
+    <button type="button" aria-label="Detonate" style="position: absolute; right: 16px; bottom: 118px; width: 88px; height: 44px; padding: 0 0 4px; font-family: 'Lilita One', sans-serif; font-size: 20px; color: #1A1040; background: #FF8FB6; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #E85C8E, 0 3px 0 #1A1040; cursor: pointer">BOOM!</button>
+    <button type="button" aria-label="Next special bomb: ice, 3 left. Swipe up to switch." style="position: absolute; right: 116px; bottom: 16px; width: 62px; height: 62px; padding: 0 0 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; font-family: 'Lilita One', sans-serif; color: #1A1040; background: #2FD4FF; border: 3px solid #1A1040; border-radius: 50%; box-shadow: inset 0 -6px 0 #12A9D6, 0 3px 0 #1A1040; cursor: pointer">
+      <span style="font-size: 17px">ICE</span>
+      <span style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 12px">×3</span>
+    </button>
+    <button type="button" aria-label="Super, ready" style="position: absolute; right: 14px; bottom: 14px; width: 90px; height: 90px; padding: 0 0 6px; font-family: 'Lilita One', sans-serif; font-size: 22px; color: #1A1040; background: #FFC531; border: 4px solid #1A1040; border-radius: 50%; box-shadow: inset 0 -9px 0 #E09A00, inset 0 4px 0 #FFE08A, 0 4px 0 #1A1040, 0 0 0 5px #5BE36A; cursor: pointer">SUPER</button>
+    <div style="position: absolute; right: 8px; bottom: 98px; font-family: 'Lilita One', sans-serif; font-size: 12px; color: #1A1040; background: #5BE36A; border: 2px solid #1A1040; border-radius: 8px; padding: 0 6px; transform: rotate(8deg)">READY!</div>
+
+    <sc-if value="{{showHints}}" hint-placeholder-val="{{true}}">
+      <div style="position: absolute; left: 36px; bottom: 26px; width: 100px; height: 100px; box-sizing: border-box; border-radius: 50%; background: rgba(255,255,255,0.3); border: 3px solid #1A1040"></div>
+      <div style="position: absolute; left: 82px; bottom: 66px; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; background: #FFFFFF; border: 3px solid #1A1040; box-shadow: inset 0 -5px 0 #D5D0EA"></div>
+      <div style="position: absolute; right: 250px; bottom: 76px; width: 60px; height: 60px; box-sizing: border-box; border-radius: 50%; border: 4px dashed #FFFFFF; box-shadow: 0 0 0 2px #1A1040"></div>
+      <div style="position: absolute; right: 196px; bottom: 12px; font-weight: 900; font-size: 13px; color: #FFFFFF; background: #1F1259; border: 3px solid #1A1040; border-radius: 14px; padding: 2px 12px">Tap anywhere on this side to drop a bomb</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["classic","neon"],"default":"classic"},"mode":{"editor":"enum","options":["ffa","ctf"],"default":"ffa"},"showHints":{"editor":"boolean","default":true},"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const neon = (this.props.theme ?? 'classic') === 'neon';
+const ctf = (this.props.mode ?? 'ffa') === 'ctf';
+const t = neon
+  ? { ground: '#0B0718', g2: '#130B28', hard: '#0B0718', hardLine: '#FF3DF0', soft: '#0B0718', softLine: '#29F0FF', flameOuter: '#FF2FD6', flameMid: '#29F0FF', flameCore: '#FFFFFF', flameLine: '#FFFFFF', bombFill: '#16102A', bombLine: '#FF3DF0' }
+  : { ground: '#679D48', g2: '#73AB52', hard: '#646C85', hardLine: '#1A1040', soft: '#C8834A', softLine: '#1A1040', flameOuter: '#FF7A1A', flameMid: '#FFC93A', flameCore: '#FFF6C4', flameLine: '#1A1040', bombFill: '#1B1C26', bombLine: '#1A1040' };
+if (ctf && !neon) t.bombFill = '#1F6FD0';
+const map = ['..xx.x...x.xx..', '.#x#.#x#.#.#x#.', 'x.x.........x.x', '.#.#x#.#.#x#.#x', '..x....x.x.....', '.#x#.#x#x#.#.#.', '..xx..x...xx...'];
+const tiles = [];
+map.forEach((row, r) => row.split('').forEach((ch, c) => {
+  if (ch === '#') tiles.push({ bg: t.hard, border: '3px solid ' + t.hardLine, radius: '10px', shadow: neon ? 'inset 0 0 10px ' + t.hardLine : 'inset 0 -8px 0 rgba(0,0,0,0.25), inset 0 5px 0 rgba(255,255,255,0.3)' });
+  else if (ch === 'x') tiles.push({ bg: t.soft, border: '3px solid ' + t.softLine, radius: '10px', shadow: neon ? 'inset 0 0 8px ' + t.softLine : 'inset 0 -7px 0 rgba(0,0,0,0.22), inset 0 4px 0 rgba(255,255,255,0.3)' });
+  else tiles.push({ bg: (r + c) % 2 ? t.g2 : t.ground, border: '0', radius: '0', shadow: 'none' });
+}));
+const ffaDefs = [
+  { name: 'You', color: '#FFD23F', c: 4, r: 4, wins: '2', me: true },
+  { name: 'Mara', color: '#FF5F93', c: 11, r: 2, wins: '1' },
+  { name: 'Vlad', color: '#4FC3FF', c: 0, r: 6, wins: '0' },
+  { name: 'Bot', color: '#7DFFB0', c: 14, r: 0, wins: '0' }
+];
+const ctfDefs = [
+  { color: '#4FC3FF', c: 4, r: 4, me: true, team: '#2FD4FF' },
+  { color: '#8FDBFF', c: 1, r: 2, team: '#2FD4FF' },
+  { color: '#2F8FE0', c: 0, r: 6, team: '#2FD4FF' },
+  { color: '#FF5F5F', c: 11, r: 2, team: '#FF4F8B' },
+  { color: '#FF9A9A', c: 14, r: 0, team: '#FF4F8B' },
+  { color: '#D93A3A', c: 14, r: 6, team: '#FF4F8B' }
+];
+const defs = ctf ? ctfDefs : ffaDefs;
+const players = defs.map((p) => ({
+  me: !!p.me,
+  teamRing: ctf && !p.me,
+  ring: p.team || '#FFC531',
+  left: (p.c * 48 + 2) + 'px',
+  top: (p.r * 48 - 8) + 'px',
+  fill: neon ? '#0B0718' : p.color,
+  stroke: neon ? p.color : '#12131C',
+  feet: neon ? p.color : '#12131C',
+  eye: neon ? p.color : '#FFFFFF',
+  pupil: neon ? '#07050F' : '#12131C'
+}));
+const chips = ffaDefs.map((p) => ({ name: p.name, color: p.color, wins: p.wins, bg: p.me ? '#FFC531' : '#3A259A', fg: p.me ? '#1A1040' : '#FFFFFF' }));
+const views = ['2D', '1P', '3P'];
+const vi = (this.state && this.state.vi) || 0;
+return { t, tiles, players, chips, isFfa: !ctf, isCtf: ctf, view: views[vi], cycleView: () => this.setState({ vi: (vi + 1) % 3 }), showHints: !ctf && (this.props.showHints ?? true) };
+}
+}
+</script>
+</body>
+</html>

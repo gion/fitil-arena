@@ -401,3 +401,21 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 - Checkpoint uman: conturile Apple / Google, nume + `appId` final, iconița finală, capturile alese, domeniul pentru App Links / Universal Links (Q-016), consimțământul pentru statistici (Q-014), build-urile iOS în CI (Q-015), politica de confidențialitate (Q-011).
 - Înregistrarea din vederea 3D e verificată în Chromium; în WebView-ul iOS rămâne de verificat pe dispozitiv (dacă iese neagră, copia se face imediat după randare).
 - Erorile native (Swift/Kotlin) nu ajung în Sentry; doar cele JS.
+
+## Skin-ul „Toy” (alternativă la „Comic”, 2026-10-07)
+
+**Mini-plan:** un strat CSS peste interfața existentă, fără DOM nou: tokeni, fonturi, apoi fiecare componentă cu fundal deschis, text moștenit sau înclinare; comutator în Settings și parametru în URL; test Playwright care parcurge meniurile în Toy.
+
+**Făcut:**
+
+- `apps/client/src/ui/toy.css` (activ la `<html data-skin="toy">`), `settings.skin` + `applySkin()`, rândul „Look” în Settings, `?skin=toy|comic` pentru sesiunea curentă.
+- Fonturile Lilita One și Nunito împachetate local (`ui/fonts/`, `fonts.css`, `assets/CREDITS.md`).
+- Două stiluri inline din `app.ts` mutate în clase (`.pvbox`, `.cap.info.plain`), ca să poată fi restilizate.
+- Machetele Toy în `reference/ui-toy/` (21), secțiunea „Skin-uri” în `docs/design/ui.md`, decizia D-077.
+- `apps/client/e2e/skin.spec.ts`: comutarea, păstrarea după reîncărcare, parametrul din URL; parcurgerea meniurilor și a HUD-ului în Toy, cu capturi în `docs/screens/ui-toy/`.
+
+**Rămas / cunoscut:**
+
+- Verificat vizual în Toy, din capturile testului (844×390): meniul principal, Play, personaje, pagina de personaj, magazin, setări, misiuni, practice, teme, texte legale, Online, camera privată și foaia de opțiuni, jocul rapid, HUD FFA / echipe / steag / 3D, pauză, reconectare, final de meci. **Neverificate în Toy:** tranzițiile (fitil, bandă), HUD-ul din Infinit, finalul de misiune și de provocare, tutorialul, ecranele de cont, panoul DEV.
+- Lilita One e mai lată decât Bangers: câteva texte lungi se rup pe două rânduri (ex. „TUTORIAL · 6 STEPS”), iar taburile din magazin sunt la limită.
+- Neverificat pe telefon real.
