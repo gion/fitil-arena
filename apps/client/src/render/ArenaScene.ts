@@ -192,6 +192,11 @@ export class ArenaScene extends Phaser.Scene {
     const r = this.game.renderer;
     if (r instanceof Phaser.Renderer.WebGL.WebGLRenderer) {
       r.pipelines.addPostPipeline('DizzyFX', DizzyFX);
+      // creat o singură dată, aici (shaderul și ținta de randare costă zeci de ms): în meci doar se pornește / oprește
+      const cam = this.cameras.main;
+      cam.setPostPipeline('DizzyFX');
+      this.dizzy = cam.getPostPipeline('DizzyFX') as DizzyFX;
+      this.dizzy.active = false;
     }
   }
 
@@ -457,6 +462,7 @@ export class ArenaScene extends Phaser.Scene {
         p.end();
       }
       this.g.clear();
+      if (this.dizzy) this.dizzy.active = false;
       if (this.staticImg) this.staticImg.setVisible(false);
       cam.setBackgroundColor(this.theme ? this.theme.ink : '#141726');
       return;
@@ -564,23 +570,14 @@ export class ArenaScene extends Phaser.Scene {
     } else this.view = { x0: 0, x1: s.W - 1, y0: 0, y1: s.H - 1 };
     // amețeala (valuri + culori)
     const amt = m.me.alive && m.me.dizzyT > 0 ? Math.min(1, m.me.dizzyT / 30) : 0;
-    if (
-      amt > 0 &&
-      this.motion &&
-      !this.mini &&
-      this.game.renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer
-    ) {
-      if (!this.dizzy) {
-        cam.setPostPipeline('DizzyFX');
-        this.dizzy = cam.getPostPipeline('DizzyFX') as DizzyFX;
+    if (this.dizzy) {
+      this.dizzy.active = amt > 0 && this.motion && !this.mini;
+      if (this.dizzy.active) {
+        this.dizzy.amt = amt;
+        this.dizzy.t = m.time;
+        this.dizzy.rows = a.h / (T * cam.zoom);
+        this.dizzy.shift = (amt * T * cam.zoom * 0.35) / a.w;
       }
-      this.dizzy.amt = amt;
-      this.dizzy.t = m.time;
-      this.dizzy.rows = a.h / (T * cam.zoom);
-      this.dizzy.shift = (amt * T * cam.zoom * 0.35) / a.w;
-    } else if (this.dizzy) {
-      cam.resetPostPipeline();
-      this.dizzy = null;
     }
   }
 
