@@ -3,6 +3,12 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-07 — Claude Code (Opus 5.5) — Comutatorul de skin, doar în build-urile de dezvoltare
+
+- **Cerut:** ambele skin-uri rămân în paralel până la decizie; comutatorul să nu ajungă în build-urile de store.
+- **Făcut:** rândul „Look” din Settings apare doar cu `__DEV_TOOLS__`; setarea salvată contează doar acolo; `?skin=` merge oriunde, pentru sesiunea curentă. `e2e/skin.spec.ts` rescris pentru build-ul de producție (fără „Look”, Comic implicit, Toy prin URL). D-073 și `docs/design/ui.md` actualizate.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts`.
+
 ## 2026-10-07 — Claude Code (Opus 5.5) — Skin-ul „Toy”, comutabil din Settings
 
 - **Cerut:** încă o versiune a interfeței, pe alt branch, cu tema A din canvas; ales: skin în cod, comutator în joc, fonturile Lilita One și Nunito descărcate din `@fontsource`.

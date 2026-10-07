@@ -156,7 +156,7 @@ Interfața are două aspecte care împart **același DOM și aceleași component
 
 - **Comic** e implicit și e descris în tot restul documentului (`styles.css`).
 - **Toy** e un strat peste el, în `apps/client/src/ui/toy.css`, activ doar când `<html data-skin="toy">`. Machetele lui sunt în `reference/ui-toy/`.
-- Se alege din **Settings › Look** (`settings.skin`, salvat local) sau, doar pentru sesiunea curentă, cu `?skin=toy` / `?skin=comic` în URL. Schimbarea se aplică pe loc.
+- În build-urile de dezvoltare se alege din **Settings › Look** (`settings.skin`, salvat local; se aplică pe loc). Oriunde, `?skin=toy` / `?skin=comic` în URL îl schimbă doar pentru sesiunea curentă. În build-urile de store nu există comutator, iar fără parametru interfața e mereu Comic.
 - Regula „interfața e fixă, tema schimbă doar arena” (D-052) rămâne: skin-ul și tema arenei sunt independente.
 
 Ce schimbă Toy față de Comic:

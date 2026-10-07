@@ -3,8 +3,9 @@ import type { Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
 /**
- * Skin-ul „Toy”: se alege din Settings › Look, se aplică pe loc, se păstrează după reîncărcare,
- * iar `?skin=` îl schimbă doar pentru sesiunea curentă. „Comic” rămâne implicit.
+ * Skin-ul „Toy” (D-073, doar pentru comparație): rândul Settings › Look apare numai în build-urile
+ * de dezvoltare; testele rulează pe build-ul de producție, unde „Comic” e implicit și Toy se
+ * deschide cu `?skin=toy`, doar pentru sesiunea curentă.
  */
 
 test.use({ viewport: { width: 844, height: 390 }, deviceScaleFactor: 2 });
@@ -19,34 +20,36 @@ const skin = (page: Page) => page.evaluate(() => document.documentElement.datase
 const pageBg = (page: Page) =>
   page.evaluate(() => getComputedStyle(document.querySelector('.page')!).backgroundColor);
 
-test('Settings › Look: Comic implicit, Toy se aplică pe loc și se păstrează', async ({ page }) => {
+test('build de store: fără rândul „Look”, Comic implicit; ?skin=toy doar pentru sesiune', async ({
+  page,
+}) => {
   const errors: string[] = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
 
+  // o setare salvată dintr-un build de dezvoltare nu contează aici
   await page.goto('/');
+  await page.evaluate(() => localStorage.setItem('fitil-settings', JSON.stringify({ skin: 'toy' })));
+  await page.reload();
   await page.waitForSelector('[data-test="settings"]');
   expect(await skin(page)).toBe('comic');
   expect(await pageBg(page)).toBe(PAPER);
-
   await page.click('[data-test="settings"]');
-  await page.click('[data-skin-pick="toy"]');
+  await expect(page.locator('[data-toggle=sound]')).toBeVisible();
+  await expect(page.locator('[data-skin-pick]')).toHaveCount(0);
+
+  // parametrul din URL schimbă aspectul, fără să atingă setările
+  await page.goto('/?skin=toy');
+  await page.waitForSelector('[data-test="settings"]');
   expect(await skin(page)).toBe('toy');
   expect(await pageBg(page)).toBe(INDIGO);
-  await expect(page.locator('[data-skin-pick="toy"]')).toHaveAttribute('aria-pressed', 'true');
   // fontul de titluri al skin-ului e cel împachetat local
   await page.evaluate(() => document.fonts.ready);
   expect(await page.evaluate(() => document.fonts.check("28px 'Lilita One'"))).toBe(true);
 
-  await page.reload();
-  await page.waitForSelector('[data-test="settings"]');
-  expect(await skin(page)).toBe('toy');
-
-  // parametrul din URL bate setarea, fără s-o schimbe
   await page.goto('/?skin=comic');
   await page.waitForSelector('[data-test="settings"]');
   expect(await skin(page)).toBe('comic');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fitil-settings')!).skin)).toBe('toy');
 
   expect(errors).toEqual([]);
 });
@@ -76,10 +79,10 @@ test('Toy: meniurile și HUD-ul se deschid fără erori, cu ținte de minimum 44
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
 
-  await page.goto('/');
+  await page.goto('/?skin=toy');
   await page.evaluate(() => {
     localStorage.clear();
-    localStorage.setItem('fitil-settings', JSON.stringify({ motion: false, name: 'Gion', skin: 'toy' }));
+    localStorage.setItem('fitil-settings', JSON.stringify({ motion: false, name: 'Gion' }));
     localStorage.setItem('fitil-profile', JSON.stringify({ coins: 900, xp: { bubu: 400 } }));
   });
   await page.reload();
