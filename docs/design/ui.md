@@ -152,7 +152,7 @@ Personajele din meniuri sunt cele din joc, desenate de `Portraits` (`apps/client
 
 ## Skin-uri: „Comic” și „Toy”
 
-Interfața are două aspecte care împart **același DOM și aceleași componente**; se schimbă doar CSS-ul (D-073). Sunt două doar **temporar, pentru comparație**: la final rămâne unul singur, iar celălalt se scoate împreună cu comutatorul.
+Interfața are două aspecte care împart **același DOM și aceleași componente**; se schimbă doar CSS-ul (D-077). Sunt două doar **temporar, pentru comparație**: la final rămâne unul singur, iar celălalt se scoate împreună cu comutatorul.
 
 - **Comic** e implicit și e descris în tot restul documentului (`styles.css`).
 - **Toy** e un strat peste el, în `apps/client/src/ui/toy.css`, activ doar când `<html data-skin="toy">`. Machetele lui sunt în `reference/ui-toy/`.

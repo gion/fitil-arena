@@ -88,4 +88,6 @@ test('Infinit online: doi jucători intră în aceeași lume, clasament și loc 
   await b.close();
   await expect(a.locator('[data-test=board] li')).toHaveCount(1, { timeout: 15_000 });
   expect(errors).toEqual([]);
+  await a.context().close();
+  await b.context().close();
 });

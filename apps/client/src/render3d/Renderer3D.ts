@@ -489,6 +489,9 @@ export class Renderer3D {
       const m = new THREE.InstancedMesh(geo, mat, N);
       m.count = 0;
       m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      // instanțele se mută în fiecare cadru, iar sfera de încadrare se calculează o singură dată (goală,
+      // cu count 0): cu culling-ul pornit, flăcările se desenau doar când originea lumii era în cadru
+      m.frustumCulled = false;
       if (shadow) {
         m.castShadow = true;
         m.receiveShadow = true;
@@ -650,9 +653,54 @@ export class Renderer3D {
     vm.rotation.set(0.15, -0.35, 0);
     this.cam.add(vm);
     this.vm = vm;
+    // tot ce apare abia în timpul meciului (păianjeni, nori, fulgere) se creează ascuns de acum
+    this.addSpider();
+    this.addCloud();
+    for (let i = 0; i < 3; i++) {
+      const b = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.05, 1.5, 6),
+        new THREE.MeshBasicMaterial({ color: '#f4fbff' }),
+      );
+      b.visible = false;
+      this.root.add(b);
+      this.bolts.push(b);
+    }
+    this.warm(s);
     this.built = s;
     this.builtTheme = th.id;
     this.camInit = false;
+  }
+
+  /**
+   * Un cadru de încălzire, cu tot ce e ascuns făcut vizibil: shaderele se compilează (și driverul își
+   * pregătește starea) acum, la construcție. Altfel prima flacără / primul nor / prima bombă din meci
+   * îngheață un cadru (zeci de ms pe desktop, sute pe telefon). Cadrul real se desenează imediat peste.
+   */
+  private warm(s: GameState): void {
+    const hidden: THREE.Object3D[] = [];
+    this.scene.traverse((o) => {
+      if (o.visible) return;
+      hidden.push(o);
+      o.visible = true;
+    });
+    const counts = Object.values(this.inst).map((i) => i.mesh.count);
+    for (const i of Object.values(this.inst)) i.mesh.count = 1;
+    const cam = this.cam;
+    const pos = cam.position.clone();
+    const quat = cam.quaternion.clone();
+    const fov = cam.fov;
+    // de sus, cu unghi larg: încap și arena, și obiectele din rezervă (încă în origine)
+    cam.fov = 90;
+    cam.position.set(s.W / 2, 80, s.H / 2 + 1);
+    cam.lookAt(s.W / 2, 0, s.H / 2);
+    cam.updateProjectionMatrix();
+    this.r.render(this.scene, cam);
+    cam.fov = fov;
+    cam.position.copy(pos);
+    cam.quaternion.copy(quat);
+    cam.updateProjectionMatrix();
+    Object.values(this.inst).forEach((i, k) => (i.mesh.count = counts[k]!));
+    for (const o of hidden) o.visible = false;
   }
 
   private pcolor(id: number): string {
@@ -1308,38 +1356,41 @@ export class Renderer3D {
     this.r.render(this.scene, this.cam);
   }
 
+  private addSpider(): void {
+    const g = new THREE.Group();
+    const bm = std({ color: '#231830', roughness: 0.4, metalness: 0.3 });
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), bm);
+    body.scale.set(1, 0.7, 1.25);
+    body.position.y = 0.2;
+    body.castShadow = true;
+    g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), bm);
+    head.position.set(0, 0.2, 0.2);
+    g.add(head);
+    for (const sd of [-1, 1]) {
+      const e = new THREE.Mesh(
+        new THREE.SphereGeometry(0.028, 6, 4),
+        new THREE.MeshBasicMaterial({ color: '#ff3b3b' }),
+      );
+      e.position.set(sd * 0.045, 0.25, 0.29);
+      g.add(e);
+    }
+    for (const sd of [-1, 1])
+      for (let i = 0; i < 4; i++) {
+        const l = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.012, 0.36, 5), bm);
+        l.position.set(sd * 0.2, 0.14, -0.12 + i * 0.09);
+        l.rotation.z = sd * 1.05;
+        l.name = `leg${i}${sd > 0 ? 'r' : 'l'}`;
+        g.add(l);
+      }
+    g.visible = false;
+    this.root.add(g);
+    this.spiders.push(g);
+  }
+
   private renderSpiders(m: Match): void {
     const s = m.s;
-    while (this.spiders.length < s.spiders.length) {
-      const g = new THREE.Group();
-      const bm = std({ color: '#231830', roughness: 0.4, metalness: 0.3 });
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), bm);
-      body.scale.set(1, 0.7, 1.25);
-      body.position.y = 0.2;
-      body.castShadow = true;
-      g.add(body);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), bm);
-      head.position.set(0, 0.2, 0.2);
-      g.add(head);
-      for (const sd of [-1, 1]) {
-        const e = new THREE.Mesh(
-          new THREE.SphereGeometry(0.028, 6, 4),
-          new THREE.MeshBasicMaterial({ color: '#ff3b3b' }),
-        );
-        e.position.set(sd * 0.045, 0.25, 0.29);
-        g.add(e);
-      }
-      for (const sd of [-1, 1])
-        for (let i = 0; i < 4; i++) {
-          const l = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.012, 0.36, 5), bm);
-          l.position.set(sd * 0.2, 0.14, -0.12 + i * 0.09);
-          l.rotation.z = sd * 1.05;
-          l.name = `leg${i}${sd > 0 ? 'r' : 'l'}`;
-          g.add(l);
-        }
-      this.root.add(g);
-      this.spiders.push(g);
-    }
+    while (this.spiders.length < s.spiders.length) this.addSpider();
     this.spiders.forEach((g, i) => {
       const c = s.spiders[i];
       g.visible = !!c;
@@ -1357,6 +1408,34 @@ export class Renderer3D {
     });
   }
 
+  private addCloud(): void {
+    const g = new THREE.Group();
+    const mat = std({
+      color: '#eef2fb',
+      roughness: 0.9,
+      transparent: true,
+      opacity: 0.95,
+      emissive: '#fff36b',
+      emissiveIntensity: 0,
+    });
+    for (const [ox, oy, oz, r] of [
+      [-0.25, 0, 0, 0.26],
+      [0.25, 0, 0, 0.26],
+      [0, 0.12, 0, 0.33],
+      [0, 0, 0.18, 0.24],
+      [0, 0, -0.18, 0.24],
+    ] as const) {
+      const b = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), mat);
+      b.position.set(ox, oy, oz);
+      b.castShadow = true;
+      g.add(b);
+    }
+    g.userData.mat = mat;
+    g.visible = false;
+    this.root.add(g);
+    this.clouds.push(g);
+  }
+
   private renderClouds(m: Match, dt: number): void {
     const s = m.s;
     const time = this.time;
@@ -1365,32 +1444,7 @@ export class Renderer3D {
     this.flash = Math.max(0, this.flash - dt * 3);
     this.hemi.intensity = ((dark ? 0.35 : 0.6) + this.flash * 1.2) * LEGACY;
     this.sun.intensity = ((dark ? 0.55 : 1.25) + this.flash * 0.8) * LEGACY;
-    while (this.clouds.length < s.clouds.length) {
-      const g = new THREE.Group();
-      const mat = std({
-        color: '#eef2fb',
-        roughness: 0.9,
-        transparent: true,
-        opacity: 0.95,
-        emissive: '#fff36b',
-        emissiveIntensity: 0,
-      });
-      for (const [ox, oy, oz, r] of [
-        [-0.25, 0, 0, 0.26],
-        [0.25, 0, 0, 0.26],
-        [0, 0.12, 0, 0.33],
-        [0, 0, 0.18, 0.24],
-        [0, 0, -0.18, 0.24],
-      ] as const) {
-        const b = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), mat);
-        b.position.set(ox, oy, oz);
-        b.castShadow = true;
-        g.add(b);
-      }
-      g.userData.mat = mat;
-      this.root.add(g);
-      this.clouds.push(g);
-    }
+    while (this.clouds.length < s.clouds.length) this.addCloud();
     this.clouds.forEach((g, i) => {
       const c = s.clouds[i];
       g.visible = !!c;
@@ -1404,15 +1458,6 @@ export class Renderer3D {
       mat.color.set(ch ? (Math.sin(time * 25) > 0.3 ? '#9aa3c0' : '#4a5068') : '#eef2fb');
       mat.emissiveIntensity = ch && Math.sin(time * 30) > 0.6 ? 0.8 : 0;
     });
-    while (this.bolts.length < 3) {
-      const b = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05, 0.05, 1.5, 6),
-        new THREE.MeshBasicMaterial({ color: '#f4fbff' }),
-      );
-      b.visible = false;
-      this.root.add(b);
-      this.bolts.push(b);
-    }
     for (const b of this.strikes) b.t -= dt;
     this.strikes = this.strikes.filter((b) => b.t > 0);
     this.bolts.forEach((mesh, i) => {

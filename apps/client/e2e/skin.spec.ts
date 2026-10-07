@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
 /**
- * Skin-ul „Toy” (D-073, în paralel cu „Comic” până la alegere): se alege din Settings › Look,
+ * Skin-ul „Toy” (D-077, în paralel cu „Comic” până la alegere): se alege din Settings › Look,
  * se aplică pe loc și se păstrează; `?skin=` îl schimbă doar pentru sesiunea curentă. Mai jos,
  * toate ecranele sunt parcurse în Toy: fără erori, ținte de minimum 44px, capturi în docs/screens/ui-toy/.
  */

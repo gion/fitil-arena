@@ -6,21 +6,35 @@ Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar isto
 ## 2026-10-07 — Claude Code (Opus 5.5) — Toy pe toate ecranele; comutatorul vizibil peste tot
 
 - **Cerut:** verificate și ecranele rămase în Toy; comutatorul să nu fie doar în build-urile de dezvoltare.
-- **Făcut:** rândul „Look” e din nou în Settings în orice build, iar setarea salvată contează peste tot. `e2e/skin.spec.ts` parcurge acum în Toy și Online, camera privată, foaia de opțiuni, jocul rapid, HUD-ul FFA / echipe / steag / 3D, pauza, reconectarea, finalul și textele legale (21 de capturi în `docs/screens/ui-toy/`). Două ajustări în `toy.css` (titlul panourilor modale, butoanele secundare din ele). D-073 și `docs/design/ui.md` actualizate.
+- **Făcut:** rândul „Look” e din nou în Settings în orice build, iar setarea salvată contează peste tot. `e2e/skin.spec.ts` parcurge acum în Toy și Online, camera privată, foaia de opțiuni, jocul rapid, HUD-ul FFA / echipe / steag / 3D, pauza, reconectarea, finalul și textele legale (21 de capturi în `docs/screens/ui-toy/`). Două ajustări în `toy.css` (titlul panourilor modale, butoanele secundare din ele). D-077 și `docs/design/ui.md` actualizate.
 - **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts`; capturile Toy privite una câte una.
 
 ## 2026-10-07 — Claude Code (Opus 5.5) — Comutatorul de skin, doar în build-urile de dezvoltare
 
 - **Cerut:** ambele skin-uri rămân în paralel până la decizie; comutatorul să nu ajungă în build-urile de store.
-- **Făcut:** rândul „Look” din Settings apare doar cu `__DEV_TOOLS__`; setarea salvată contează doar acolo; `?skin=` merge oriunde, pentru sesiunea curentă. `e2e/skin.spec.ts` rescris pentru build-ul de producție (fără „Look”, Comic implicit, Toy prin URL). D-073 și `docs/design/ui.md` actualizate.
+- **Făcut:** rândul „Look” din Settings apare doar cu `__DEV_TOOLS__`; setarea salvată contează doar acolo; `?skin=` merge oriunde, pentru sesiunea curentă. `e2e/skin.spec.ts` rescris pentru build-ul de producție (fără „Look”, Comic implicit, Toy prin URL). D-077 și `docs/design/ui.md` actualizate.
 - **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts`.
 
 ## 2026-10-07 — Claude Code (Opus 5.5) — Skin-ul „Toy”, comutabil din Settings
 
 - **Cerut:** încă o versiune a interfeței, pe alt branch, cu tema A din canvas; ales: skin în cod, comutator în joc, fonturile Lilita One și Nunito descărcate din `@fontsource`.
-- **Făcut:** machetele A aduse la zi pe canvas și copiate în `reference/ui-toy/`; `ui/toy.css` (strat peste `styles.css`, activ la `data-skin="toy"`), `settings.skin`, rândul „Look” în Settings, `?skin=`; fonturile împachetate local; două stiluri inline mutate în clase; `e2e/skin.spec.ts`; secțiunea „Skin-uri” în `docs/design/ui.md`, D-073, credite, progres. Branch `design/ui-toy`.
+- **Făcut:** machetele A aduse la zi pe canvas și copiate în `reference/ui-toy/`; `ui/toy.css` (strat peste `styles.css`, activ la `data-skin="toy"`), `settings.skin`, rândul „Look” în Settings, `?skin=`; fonturile împachetate local; două stiluri inline mutate în clase; `e2e/skin.spec.ts`; secțiunea „Skin-uri” în `docs/design/ui.md`, D-077, credite, progres. Branch `design/ui-toy`.
 - **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts` (8 teste trecute, pe un build proaspăt); capturi Toy comparate vizual pentru 11 ecrane.
 - **Notă operațională:** pe mașina asta portul 4173 era ocupat de alt proces cu un build vechi, așa că Playwright a fost rulat cu o configurație temporară pe 4199 (neadăugată în repo). `ui.spec.ts` rescrie capturile din `docs/screens/ui/`; a fost păstrată doar `settings.jpg` (ecranul are acum rândul „Look”).
+
+## 2026-10-06 — Claude Code — Faza 8: mobil & store readiness
+
+- **Cerut:** „next phase?” → „Dap”: Faza 8 din PLAN.md, partea care nu cere conturi / bani / decizii finale; PR la final.
+- **Făcut:** pluginuri Capacitor (app, splash-screen, status-bar, filesystem, share, keep-awake) și `native.ts` (înapoi, fundal, ecran aprins, splash); deep links `fusearena://join/…` și `?join=` pe web; „Save clip” (`clip.ts`); PostHog + Sentry prin clienți proprii (`telemetry.ts`); „GET THE APP” pe web; workflow `mobile.yml` (Android emulator, iOS simulator manual); `docs/store-checklist.md`; `store:shots`. Decizii D-073 – D-076, întrebări Q-014 – Q-016.
+- **Verificat:** `pnpm lint`, `format`, `typecheck`, `test` (client 24, sim 148, net 22, content 39, server 7 + 11 sărite fără Postgres), `build`; e2e `mobile`, `online`, `ui`, `infinite`, `account`, `missions` (`smoke` FPS nu rulează în container, cunoscut); clipurile 2D și 3D verificate cadru cu cadru (ffmpeg).
+- **Notă operațională:** Android SDK nu se poate descărca din containerul cloud (dl.google.com blocat): build-urile native rulează doar în workflow-ul `Mobile`. Capturile de store: `pnpm --filter @fitil/client store:shots` (cu `PW_CHROMIUM` în container).
+
+## 2026-10-06 — Claude Code (Opus 5.5) — Înghețări când se întâmplă multe pe ecran
+
+- **Cerut:** jocul „începe să meargă mai greu, se blochează uneori când sunt multe lucruri care se întâmplă simultan” (fără alte detalii: dispozitiv, vedere, mod).
+- **Făcut:** măsurat cadru cu cadru în browser (simulare, desen 2D, randare, compilări de shadere). Trei cauze găsite și reparate, toate în client: (1) 2D — efectul „amețit” (`DizzyFX`) se crea și se distrugea la fiecare amețeală (shader + țintă de randare): acum se creează o dată în `ArenaScene.create()` și doar se pornește / oprește; (2) 3D — shaderele se compilau la prima apariție a fiecărui lucru (flăcări, nori, păianjeni): `Renderer3D.build()` creează ascuns un păianjen, un nor și fulgerele și desenează un cadru de încălzire (`warm()`); (3) 3D — flăcările, lăzile, bonusurile (mesh-uri instanțiate) aveau sfera de încadrare calculată o singură dată, goală: flăcările se desenau doar când originea lumii era în cadru; acum au `frustumCulled = false`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (sim 148, content 39, net 22, client 18, server 7 + 11 sărite fără Postgres), e2e `smoke` + `heroes` (10 trec, inclusiv FPS cu CPU încetinit 4×). Măsurători pe M1 Max: amețeala 107 ms prima dată / 40 ms de fiecare dată → fără cadru lung; primii nori în 3D 20–50 ms → 0.7 ms; 0 compilări de shader după primul cadru al meciului; flăcări desenate în 3D în 0 din ~600 de cadre → în toate. Capturi verificate pentru flăcările 3D și amețeala 2D.
+- **Notă operațională:** o încetinire constantă (nu doar înghețări) nu s-a reprodus pe desktop: 10 000 de cadre 2D fără niciun cadru > 4 ms, 12 meciuri la rând fără creștere de memorie / obiecte. Dacă persistă pe telefon, următorii suspecți sunt costul pe GPU în 3D (4 lumini punctiforme mereu active + umbre 2048) și rezoluția canvas-ului 2D la DPR 3 — de măsurat pe dispozitiv. `pnpm test:e2e` refolosește un `vite preview` deja pornit pe 4173: dacă există unul vechi, testele rulează pe build-ul vechi (aici a trebuit `VITE_API_URL=http://localhost:3099 pnpm build`).
 
 ## 2026-10-06 — Claude Code — Faza 7: Modul Infinit
 

@@ -1,12 +1,16 @@
 import Phaser from 'phaser';
 import { App } from './app.ts';
 import { DPR, viewportSize } from './display.ts';
+import { hideSplash } from './native.ts';
 import { ArenaScene } from './render/ArenaScene.ts';
 import { applySkin } from './settings.ts';
 import './ui/styles.css';
 import './ui/toy.css';
 
 applySkin();
+
+// plasa de siguranță: ecranul de pornire nu rămâne blocat dacă ceva pică la încărcare
+setTimeout(hideSplash, 5000);
 
 const { width, height } = viewportSize();
 const scene = new ArenaScene();
@@ -35,4 +39,5 @@ game.events.once(Phaser.Core.Events.READY, () => {
   const app = new App(game, scene);
   // pentru testele Playwright și depanare
   (window as unknown as { __fitil: unknown }).__fitil = { app, scene, game };
+  hideSplash();
 });
