@@ -1,5 +1,5 @@
 import { FLAME, SHIFT_STEP } from './constants.ts';
-import { blast, idx, inBounds, mobX, mobY } from './grid.ts';
+import { areaTiles, blast, idx, inBounds, mobX, mobY } from './grid.ts';
 import { shuffle } from './rng.ts';
 import type { RngState } from './rng.ts';
 import { DIRS, DX, DY } from './types.ts';
@@ -43,7 +43,7 @@ const CROSS: readonly [number, number][] = [
 /** Pătrățelele care vor fi (sau sunt) în flăcări: raza bombelor de pe jos, flăcările active și pericolele de mediu. */
 export function computeDanger(s: GameState): Uint8Array {
   const d = new Uint8Array(s.W * s.H);
-  for (const b of s.bombs) if (b.held === null && b.fly === null) blast(s, b.x, b.y, b.range, d);
+  for (const b of s.bombs) if (b.held === null && b.fly === null) blast(s, b.x, b.y, b.range, d, b.area);
   for (let i = 0; i < d.length; i++) if (s.flame[i]! > 0) d[i] = 1;
   forHazards(s, (k) => (d[k] = 1));
   return d;
@@ -106,10 +106,15 @@ interface PendingBomb {
   x: number;
   y: number;
   range: number;
+  area: number;
   t: number;
 }
 
 function forBlast(s: GameState, b: PendingBomb, fn: (k: number) => void): void {
+  if (b.area > 0) {
+    for (const [x, y] of areaTiles(s, b.x, b.y, b.area)) fn(idx(s, x, y));
+    return;
+  }
   fn(idx(s, b.x, b.y));
   for (const d of DIRS)
     for (let i = 1; i <= b.range; i++) {
@@ -129,15 +134,16 @@ function forBlast(s: GameState, b: PendingBomb, fn: (k: number) => void): void {
  */
 export function dangerTimes(
   s: GameState,
-  extra?: { x: number; y: number; range: number; fuse: number },
+  extra?: { x: number; y: number; range: number; fuse: number; area?: number },
 ): DangerTimes {
   const N = s.W * s.H;
   const start = new Int32Array(N).fill(NEVER);
   const end = new Int32Array(N).fill(0);
   const list: PendingBomb[] = [];
   for (const b of s.bombs)
-    if (b.held === null && b.fly === null) list.push({ x: b.x, y: b.y, range: b.range, t: b.fuse });
-  if (extra) list.push({ x: extra.x, y: extra.y, range: extra.range, t: extra.fuse });
+    if (b.held === null && b.fly === null)
+      list.push({ x: b.x, y: b.y, range: b.range, area: b.area, t: b.fuse });
+  if (extra) list.push({ x: extra.x, y: extra.y, range: extra.range, area: extra.area ?? 0, t: extra.fuse });
   // relaxare: lanțurile pot doar grăbi exploziile
   const at = new Map<number, PendingBomb>();
   for (const b of list) at.set(idx(s, b.x, b.y), b);

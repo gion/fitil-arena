@@ -76,7 +76,7 @@ test('personaje: pagina personajului, cumpărare, meci cu personajul ales și re
   });
   await page.reload();
   await page.locator('[data-test=characters]').click();
-  await expect(page.locator('.ccard')).toHaveCount(11);
+  await expect(page.locator('.ccard')).toHaveCount(13);
   // primul tap arată personajul jos, „Open page” deschide pagina lui
   await page.locator(`[data-char=${EPIC.id}]`).click();
   await page.locator('[data-test=open-char]').click();

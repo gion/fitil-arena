@@ -2,7 +2,7 @@ import { BOT_LEVELS } from './botLevels.ts';
 import type { BotParams } from './botLevels.ts';
 import { bfs, computeDanger, dangerTimes, escapeRoute } from './danger.ts';
 import { SUPER_FULL } from './constants.ts';
-import { bombAt, idx, inBounds, tileAt, tileX, tileY, walkable } from './grid.ts';
+import { blast, bombAt, burstRadius, idx, inBounds, tileAt, tileX, tileY, walkable } from './grid.ts';
 import { isNegative } from './items.ts';
 import { carriedFlag } from './modes.ts';
 import { deriveRng, nextFloat, nextInt } from './rng.ts';
@@ -87,24 +87,39 @@ interface Ctx {
   tpt: number;
 }
 
+/** Raza ariei bombei pe care ar pune-o botul (0 = cruce). */
+/** Supernova: aria bombei uriașe depășește cu atât aria obișnuită a bombelor lui Nova. */
+const BURST_BOT_BONUS = 1;
+const ownArea = (p: Player, range: number, bonus = 0): number =>
+  p.kit?.burst ? burstRadius(range) + bonus : 0;
+
 /** Dacă botul pune acum o bombă aici, pe unde fuge? null = n-are scăpare, nu pune. */
-function bombEscape(c: Ctx, range = c.p.range): Dir | null {
+function bombEscape(c: Ctx, range = c.p.range, areaBonus = 0): Dir | null {
   const { s, L, rng, cx, cy, danger, open, tpt } = c;
   if (L.timed) {
-    const dz = dangerTimes(s, { x: cx, y: cy, range, fuse: s.rules.fuse });
+    const dz = dangerTimes(s, {
+      x: cx,
+      y: cy,
+      range,
+      fuse: s.rules.fuse,
+      area: ownArea(c.p, range, areaBonus),
+    });
     return escapeRoute(s, rng, cx, cy, tpt, dz, open);
   }
   const hyp = danger.slice();
   hyp[idx(s, cx, cy)] = 1;
-  for (const d of DIRS)
-    for (let i = 1; i <= range; i++) {
-      const nx = cx + DX[d]! * i;
-      const ny = cy + DY[d]! * i;
-      const g = tileAt(s, nx, ny);
-      if (g !== EMPTY && g !== SOFT) break;
-      hyp[idx(s, nx, ny)] = 1;
-      if (g === SOFT) break;
-    }
+  const area = ownArea(c.p, range, areaBonus);
+  if (area > 0) blast(s, cx, cy, range, hyp, area);
+  else
+    for (const d of DIRS)
+      for (let i = 1; i <= range; i++) {
+        const nx = cx + DX[d]! * i;
+        const ny = cy + DY[d]! * i;
+        const g = tileAt(s, nx, ny);
+        if (g !== EMPTY && g !== SOFT) break;
+        hyp[idx(s, nx, ny)] = 1;
+        if (g === SOFT) break;
+      }
   return bfs(s, rng, cx, cy, open, (x, y) => !hyp[idx(s, x, y)]);
 }
 
@@ -168,14 +183,20 @@ function attackSuper(c: Ctx): Input | null {
     );
     return near ? { dir: null, super: true } : null;
   }
+  if (k === 'smoke') {
+    const near = s.players.some(
+      (q) => isFoe(s, p, q) && Math.abs(tileX(q) - c.cx) + Math.abs(tileY(q) - c.cy) <= 5,
+    );
+    return near ? { dir: null, super: true } : null;
+  }
   if (k === 'cluster') {
     const near = s.players.some(
       (q) => isFoe(s, p, q) && Math.abs(tileX(q) - c.cx) + Math.abs(tileY(q) - c.cy) <= 3,
     );
     return near ? { dir: null, super: true } : null;
   }
-  if (k === 'bigbomb' && !bombAt(s, c.cx, c.cy) && enemyInLine(s, p, c.cx, c.cy)) {
-    const esc = bombEscape(c, p.range + 2);
+  if ((k === 'bigbomb' || k === 'nova') && !bombAt(s, c.cx, c.cy) && enemyInLine(s, p, c.cx, c.cy)) {
+    const esc = bombEscape(c, p.range + 2, k === 'nova' ? BURST_BOT_BONUS : 0);
     return esc === null ? null : { dir: esc, super: true };
   }
   return null;

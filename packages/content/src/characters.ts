@@ -58,6 +58,8 @@ const SUPERS = [
   'penalty',
   'boo',
   'swap',
+  'smoke',
+  'nova',
 ] as const satisfies readonly SuperKind[];
 
 const KitSchema = z.object({
@@ -81,6 +83,7 @@ const KitSchema = z.object({
   fuseAdd: z.number().int().min(0).max(20).optional(),
   ghost: z.boolean().optional(),
   pigeon: z.boolean().optional(),
+  burst: z.boolean().optional(),
 }) satisfies z.ZodType<CharKit>;
 
 const CharSchema = z.object({
@@ -370,6 +373,54 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     quips: ['That wasn’t the trick!', 'Abracada… ouch!', 'Where’s my hat?'],
     win: ['Ta-daaa!', 'And for my next trick…'],
     kill: ['Poof!', 'Ta-da!'],
+  },
+  {
+    id: 'nova',
+    name: 'Nova',
+    rarity: 'epic',
+    tagline: 'Why aim down a line when you can hit the whole block?',
+    kit: { speed: 160, range: 1, bombs: 1, maxBombs: 6, lives: 1, burst: true, fuseAdd: 10 },
+    signature: 'Her bombs blast a whole area around them (radius = range + 1, up to 3), not a cross.',
+    pros: ['Blast covers an area, corners included', 'Great against campers'],
+    cons: ['Short reach: nothing beyond the area', 'Fuse +0.5s', 'At most 6 bombs'],
+    ultimate: {
+      name: 'Supernova',
+      desc: 'Drops a giant bomb whose area blast is one step wider than any normal bomb.',
+      kind: 'nova',
+      pct: 100,
+    },
+    color: '#ff8a3d',
+    signatureColor: '#ffe14d',
+    size: 1,
+    walk: 'hop',
+    voice: 'sizzle',
+    quips: ['Too bright!', 'Supernova… down!', 'Burned out!'],
+    win: ['Shine bright!', 'Boom, area cleared!'],
+    kill: ['Blast radius!', 'Right in the glow!'],
+  },
+  {
+    id: 'shade',
+    name: 'Shade',
+    rarity: 'legendary',
+    tagline: 'Now you see him… now it’s just smoke.',
+    kit: { speed: 185, range: 1, bombs: 1, maxBombs: 5, lives: 1 },
+    signature: 'The fastest hero, but carries few bombs.',
+    pros: ['Top speed', 'Slips away from trouble'],
+    cons: ['At most 5 bombs', 'No shield or health tricks'],
+    ultimate: {
+      name: 'Smoke Bomb',
+      desc: 'Throws a smoke bomb up to 3 tiles ahead: a cloud hides everyone inside for 6 seconds.',
+      kind: 'smoke',
+      pct: 85,
+    },
+    color: '#4b5563',
+    signatureColor: '#a78bfa',
+    size: 0.95,
+    walk: 'glide',
+    voice: 'whoosh',
+    quips: ['Caught in the smoke!', 'Not fast enough!', 'Cough… cough…'],
+    win: ['Vanished into victory!', 'You never saw me.'],
+    kill: ['Poof!', 'Gone in smoke!'],
   },
 ]);
 

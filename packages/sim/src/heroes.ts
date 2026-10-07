@@ -2,18 +2,33 @@ import { newBomb, effectiveRange } from './actions.ts';
 import {
   BIG_EXTRA,
   BOO,
+  BURST_CAP,
   DASH_TILES,
   MAX_RANGE,
   PURSE_MAX,
   PURSE_MIN,
   QUAKE_REACH,
+  SMOKE_RADIUS,
+  SMOKE_T,
+  SMOKE_THROW,
   STICKY_FUSE,
   SUPER_FULL,
   TIME_STOP,
   WARP_MIN,
 } from './constants.ts';
 import { computeDanger } from './danger.ts';
-import { bombAt, idx, inBounds, padIndex, playerAt, tileAt, tileX, tileY, walkable } from './grid.ts';
+import {
+  areaTiles,
+  bombAt,
+  idx,
+  inBounds,
+  padIndex,
+  playerAt,
+  tileAt,
+  tileX,
+  tileY,
+  walkable,
+} from './grid.ts';
 import { nextInt } from './rng.ts';
 import { isTeamMode } from './setup.ts';
 import { DIRS, DX, DY, EMPTY, U } from './types.ts';
@@ -31,12 +46,18 @@ function placeAt(p: Player, x: number, y: number): void {
 const freeTile = (s: GameState, x: number, y: number): boolean =>
   inBounds(s, x, y) && tileAt(s, x, y) === EMPTY && !bombAt(s, x, y) && s.flame[idx(s, x, y)]! <= 0;
 
-/** Bubu: o bombă mare (rază +2) la picioare, în plus față de bombele lui. */
-function bigBomb(s: GameState, p: Player): boolean {
+/**
+ * Bubu: o bombă mare (rază +2) la picioare, în plus față de bombele lui.
+ * Nova (`nova`): aceeași bombă, dar explodează în arie, cu o treaptă peste plafonul bombelor ei.
+ */
+function bigBomb(s: GameState, p: Player, nova = false): boolean {
   const x = tileX(p);
   const y = tileY(p);
   if (bombAt(s, x, y) || s.flame[idx(s, x, y)]! > 0) return false;
-  newBomb(s, p.id, x, y, Math.min(MAX_RANGE + BIG_EXTRA, effectiveRange(s, p) + BIG_EXTRA), { free: true });
+  const b = newBomb(s, p.id, x, y, Math.min(MAX_RANGE + BIG_EXTRA, effectiveRange(s, p) + BIG_EXTRA), {
+    free: true,
+  });
+  if (nova) b.area = BURST_CAP + 1;
   return true;
 }
 
@@ -208,6 +229,28 @@ function boo(p: Player): boolean {
   return true;
 }
 
+/**
+ * Umbra: bomba fumigenă zboară până la 3 pătrățele în direcția privirii (se oprește la obstacole)
+ * și lasă un nor de fum de rază 2 pentru 6s. Fumul nu rănește; ascunde ce e în el.
+ */
+function smokeBomb(s: GameState, p: Player): boolean {
+  let x = tileX(p);
+  let y = tileY(p);
+  for (let i = 0; i < SMOKE_THROW; i++) {
+    const nx = x + DX[p.face]!;
+    const ny = y + DY[p.face]!;
+    if (!walkable(s, nx, ny)) break;
+    x = nx;
+    y = ny;
+  }
+  for (const [tx, ty] of areaTiles(s, x, y, SMOKE_RADIUS)) {
+    // lada oprește fumul și nu intră în el
+    if (tileAt(s, tx, ty) === EMPTY) s.smoke[idx(s, tx, ty)] = SMOKE_T;
+  }
+  s.events.push({ type: 'smokeBomb', player: p.id, x, y });
+  return true;
+}
+
 /** Magicianul: schimbă locul cu cel mai apropiat adversar. */
 function swap(s: GameState, p: Player): boolean {
   const cx = tileX(p);
@@ -238,8 +281,8 @@ export function useSuper(s: GameState, p: Player): boolean {
   const h = p.hero;
   if (!h || !p.alive || p.charge < SUPER_FULL || p.frozenT > 0 || p.carry !== null) return false;
   const ok =
-    h.super === 'bigbomb'
-      ? bigBomb(s, p)
+    h.super === 'bigbomb' || h.super === 'nova'
+      ? bigBomb(s, p, h.super === 'nova')
       : h.super === 'dash'
         ? dash(s, p)
         : h.super === 'sticky'
@@ -258,7 +301,9 @@ export function useSuper(s: GameState, p: Player): boolean {
                       ? boo(p)
                       : h.super === 'swap'
                         ? swap(s, p)
-                        : warp(s, p);
+                        : h.super === 'smoke'
+                          ? smokeBomb(s, p)
+                          : warp(s, p);
   if (!ok) return false;
   p.charge = 0;
   s.events.push({ type: 'super', player: p.id, kind: h.super });

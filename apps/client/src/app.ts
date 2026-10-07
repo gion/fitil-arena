@@ -3299,6 +3299,9 @@ export class App {
       case 'trapFire':
         this.sfx.bad();
         break;
+      case 'smokeBomb':
+        this.sfx.tp();
+        break;
       case 'timeStop':
         this.sfx.tp();
         this.showBanner('Time stop!', 1100, mine(e.owner) ? 'gold' : 'bad');

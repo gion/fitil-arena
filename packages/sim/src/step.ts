@@ -30,6 +30,7 @@ import { collectCrystal, hitTarget, updateMission } from './missions.ts';
 import { updateWorld } from './world.ts';
 import { noteGot, updateInfinite } from './infinite.ts';
 import {
+  areaTiles,
   blast,
   bombAt,
   countSoft,
@@ -263,43 +264,52 @@ function explode(s: GameState, b: Bomb, dead: Set<number>): void {
     x: b.x,
     y: b.y,
     range: b.range,
+    area: b.area,
     owner: b.owner,
     chain: b.chain,
   });
   fire(b.x, b.y);
+  /** Lovește un pătrățel; întoarce true dacă flacăra se oprește aici (zid, ladă). */
+  const hit = (nx: number, ny: number): boolean => {
+    const g = tileAt(s, nx, ny);
+    if (g === HARD) return true;
+    const k = idx(s, nx, ny);
+    if (g === SOFT && !lethal) return true; // gheața și flashbang-ul nu sparg lăzi
+    if (g === SOFT && s.mission && hitTarget(s, nx, ny, b.owner, b.via)) return true;
+    if (g === SOFT) {
+      s.grid[k] = EMPTY;
+      fire(nx, ny);
+      addCharge(owner, CHARGE_BOX);
+      if (owner) owner.boxes++;
+      const gold = s.gold[k] === 1;
+      const cursed = s.cursed[k] === 1;
+      s.gold[k] = 0;
+      s.cursed[k] = 0;
+      if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
+      else
+        s.drops[k] = gold
+          ? rollGold(s.rng)
+          : rollDrop(s.rng, s.rules.hearts, s.rules.extras, s.rules.dropPct);
+      s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed, owner: b.owner });
+      return true;
+    }
+    for (const o of s.bombs) {
+      if (!lethal || o.x !== nx || o.y !== ny || o.held !== null || o.fly !== null || dead.has(o.id))
+        continue;
+      o.fuse = Math.min(o.fuse, CHAIN_DELAY);
+      if (!o.chain) o.chain = b.chain;
+    }
+    fire(nx, ny);
+    return false;
+  };
+  if (b.area > 0) {
+    // explozie în arie: pătrățelele vin deja oprite de ziduri și de lăzi (`areaTiles`)
+    for (const [ax, ay] of areaTiles(s, b.x, b.y, b.area).slice(1)) hit(ax, ay);
+    return;
+  }
   for (const d of DIRS) {
     for (let i = 1; i <= b.range; i++) {
-      const nx = b.x + DX[d]! * i;
-      const ny = b.y + DY[d]! * i;
-      const g = tileAt(s, nx, ny);
-      if (g === HARD) break;
-      const k = idx(s, nx, ny);
-      if (g === SOFT && !lethal) break; // gheața și flashbang-ul nu sparg lăzi
-      if (g === SOFT && s.mission && hitTarget(s, nx, ny, b.owner, b.via)) break;
-      if (g === SOFT) {
-        s.grid[k] = EMPTY;
-        fire(nx, ny);
-        addCharge(owner, CHARGE_BOX);
-        if (owner) owner.boxes++;
-        const gold = s.gold[k] === 1;
-        const cursed = s.cursed[k] === 1;
-        s.gold[k] = 0;
-        s.cursed[k] = 0;
-        if (cursed) s.curses.push({ x: nx, y: ny, t: CURSE_DELAY });
-        else
-          s.drops[k] = gold
-            ? rollGold(s.rng)
-            : rollDrop(s.rng, s.rules.hearts, s.rules.extras, s.rules.dropPct);
-        s.events.push({ type: 'boxDestroyed', x: nx, y: ny, gold, cursed, owner: b.owner });
-        break;
-      }
-      for (const o of s.bombs) {
-        if (!lethal || o.x !== nx || o.y !== ny || o.held !== null || o.fly !== null || dead.has(o.id))
-          continue;
-        o.fuse = Math.min(o.fuse, CHAIN_DELAY);
-        if (!o.chain) o.chain = b.chain;
-      }
-      fire(nx, ny);
+      if (hit(b.x + DX[d]! * i, b.y + DY[d]! * i)) break;
     }
   }
 }
@@ -310,7 +320,7 @@ function pigeon(s: GameState, b: Bomb, dead: Set<number>): boolean {
   if (!mags.length) return false;
   const owner = s.players[b.owner];
   const hit = new Uint8Array(s.grid.length);
-  blast(s, b.x, b.y, b.range, hit);
+  blast(s, b.x, b.y, b.range, hit, b.area);
   const mag = mags.find(
     (p) =>
       hit[idx(s, tileX(p), tileY(p))] &&
@@ -343,6 +353,7 @@ function explodeBombs(s: GameState): void {
 function updateFlames(s: GameState): void {
   for (let k = 0; k < s.oil.length; k++) if (s.oil[k]! > 0 && --s.oil[k]! === 0) s.oilOwner[k] = -1;
   for (let k = 0; k < s.toxic.length; k++) if (s.toxic[k]! > 0 && --s.toxic[k]! === 0) s.toxicOwner[k] = -1;
+  for (let k = 0; k < s.smoke.length; k++) if (s.smoke[k]! > 0) s.smoke[k]!--;
   for (let k = 0; k < s.flame.length; k++) {
     if (s.flame[k]! <= 0) continue;
     s.flame[k]!--;

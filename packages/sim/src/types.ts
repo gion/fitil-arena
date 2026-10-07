@@ -39,7 +39,9 @@ export type SuperKind =
   | 'quake'
   | 'penalty'
   | 'boo'
-  | 'swap';
+  | 'swap'
+  | 'smoke'
+  | 'nova';
 /** Abilitățile pasive care cer reguli în sim (statisticile de start sunt separate). */
 export type PassiveKind = 'none' | 'bounce' | 'guard' | 'timers' | 'trap';
 
@@ -121,6 +123,8 @@ export interface CharKit {
   ghost?: boolean;
   /** O dată pe rundă, bomba unui adversar care l-ar prinde devine porumbel. */
   pigeon?: boolean;
+  /** Bombele lui explodează în arie (pătrat umplut în jurul bombei), nu în cruce. */
+  burst?: boolean;
 }
 
 /** Încărcări pentru abilitățile luate din arenă (0 = nelimitat, dacă abilitatea e activă). */
@@ -250,6 +254,8 @@ export interface Bomb {
   sticky: boolean;
   /** Ricoșeuri rămase la șut (Fotbalistul: 1; pasivul de erou: 2). */
   bounce: number;
+  /** Raza exploziei în arie (0 = explozie în cruce, de lungime `range`). */
+  area: number;
 }
 
 export type BombKind = 'normal' | SpecialKind;
@@ -361,7 +367,16 @@ export type MaxStat = 'speed' | 'bombs' | 'fire';
 
 export type GameEvent =
   | { type: 'bombPlaced'; bomb: number; x: number; y: number; owner: number }
-  | { type: 'explode'; bomb: number; x: number; y: number; range: number; owner: number; chain: number }
+  | {
+      type: 'explode';
+      bomb: number;
+      x: number;
+      y: number;
+      range: number;
+      area: number;
+      owner: number;
+      chain: number;
+    }
   | { type: 'boxDestroyed'; x: number; y: number; gold: boolean; cursed: boolean; owner: number }
   | { type: 'death'; player: number; killerId: number | null; cause: DeathCause; via: number }
   | { type: 'pickup'; player: number; item: ItemType; x: number; y: number }
@@ -415,6 +430,7 @@ export type GameEvent =
   | { type: 'trapSet'; x: number; y: number; owner: number }
   | { type: 'trapFire'; x: number; y: number; owner: number }
   | { type: 'timeStop'; owner: number }
+  | { type: 'smokeBomb'; player: number; x: number; y: number }
   | { type: 'bushBurn'; x: number; y: number }
   | { type: 'crownTake'; player: number }
   | { type: 'crownDrop'; x: number; y: number }
@@ -513,6 +529,8 @@ export interface GameState {
   toxic: number[];
   toxicOwner: number[];
   bush: number[];
+  /** Fum (bomba fumigenă): tick-uri rămase pe fiecare pătrățel. */
+  smoke: number[];
   traps: Trap[];
   /** Super-ul „oprește timpul”: bombele celorlalți stau pe loc. */
   timeStop: { owner: number; t: number } | null;

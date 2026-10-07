@@ -419,3 +419,20 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 - Verificat vizual în Toy, din capturile testului (844×390): meniul principal, Play, personaje, pagina de personaj, magazin, setări, misiuni, practice, teme, texte legale, Online, camera privată și foaia de opțiuni, jocul rapid, HUD FFA / echipe / steag / 3D, pauză, reconectare, final de meci. **Neverificate în Toy:** tranzițiile (fitil, bandă), HUD-ul din Infinit, finalul de misiune și de provocare, tutorialul, ecranele de cont, panoul DEV.
 - Lilita One e mai lată decât Bangers: câteva texte lungi se rup pe două rânduri (ex. „TUTORIAL · 6 STEPS”), iar taburile din magazin sunt la limită.
 - Neverificat pe telefon real.
+
+## Nova și Shade: bombă în arie și bombă fumigenă (2026-10-07)
+
+**Mini-plan:** `sim` mai întâi (arie + fum, cu teste deterministe), apoi `content`, protocolul Infinit și randarea; bench de balans la final.
+
+**Făcut:**
+
+- `sim`: `Bomb.area` + `areaTiles` (rază `min(range+1, 3)`, ocolește stâlpii, lada oprește aria); Super-urile `nova` (Supernova) și `smoke` (bomba fumigenă); `GameState.smoke`; `canSee` ține cont de fum; boții evită aria și folosesc fumul.
+- `content`: Nova (epic, `burst`, fitil +0.5s, 6 bombe) și Shade (legendar, viteză 185, 5 bombe); roster de 13 personaje.
+- `net` (Infinit): aria în bombă, fumul în codul celulei. Client: fum în 2D/3D, accesorii, sunet.
+- Teste: `packages/sim/test/burst-smoke.test.ts` (15).
+
+**Rămas / cunoscut:**
+
+- Echilibrul (fitil, raza, 6s de fum) e provizoriu: de jucat cu oameni. `sim:bench` nu măsoară pe personaj.
+- Aspectul lui Nova și Shade e doar un accesoriu peste corpul generic; direcția artistică finală așteaptă proprietarul.
+- Playwright nerulat în containerul de lucru (numărul de carduri din `characters.spec.ts` a fost actualizat la 13).

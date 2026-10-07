@@ -601,6 +601,11 @@ export class Renderer3D {
       tg,
       new THREE.MeshBasicMaterial({ color: '#8dff5a', transparent: true, opacity: 0.35, depthWrite: false }),
     );
+    inst(
+      'smoke',
+      new THREE.SphereGeometry(0.62, 10, 8),
+      new THREE.MeshBasicMaterial({ color: '#b4bac8', transparent: true, opacity: 0.8, depthWrite: false }),
+    );
     const sg = new THREE.PlaneGeometry(1, 1);
     sg.rotateX(-Math.PI / 2);
     inst(
@@ -1159,6 +1164,7 @@ export class Renderer3D {
       'shift',
       'bush',
       'toxic',
+      'smoke',
     ])
       I[k]!.n = 0;
     const inf = s.inf !== null;
@@ -1208,6 +1214,8 @@ export class Renderer3D {
         }
         if (s.bush[k]) this.set(I.bush!, x, 0.45, y, 0.9, 0.9, 0.9);
         if (s.toxic[k]! > 0) this.set(I.toxic!, x, 0.04, y, 1, 1, 1);
+        if (s.smoke[k]! > 0)
+          this.set(I.smoke!, x, 0.55 + Math.sin(time * 1.5 + x * 1.3 + y) * 0.06, y, 1.5, 1.2, 1.5);
         const it = s.items[k];
         if (it && g !== SOFT) {
           const i = I.item!;
@@ -1243,6 +1251,7 @@ export class Renderer3D {
       'shift',
       'bush',
       'toxic',
+      'smoke',
     ]) {
       const i = I[k]!;
       i.mesh.count = i.n;

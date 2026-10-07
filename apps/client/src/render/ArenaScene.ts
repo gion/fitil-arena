@@ -901,6 +901,22 @@ export class ArenaScene extends Phaser.Scene {
         im.setDepth(DEPTH.actors + y * 0.01 + 0.009).setAlpha(inside ? 0.55 : 1);
       }
 
+    // fum (bomba fumigenă): peste jucători, ca să nu se vadă ce e în el; se subțiază în ultima secundă
+    for (let y = V.y0; y <= V.y1; y++)
+      for (let x = V.x0; x <= V.x1; x++) {
+        if (inf && !inBounds(s, x, y)) continue;
+        const v = s.smoke[idx(s, x, y)]!;
+        if (v <= 0) continue;
+        const sv = Math.floor(paint.hash(x, y, 83) * 3);
+        P.actors!.get(
+          this.t(`smoke${sv}`, 1.3, 1.3, 0.5, 0.5, () => paint.smoke(sv)),
+          (x + 0.5) * T + Math.sin(time * 0.9 + x * 1.7 + y) * T * 0.04,
+          (y + 0.5) * T + Math.cos(time * 0.8 + y * 1.3 + x) * T * 0.04,
+        )
+          .setDepth(DEPTH.actors + y * 0.01 + 0.0095)
+          .setAlpha(Math.min(0.88, v / TICK_HZ));
+      }
+
     // nori
     for (const c of s.clouds) {
       const [x, y] = m.lerp(`c${c.id}`, c.px, c.py);
