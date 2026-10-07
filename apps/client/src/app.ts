@@ -85,7 +85,7 @@ import { vibrate } from './haptics.ts';
 import { Controls, quantize } from './input/controls.ts';
 import type { ArenaScene } from './render/ArenaScene.ts';
 import type { Renderer3D } from './render3d/Renderer3D.ts';
-import { currentTheme, save, settings } from './settings.ts';
+import { applySkin, currentSkin, currentTheme, save, settings } from './settings.ts';
 import type { Quality, View } from './settings.ts';
 import { $, h, show } from './ui/dom.ts';
 import { account } from './online/account.ts';
@@ -1662,8 +1662,7 @@ export class App {
         h(
           'div',
           {
-            class: 'grow col',
-            style: 'gap:6px;background:var(--white);border:3px solid var(--ink);padding:6px 12px',
+            class: 'grow col pvbox',
           },
           h(
             'div',
@@ -2324,15 +2323,7 @@ export class App {
     const self = () => this.settingsMenu(onBack);
     return this.page(
       'settings',
-      head(
-        'SETTINGS',
-        onBack,
-        h(
-          'div',
-          { class: 'push cap info', style: 'font-style:normal;font-size:12px;background:var(--white)' },
-          `version ${__APP_VERSION__}`,
-        ),
-      ),
+      head('SETTINGS', onBack, h('div', { class: 'push cap info plain' }, `version ${__APP_VERSION__}`)),
       h(
         'div',
         { class: 'body', style: 'gap:18px' },
@@ -2361,6 +2352,27 @@ export class App {
             this.scene.motion = settings.motion;
             this.applyMotion();
           }),
+          // aspectul interfeței (Comic / Toy): doar aspect, vezi ui/toy.css
+          h(
+            'div',
+            { class: 'lookrow' },
+            h('div', { class: 'label' }, 'Look'),
+            seg(
+              'Interface look',
+              [
+                ['comic', 'Comic'],
+                ['toy', 'Toy'],
+              ] as const,
+              currentSkin(),
+              (s) => {
+                settings.skin = s;
+                save();
+                applySkin();
+                this.showScreen(self);
+              },
+              'data-skin-pick',
+            ),
+          ),
         ),
         panel(
           'tr col side',

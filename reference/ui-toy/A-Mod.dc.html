@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Choose a mode (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; gap: 12px; padding: 16px 56px 20px">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <a href="A-Home.dc.html" aria-label="Back" style="width: 48px; height: 48px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #FF4F8B; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #D12863, 0 4px 0 #1A1040">
+      <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: #1A1040; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <h1 style="margin: 0; white-space: nowrap; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040">CHOOSE A MODE</h1>
+    <div style="margin-left: auto; min-width: 0; max-width: 420px; background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; padding: 5px 12px; font-weight: 700; font-size: 13px; line-height: 1.3"><span style="font-family: 'Lilita One', sans-serif; color: #FFC531">{{sel.name}}:</span> {{sel.desc}}</div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; gap: 18px; min-height: 0">
+    <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-content: start; padding-top: 2px">
+      <sc-for list="{{modes}}" as="m" hint-placeholder-count="9">
+        <button type="button" aria-pressed="{{m.on}}" onClick="{{m.pick}}" style="position: relative; height: 84px; padding: 0 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; text-align: left; font-family: 'Nunito', sans-serif; color: #FFFFFF; background: {{m.bg}}; border: 3px solid {{m.ring}}; border-radius: 20px; box-shadow: 0 5px 0 #1A1040; cursor: pointer; opacity: {{m.opacity}}">
+          <span style="font-family: 'Lilita One', sans-serif; font-size: 19px; line-height: 1.1">{{m.name}}</span>
+          <span style="font-weight: 800; font-size: 12px; color: #D9D2FF">{{m.sub}}</span>
+          <sc-if value="{{m.fresh}}" hint-placeholder-val="{{false}}">
+            <span style="position: absolute; right: -8px; top: -10px; height: 24px; box-sizing: border-box; border-radius: 12px; background: #D81E45; color: #FFFFFF; border: 3px solid #1A1040; font-family: 'Lilita One', sans-serif; font-size: 12px; line-height: 18px; padding: 0 6px">NEW</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px">
+      <a href="A-Personaje.dc.html" style="display: flex; align-items: center; gap: 10px; height: 60px; box-sizing: border-box; padding: 0 12px; text-decoration: none; color: #1A1040; background: #2FD4FF; border: 3px solid #1A1040; border-radius: 18px; box-shadow: inset 0 -6px 0 #12A9D6, 0 4px 0 #1A1040">
+        <span style="width: 36px; height: 36px; box-sizing: border-box; border-radius: 50%; background: #5AD15A; border: 3px solid #12131C; flex-shrink: 0"></span>
+        <span style="display: flex; flex-direction: column; line-height: 1.15">
+          <span style="font-family: 'Lilita One', sans-serif; font-size: 18px">Bubu — Big Bang</span>
+          <span style="font-weight: 900; font-size: 12px">change character</span>
+        </span>
+      </a>
+      <div>
+        <div style="font-family: 'Lilita One', sans-serif; font-size: 12px; letter-spacing: 1px; color: #D9D2FF; margin-bottom: 3px">RULES</div>
+        <div role="group" aria-label="Rules" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; padding: 3px; gap: 3px">
+          <sc-for list="{{rules}}" as="r" hint-placeholder-count="2">
+            <button type="button" aria-pressed="{{r.on}}" onClick="{{r.pick}}" style="height: 44px; padding: 0; font-family: 'Lilita One', sans-serif; font-size: 15px; color: {{r.fg}}; background: {{r.bg}}; border: 0; border-radius: 11px; cursor: pointer">{{r.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <div style="font-family: 'Lilita One', sans-serif; font-size: 12px; letter-spacing: 1px; color: #D9D2FF; margin-bottom: 3px">BOTS</div>
+        <div role="group" aria-label="Bot difficulty" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; padding: 3px; gap: 3px">
+          <sc-for list="{{bots}}" as="b" hint-placeholder-count="4">
+            <button type="button" aria-pressed="{{b.on}}" onClick="{{b.pick}}" style="height: 44px; padding: 0; font-family: 'Lilita One', sans-serif; font-size: 13px; color: {{b.fg}}; background: {{b.bg}}; border: 0; border-radius: 11px; cursor: pointer">{{b.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <a href="A-RoundStart.dc.html" style="margin-top: auto; height: 64px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 30px; letter-spacing: 1px; color: #1A1040; background: #FFC531; border: 3px solid #1A1040; border-radius: 22px; box-shadow: inset 0 -8px 0 #E09A00, inset 0 4px 0 #FFE08A, 0 5px 0 #1A1040">START</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const picked = st.mode || 'ffa';
+const defs = [
+  { id: 'ffa', name: 'Free for all', sub: 'You against 3 bots', desc: 'Last one standing wins.' },
+  { id: 'duel', name: '1 vs 1', sub: 'Small arena duel', desc: 'Both start with the same random power-ups.' },
+  { id: 'team2', name: 'Teams 2v2', sub: 'You and a teammate', desc: 'Friendly bombs can’t hurt you.' },
+  { id: 'team3', name: 'Teams 3v3', sub: '3 against 3', desc: 'Friendly bombs can’t hurt you.' },
+  { id: 'ctf', name: 'Capture the flag', sub: 'First to 3 captures', desc: 'Steal the enemy flag and bring it home. You respawn after 3s.' },
+  { id: 'spin', name: 'Spinning arena', sub: 'The map rotates', desc: 'The arena spins faster and faster and changes direction.', fresh: true },
+  { id: 'rows', name: 'Shifting rows', sub: 'Rows slide around', desc: 'If a crate pushes you into a wall, you get squashed.' },
+  { id: 'crown', name: 'Crown', sub: 'Locked · Player Lv 6', desc: 'Grab the crown and keep it.', locked: true },
+  { id: 'potato', name: 'Hot potato', sub: 'Locked · Player Lv 8', desc: 'Don’t be the one holding it when it blows.', locked: true }
+];
+const modes = defs.map((m) => ({
+  ...m,
+  on: m.id === picked,
+  fresh: !!m.fresh && m.id !== picked,
+  bg: m.id === picked ? '#4A33B8' : '#1F1259',
+  ring: m.id === picked ? '#FFC531' : '#1A1040',
+  opacity: m.locked ? 0.55 : 1,
+  pick: () => { if (!m.locked) this.setState({ mode: m.id }); }
+}));
+const seg = (key, labels, def) => labels.map((label) => {
+  const on = (st[key] || def) === label;
+  return { label, on, bg: on ? '#FFC531' : 'transparent', fg: on ? '#1A1040' : '#FFFFFF', pick: () => this.setState({ [key]: label }) };
+});
+return { modes, sel: defs.find((m) => m.id === picked), rules: seg('rules', ['Classic', 'Characters'], 'Characters'), bots: seg('bots', ['Easy', 'Normal', 'Hard', 'Insane'], 'Normal') };
+}
+}
+</script>
+</body>
+</html>

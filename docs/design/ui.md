@@ -150,6 +150,31 @@ Personajele din meniuri sunt cele din joc, desenate de `Portraits` (`apps/client
 - Pe un ecran reacționează **un singur** personaj: cel mare. Cele mici din grile doar clipesc.
 - Cu `settings.motion` oprit, personajele stau pe loc, dar își schimbă în continuare expresia.
 
+## Skin-uri: „Comic” și „Toy”
+
+Interfața are două aspecte care împart **același DOM și aceleași componente**; se schimbă doar CSS-ul (D-073).
+
+- **Comic** e implicit și e descris în tot restul documentului (`styles.css`).
+- **Toy** e un strat peste el, în `apps/client/src/ui/toy.css`, activ doar când `<html data-skin="toy">`. Machetele lui sunt în `reference/ui-toy/`.
+- Se alege din **Settings › Look** (`settings.skin`, salvat local) sau, doar pentru sesiunea curentă, cu `?skin=toy` / `?skin=comic` în URL. Schimbarea se aplică pe loc.
+- Regula „interfața e fixă, tema schimbă doar arena” (D-052) rămâne: skin-ul și tema arenei sunt independente.
+
+Ce schimbă Toy față de Comic:
+
+|                     | Comic                                 | Toy                                                                  |
+| ------------------- | ------------------------------------- | -------------------------------------------------------------------- |
+| Fundal              | galben cu raster                      | indigo `#2B1A78` cu raze discrete                                    |
+| Suprafețe           | albe, text negru                      | panouri `#3A259A` și `#1F1259`, text alb                             |
+| Contur și umbră     | `#111111`, umbră dură în diagonală    | `#1A1040`, „buză” jos (`inset 0 -6px 0`) + umbră dreaptă sub element |
+| Forme               | colțuri drepte, înclinări și rotiri   | colțuri rotunjite (10–28px), fără înclinări                          |
+| Acțiunea principală | roșu cu text alb                      | galben `#FFC531` cu text închis                                      |
+| Înapoi / ieșire     | pătrat alb                            | roz `#FF4F8B` / `#FF8FB6`                                            |
+| ON/OFF              | ștampilă rotită                       | pastilă verde / mov                                                  |
+| Fonturi             | Bangers + Rubik                       | Lilita One + Nunito (700/800/900)                                    |
+| Apăsare             | elementul intră în umbră pe diagonală | elementul coboară 4px și „buza” se strânge                           |
+
+Reguli pentru cod: orice componentă nouă se stilizează întâi în `styles.css` (Comic), fără culori sau fundaluri puse inline în TypeScript, apoi primește regula ei în `toy.css` dacă are fundal deschis, text moștenit sau înclinare. Testul `apps/client/e2e/skin.spec.ts` parcurge meniurile în Toy (fără erori, ținte de minimum 44px) și salvează capturi în `docs/screens/ui-toy/`.
+
 ## Ce nu e desenat încă
 
 Splash-ul de încărcare, momentele „bye bye” și de glorie, HUD-ul pentru Crown și Hot potato, stările butoanelor (apăsat, dezactivat), mesajele de tip toast. Se construiesc din componentele de mai sus. Missions, Practice, Themes, panoul DEV și ecranul „Rotate your phone” au fost construite așa în Faza 4b (fără machetă); capturile lor sunt în `docs/screens/ui/`.

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Round start (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 16px 56px 18px">
+  <div style="position: absolute; left: -78px; top: -305px; width: 1000px; height: 1000px; border-radius: 50%; background: repeating-conic-gradient(#3A259A 0deg 10deg, #2B1A78 10deg 20deg)"></div>
+  <div style="position: relative; align-self: flex-start; font-family: 'Lilita One', sans-serif; font-size: 13px; letter-spacing: 1px; background: #1F1259; border: 3px solid #1A1040; border-radius: 14px; padding: 2px 12px">Classic arena · Free for all</div>
+  <div style="position: relative; margin-top: -6px; font-family: 'Lilita One', sans-serif; font-size: 22px; letter-spacing: 2px; color: #1A1040; background: #2FD4FF; border: 3px solid #1A1040; border-radius: 14px; padding: 1px 18px; box-shadow: 0 4px 0 #1A1040; transform: rotate(-3deg)">ROUND 1</div>
+  <a href="A-Game.dc.html" style="position: relative; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 84px; line-height: 1.05; letter-spacing: 2px; color: #FFC531; -webkit-text-stroke: 12px #1A1040; paint-order: stroke fill; text-shadow: 0 8px 0 #1A1040; transform: rotate(-3deg)">GET READY!</a>
+
+  <div style="position: relative; margin-top: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; width: 100%">
+    <sc-for list="{{fighters}}" as="f" hint-placeholder-count="4">
+      <div style="display: flex; flex-direction: column; align-items: center">
+        <svg viewBox="0 -8 100 118" style="width: 92px; height: 108px" aria-hidden="true">
+          <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+          <path d="M50 20 Q60 -4 72 3" style="fill: none; stroke: #12131C; stroke-width: 4; stroke-linecap: round"/>
+          <circle cx="72" cy="4" r="6" fill="{{f.color}}" style="stroke: #12131C; stroke-width: 3"/>
+          <circle cx="50" cy="58" r="38" fill="{{f.color}}" style="stroke: #12131C; stroke-width: 5"/>
+          <ellipse cx="36" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/><ellipse cx="64" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/>
+          <circle cx="38" cy="55" r="4" style="fill: #12131C"/><circle cx="66" cy="55" r="4" style="fill: #12131C"/>
+          <path d="M25 40 l16 5M75 40 l-16 5" style="fill: none; stroke: #12131C; stroke-width: 4; stroke-linecap: round"/>
+        </svg>
+        <div style="margin-top: -8px; width: 100%; box-sizing: border-box; text-align: center; font-family: 'Lilita One', sans-serif; font-size: 18px; color: #1A1040; background: {{f.bg}}; border: 3px solid #1A1040; border-radius: 14px; box-shadow: inset 0 -5px 0 rgba(26,16,64,0.2), 0 4px 0 #1A1040; padding: 3px 0 7px">{{f.name}}</div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="position: relative; margin-top: 14px; background: #1F1259; border: 3px solid #1A1040; border-radius: 16px; padding: 5px 14px; font-weight: 700; font-size: 14px"><span style="font-family: 'Lilita One', sans-serif; color: #FFC531">Arena event · East wind:</span> kicked bombs travel further this round.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const fighters = [
+  { name: 'Gion', color: '#FFD23F', bg: '#FFC531' },
+  { name: 'Mara', color: '#FF5F93', bg: '#FF8FB6' },
+  { name: 'Vlad', color: '#4FC3FF', bg: '#2FD4FF' },
+  { name: 'Bot Nelu', color: '#7DFFB0', bg: '#5BE36A' }
+];
+return { fighters };
+}
+}
+</script>
+</body>
+</html>

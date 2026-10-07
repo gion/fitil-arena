@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-07 — Claude Code (Opus 5.5) — Skin-ul „Toy”, comutabil din Settings
+
+- **Cerut:** încă o versiune a interfeței, pe alt branch, cu tema A din canvas; ales: skin în cod, comutator în joc, fonturile Lilita One și Nunito descărcate din `@fontsource`.
+- **Făcut:** machetele A aduse la zi pe canvas și copiate în `reference/ui-toy/`; `ui/toy.css` (strat peste `styles.css`, activ la `data-skin="toy"`), `settings.skin`, rândul „Look” în Settings, `?skin=`; fonturile împachetate local; două stiluri inline mutate în clase; `e2e/skin.spec.ts`; secțiunea „Skin-uri” în `docs/design/ui.md`, D-073, credite, progres. Branch `design/ui-toy`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts` (8 teste trecute, pe un build proaspăt); capturi Toy comparate vizual pentru 11 ecrane.
+- **Notă operațională:** pe mașina asta portul 4173 era ocupat de alt proces cu un build vechi, așa că Playwright a fost rulat cu o configurație temporară pe 4199 (neadăugată în repo). `ui.spec.ts` rescrie capturile din `docs/screens/ui/`; a fost păstrată doar `settings.jpg` (ecranul are acum rândul „Look”).
+
 ## 2026-10-06 — Claude Code — Faza 7: Modul Infinit
 
 - **Cerut:** „începem faza 7” (PLAN.md: modul Infinit offline în sim, lume pe chunk-uri, instanțe de 30–80 de jucători cu interest management, respawn, scor, bonusuri la moarte, clasament live, minimapă, shard-uri; test de încărcare cu 80 de boți-client).

@@ -1,0 +1,869 @@
+/*
+ * Skin-ul „Toy” (direcția A din canvasul de design): fundal indigo, panouri închise, butoane
+ * rotunjite cu „buză” 3D, galben pentru acțiunea principală. E un strat peste styles.css,
+ * activ doar când <html data-skin="toy"> (settings.skin). Fără el, interfața rămâne „Comic”.
+ * Aceeași structură de DOM pentru ambele skin-uri: aici se schimbă doar aspectul.
+ */
+:root[data-skin='toy'] {
+  color-scheme: dark;
+  --ink: #1a1040;
+  --paper: #ffc531;
+  --red: #d81e45;
+  --red-dark: #b3123a;
+  --cyan: #2fd4ff;
+  --caption: #1f1259;
+  --ok: #5be36a;
+  --raster: none;
+  --display: 'Lilita One', 'Arial Rounded MT Bold', 'Arial Black', sans-serif;
+  --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --t-bg: #2b1a78;
+  --t-ray: #33218b;
+  --t-panel: #3a259a;
+  --t-panel-hi: #4a33b8;
+  --t-deep: #1f1259;
+  --t-line: #6b58c9;
+  --t-mute: #d9d2ff;
+  --t-pink: #ff8fb6;
+  --lip: #d5d0ea;
+}
+
+/* ---------- pagină ---------- */
+:root[data-skin='toy'] {
+  background-color: var(--t-bg);
+  background-image: none;
+}
+[data-skin='toy'] body,
+[data-skin='toy'] .page {
+  color: #fff;
+  background-color: var(--t-bg);
+  background-image: repeating-conic-gradient(
+    from 0deg at 50% 38%,
+    var(--t-ray) 0 10deg,
+    var(--t-bg) 10deg 20deg
+  );
+  background-size: auto;
+}
+[data-skin='toy'] .ico {
+  stroke: var(--ink);
+}
+[data-skin='toy']
+  :is(
+    .panel,
+    .tile,
+    .card,
+    .ccard,
+    .seats li,
+    .mpanel,
+    .mpanel > .cap,
+    .lvlup,
+    .banner,
+    .stamp,
+    .tag,
+    .sup,
+    .bomb3,
+    .final .hero-box h1,
+    .playbox,
+    .playbox .play,
+    .playbox .online
+  ) {
+  rotate: 0deg !important;
+}
+[data-skin='toy'] .ptitle {
+  font-size: 28px;
+  letter-spacing: 1px;
+  color: #fff;
+  background: none;
+  padding: 0 4px;
+  transform: none;
+  -webkit-text-stroke: 6px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 var(--ink);
+}
+[data-skin='toy'] .sub-title {
+  font-size: 15px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 2px 12px;
+  transform: none;
+}
+[data-skin='toy'] .label {
+  color: var(--t-mute);
+  font-weight: 900;
+}
+
+/* ---------- butoane ---------- */
+[data-skin='toy'] .sq {
+  --lip: #d12863;
+  background: #ff4f8b;
+  border-radius: 16px;
+  box-shadow:
+    inset 0 -5px 0 var(--lip),
+    0 4px 0 var(--ink);
+}
+[data-skin='toy'] .b {
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  padding: 0 16px 5px;
+  border-radius: 18px;
+  transform: none;
+  box-shadow:
+    inset 0 -6px 0 var(--lip),
+    0 5px 0 var(--ink);
+}
+[data-skin='toy'] .b.cyan {
+  --lip: #12a9d6;
+}
+[data-skin='toy'] .b.main {
+  --lip: #e09a00;
+  font-size: 24px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: var(--paper);
+  border-width: 3px;
+  border-radius: 22px;
+  padding-bottom: 7px;
+  box-shadow:
+    inset 0 -8px 0 var(--lip),
+    inset 0 4px 0 #ffe08a,
+    0 5px 0 var(--ink);
+}
+[data-skin='toy'] .b.main.huge {
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+[data-skin='toy'] .b small {
+  font-weight: 900;
+}
+[data-skin='toy'] :is(.sq, .b, .tile, .pick-btn, .switch).down {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 -2px 0 var(--lip),
+    0 1px 0 var(--ink);
+}
+
+/* ---------- casete, balon, etichete, comutatoare ---------- */
+[data-skin='toy'] .cap {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  background: var(--t-deep);
+  border-radius: 16px;
+}
+[data-skin='toy'] .cap.info b {
+  font-family: var(--display);
+  font-weight: 400;
+  color: var(--paper);
+}
+[data-skin='toy'] .cap.info.plain {
+  background: var(--t-deep);
+}
+[data-skin='toy'] .pvbox {
+  color: #fff;
+  background: var(--t-panel);
+  border-radius: 20px;
+}
+[data-skin='toy'] .say {
+  color: var(--ink);
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 3px 0 var(--ink);
+  font-weight: 900;
+}
+[data-skin='toy'] .tag {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  line-height: 18px;
+  border-radius: 12px;
+  padding: 0 7px;
+}
+[data-skin='toy'] .tag.picked {
+  font-size: 13px;
+}
+[data-skin='toy'] .stamp {
+  min-width: 52px;
+  font-size: 17px;
+  line-height: 30px;
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: inset 0 3px 0 rgba(26, 16, 64, 0.2);
+}
+[data-skin='toy'] .stamp.off {
+  color: #fff;
+  background: var(--t-line);
+  border-color: var(--ink);
+}
+[data-skin='toy'] .switch {
+  --lip: #2c1b7c;
+  color: #fff;
+  background: var(--t-panel);
+  border-radius: 20px;
+  box-shadow: 0 5px 0 var(--ink);
+}
+[data-skin='toy'] .switch .stamp {
+  min-width: 52px;
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 28px;
+}
+[data-skin='toy'] .sw-txt b {
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+[data-skin='toy'] .sw-txt small {
+  color: var(--t-mute);
+  font-weight: 700;
+}
+[data-skin='toy'] .switch.slim {
+  background: var(--t-deep);
+  border-radius: 16px;
+}
+[data-skin='toy'] .switch.slim .sw-txt b {
+  font: 900 13px var(--body);
+}
+[data-skin='toy'] .switch.slim .stamp {
+  font-size: 14px;
+  line-height: 24px;
+}
+[data-skin='toy'] .seg {
+  gap: 3px;
+  padding: 3px;
+  background: var(--t-deep);
+  border-radius: 16px;
+}
+[data-skin='toy'] .seg button {
+  font-size: 15px;
+  letter-spacing: 0;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-radius: 11px;
+}
+[data-skin='toy'] .seg button[aria-pressed='true'] {
+  color: var(--ink);
+  background: var(--paper);
+}
+[data-skin='toy'] .seg button.down {
+  background: var(--t-panel);
+}
+
+/* ---------- panouri și pastile ---------- */
+[data-skin='toy'] .panel {
+  color: #fff;
+  background: var(--t-panel);
+  border-width: 3px;
+  border-radius: 24px;
+  box-shadow: 0 6px 0 var(--ink);
+}
+[data-skin='toy'] .panel.cyan {
+  background: var(--t-panel);
+}
+[data-skin='toy'] .rays {
+  background: repeating-conic-gradient(var(--t-panel-hi) 0deg 15deg, var(--t-panel) 15deg 30deg);
+}
+[data-skin='toy'] .hero-box .foot {
+  --lip: #d5d0ea;
+  align-self: center;
+  min-height: 44px;
+  margin: 0 10px 12px;
+  padding: 0 16px 4px;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: inset 0 -5px 0 var(--lip);
+}
+[data-skin='toy'] .hero-box .foot.ink {
+  color: #fff;
+  background: var(--t-deep);
+  box-shadow: none;
+  padding-bottom: 0;
+}
+[data-skin='toy'] :is(.coins, .plevel) {
+  color: #fff;
+  background: var(--t-deep);
+  border-radius: 22px;
+  box-shadow: none;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+[data-skin='toy'] .plevel b {
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+[data-skin='toy'] :is(.coins, .plevel) small {
+  color: var(--t-mute);
+}
+[data-skin='toy'] .plevel i {
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--ok) var(--w), var(--t-bg) var(--w));
+}
+[data-skin='toy'] :is(.bar, .hbar) {
+  background: var(--t-deep);
+  border-radius: 10px;
+  overflow: hidden;
+}
+[data-skin='toy'] .bar i {
+  background: var(--ok);
+  box-shadow: inset 0 -4px 0 #2fb843;
+}
+[data-skin='toy'] .hbar i {
+  background: var(--paper);
+  box-shadow: inset 0 -5px 0 #e09a00;
+}
+[data-skin='toy'] .field {
+  font-size: 18px;
+  color: var(--ink);
+  border-radius: 16px;
+}
+[data-skin='toy'] .field.code {
+  font-size: 28px;
+  letter-spacing: 8px;
+  background: var(--white);
+  border-style: solid;
+  border-radius: 18px;
+  box-shadow: inset 0 5px 0 var(--lip);
+}
+[data-skin='toy'] .err {
+  border-radius: 14px;
+}
+[data-skin='toy'] .or {
+  color: var(--t-mute);
+}
+[data-skin='toy'] .or::before,
+[data-skin='toy'] .or::after {
+  background: var(--t-line);
+}
+
+/* ---------- meniul principal ---------- */
+[data-skin='toy'] .playbox {
+  gap: 14px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding-bottom: 6px;
+}
+[data-skin='toy'] .playbox .play {
+  --lip: #e09a00;
+  font-size: clamp(48px, 8vw, 64px);
+  letter-spacing: 2px;
+  color: var(--ink);
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  rotate: 0deg;
+  transform: none;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 28px;
+  padding-bottom: 10px;
+  box-shadow:
+    inset 0 -12px 0 var(--lip),
+    inset 0 5px 0 #ffe08a,
+    0 6px 0 var(--ink);
+}
+[data-skin='toy'] .playbox .play.down {
+  scale: 1;
+  translate: 0 5px;
+  box-shadow:
+    inset 0 -4px 0 var(--lip),
+    inset 0 5px 0 #ffe08a,
+    0 1px 0 var(--ink);
+}
+[data-skin='toy'] .playbox .online {
+  --lip: #12a9d6;
+  align-items: center;
+  text-align: center;
+  color: var(--ink);
+  background: var(--cyan);
+  border: 3px solid var(--ink);
+  border-radius: 24px;
+  padding-bottom: 8px;
+  box-shadow:
+    inset 0 -8px 0 var(--lip),
+    0 6px 0 var(--ink);
+}
+[data-skin='toy'] .playbox .online b {
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+[data-skin='toy'] .playbox .online small {
+  font-weight: 900;
+}
+[data-skin='toy'] .playbox .online.down {
+  background: var(--cyan);
+  translate: 0 5px;
+  box-shadow:
+    inset 0 -3px 0 var(--lip),
+    0 1px 0 var(--ink);
+}
+[data-skin='toy'] .tiles {
+  padding-bottom: 6px;
+}
+[data-skin='toy'] .tile {
+  font-size: 17px;
+  letter-spacing: 0.5px;
+  color: var(--ink);
+  border-radius: 20px;
+  padding-bottom: 5px;
+  box-shadow:
+    inset 0 -6px 0 var(--lip),
+    0 5px 0 var(--ink);
+}
+[data-skin='toy'] .tile:nth-child(4n + 1) {
+  --lip: #e85c8e;
+  background: var(--t-pink);
+}
+[data-skin='toy'] .tile:nth-child(4n + 2) {
+  --lip: #2fb843;
+  background: var(--ok);
+}
+
+/* ---------- carduri de grilă ---------- */
+[data-skin='toy'] .cards {
+  padding: 2px 4px 8px 0;
+}
+[data-skin='toy'] .card {
+  color: #fff;
+  background: var(--t-deep);
+  border-width: 3px;
+  border-radius: 20px;
+  box-shadow: 0 5px 0 var(--ink);
+}
+[data-skin='toy'] .card b {
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+[data-skin='toy'] .card small {
+  color: var(--t-mute);
+  font-weight: 800;
+}
+[data-skin='toy'] .card :is(small.lock-txt, small.bad),
+[data-skin='toy'] .lvlup small {
+  color: #ffb3c7;
+}
+[data-skin='toy'] .card[aria-pressed='true'] {
+  background: var(--t-panel-hi);
+  border-color: var(--paper);
+  box-shadow: 0 5px 0 var(--ink);
+}
+[data-skin='toy'] .card.down {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+[data-skin='toy'] .card.locked {
+  border-color: var(--t-line);
+}
+[data-skin='toy'] .ccard {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--t-deep);
+  border-width: 3px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+[data-skin='toy'] .ccard[aria-pressed='true'] {
+  background: var(--t-panel-hi);
+  border-left-color: var(--paper);
+  border-right-color: var(--paper);
+  border-bottom-color: var(--paper);
+  box-shadow: 0 4px 0 var(--ink);
+}
+[data-skin='toy'] .ccard.down {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+[data-skin='toy'] .ccard .nm {
+  background: none;
+}
+[data-skin='toy'] .ccard .nm b {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+[data-skin='toy'] .more-soon {
+  color: var(--t-mute);
+  border: 3px dashed var(--t-line);
+  border-radius: 16px;
+  font-size: 13px;
+}
+[data-skin='toy'] .rar {
+  color: var(--ink);
+  border-radius: 10px;
+}
+[data-skin='toy'] .pick-btn {
+  --lip: #12a9d6;
+  color: var(--ink);
+  border-radius: 18px;
+  padding-bottom: 5px;
+  box-shadow:
+    inset 0 -6px 0 var(--lip),
+    0 4px 0 var(--ink);
+}
+[data-skin='toy'] .pick-btn b {
+  font-size: 17px;
+  letter-spacing: 0.5px;
+}
+[data-skin='toy'] :is(.pick-btn .dot, .dot) {
+  border-width: 3px;
+}
+[data-skin='toy'] .rewards div {
+  color: #fff;
+  background: var(--t-deep);
+  border-color: var(--t-line);
+  border-radius: 14px;
+}
+[data-skin='toy'] .rewards div.done {
+  color: var(--ink);
+  background: var(--ok);
+  border-style: solid;
+  border-color: var(--ink);
+}
+[data-skin='toy'] .rewards b {
+  font-size: 14px;
+}
+[data-skin='toy'] .sbar i {
+  background: var(--t-deep);
+  border-radius: 4px;
+}
+[data-skin='toy'] .sbar i.on {
+  background: var(--paper);
+}
+[data-skin='toy'] .proscons ul {
+  color: var(--ink);
+  border-radius: 14px;
+}
+[data-skin='toy'] .shop .tabs {
+  box-shadow: none;
+}
+[data-skin='toy'] .shop .tabs button {
+  font-size: 12px;
+  padding: 0 6px;
+}
+[data-skin='toy'] .sitem.eq small {
+  color: var(--paper);
+}
+
+/* ---------- camere, foi de opțiuni, panouri modale ---------- */
+[data-skin='toy'] .seats li {
+  background: var(--t-panel);
+  border-width: 3px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 5px 0 var(--ink);
+}
+[data-skin='toy'] :is(.seats li.off, .seats li.empty) {
+  background: transparent;
+  border: 3px dashed var(--t-line);
+  box-shadow: none;
+}
+[data-skin='toy'] .seats li .q {
+  color: var(--t-line);
+  -webkit-text-stroke: 6px var(--ink);
+  paint-order: stroke fill;
+}
+[data-skin='toy'] .seats .nm {
+  background: none;
+}
+[data-skin='toy'] .seats .nm b {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+[data-skin='toy'] :is(.room-code, .countdown, .fuse-where) {
+  color: var(--ink);
+  border-style: solid;
+  border-radius: 14px;
+  box-shadow: inset 0 -5px 0 var(--lip);
+}
+[data-skin='toy'] .room-code {
+  font-size: 28px;
+}
+[data-skin='toy'] .rules > button {
+  color: #fff;
+}
+[data-skin='toy'] .rules > button > small {
+  color: var(--t-mute);
+}
+[data-skin='toy'] .rules > button > b {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+[data-skin='toy'] .rules > button .ico {
+  stroke: #fff;
+}
+[data-skin='toy'] .rules > button.down {
+  background: var(--t-deep);
+}
+[data-skin='toy'] :is(.sheet, .modal, .fuse-dim) {
+  background: rgba(26, 16, 64, 0.8);
+}
+[data-skin='toy'] :is(.sheet .panel, .mpanel) {
+  color: #fff;
+  background: var(--t-panel);
+  border-width: 3px;
+  border-radius: 28px;
+  box-shadow: 0 8px 0 var(--ink);
+}
+/* Lilita One e mai lată decât Bangers: butoanele secundare din panouri au text mai mic */
+[data-skin='toy'] .mpanel .b:not(.main) {
+  font-size: 15px !important;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+[data-skin='toy'] .mpanel .hero-box {
+  background: var(--t-deep);
+  border-radius: 22px;
+}
+[data-skin='toy'] .mpanel h1.ptitle {
+  color: var(--ink);
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  padding: 2px 22px 6px;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  box-shadow: inset 0 -6px 0 #e09a00;
+}
+[data-skin='toy'] .bigstars {
+  color: var(--t-line);
+}
+
+/* ---------- final de meci ---------- */
+[data-skin='toy'] .burst path {
+  fill: var(--t-panel-hi);
+  stroke: var(--ink);
+}
+[data-skin='toy'] .final .hero-box h1 {
+  font-size: 40px;
+  color: var(--paper);
+  -webkit-text-stroke: 8px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 5px 0 var(--ink);
+}
+[data-skin='toy'] .final .hero-box .say {
+  border-radius: 16px 16px 16px 4px;
+}
+[data-skin='toy'] .ranks li {
+  color: #fff;
+  background: var(--t-deep);
+  border-radius: 16px;
+  overflow: hidden;
+}
+[data-skin='toy'] .ranks li.me {
+  background: var(--t-panel-hi);
+  border-color: var(--paper);
+  box-shadow: none;
+}
+[data-skin='toy'] .ranks .n {
+  color: var(--ink);
+  background: var(--white);
+  font-size: 18px;
+}
+[data-skin='toy'] .ranks li:nth-child(1) .n {
+  background: var(--paper);
+}
+[data-skin='toy'] .ranks li:nth-child(2) .n {
+  background: #c9c1f2;
+}
+[data-skin='toy'] .ranks li:nth-child(3) .n {
+  background: #ffb27a;
+}
+[data-skin='toy'] .ranks b {
+  font-size: 17px;
+  letter-spacing: 0;
+}
+[data-skin='toy'] .ranks small {
+  color: var(--t-mute);
+}
+[data-skin='toy'] .lvlup {
+  color: #fff;
+  background: var(--t-deep);
+  border-radius: 16px;
+}
+[data-skin='toy'] .lvlup b {
+  font-size: 20px;
+}
+[data-skin='toy'] :is(.chapter, .legend) {
+  color: #fff;
+}
+
+/* ---------- HUD ---------- */
+[data-skin='toy'] .hudbar {
+  background: var(--t-deep);
+  border-bottom: 3px solid var(--ink);
+  box-sizing: border-box;
+}
+[data-skin='toy'] .hudbar .clock {
+  font-size: 24px;
+  letter-spacing: 1px;
+  -webkit-text-stroke: 4px var(--ink);
+  paint-order: stroke fill;
+}
+[data-skin='toy'] .chip {
+  background: var(--t-panel);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  font-weight: 900;
+}
+[data-skin='toy'] .chip i {
+  box-shadow: none;
+}
+[data-skin='toy'] .chip em,
+[data-skin='toy'] .stats em {
+  font-size: 15px;
+}
+[data-skin='toy'] :is(.chip.me, .chip.on, .chip.flag) {
+  background: var(--paper);
+}
+[data-skin='toy'] .chip.team {
+  background: var(--tc);
+}
+[data-skin='toy'] .stats .box {
+  border: 3px solid var(--ink);
+  border-radius: 13px;
+  background: var(--t-panel);
+}
+[data-skin='toy'] .stats .box.bad {
+  background: var(--red);
+}
+[data-skin='toy'] .stats .box.shield {
+  background: var(--cyan);
+}
+[data-skin='toy'] .stats .box.on {
+  background: var(--paper);
+}
+[data-skin='toy'] .heart path {
+  fill: #ff4f8b;
+  stroke: var(--ink);
+}
+[data-skin='toy'] .life {
+  background: var(--t-deep);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  overflow: hidden;
+}
+[data-skin='toy'] .viewbtn {
+  --lip: #d5d0ea;
+  font-size: 15px;
+  letter-spacing: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 -4px 0 var(--lip);
+}
+[data-skin='toy'] .pausebtn {
+  background: #ff4f8b;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: inset 0 -4px 0 #d12863;
+}
+[data-skin='toy'] .pausebtn .ico {
+  stroke: var(--ink);
+}
+[data-skin='toy'] .frame {
+  border-radius: 18px;
+}
+[data-skin='toy'] .frame.mini {
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+[data-skin='toy'] .joy-knob {
+  box-shadow: inset 0 -5px 0 var(--lip);
+}
+[data-skin='toy'] .sup {
+  box-shadow: 0 4px 0 var(--ink);
+}
+[data-skin='toy'] .sup.ready {
+  box-shadow:
+    inset 0 -9px 0 #e09a00,
+    inset 0 4px 0 #ffe08a,
+    0 4px 0 var(--ink),
+    0 0 0 5px var(--ok);
+}
+[data-skin='toy'] .sup.ready::after {
+  color: var(--ink);
+  background: var(--ok);
+  border-radius: 8px;
+  rotate: 8deg;
+}
+[data-skin='toy'] .spec {
+  box-shadow:
+    inset 0 -6px 0 rgba(26, 16, 64, 0.25),
+    0 3px 0 var(--ink);
+}
+[data-skin='toy'] .spec.more::after {
+  color: var(--ink);
+  border-radius: 8px;
+}
+[data-skin='toy'] .det {
+  color: var(--ink);
+  background: var(--t-pink);
+  border-radius: 16px;
+  transform: none;
+  box-shadow:
+    inset 0 -5px 0 #e85c8e,
+    0 3px 0 var(--ink);
+}
+[data-skin='toy'] .bomb3 {
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 26px;
+  box-shadow:
+    inset 0 -11px 0 #e09a00,
+    inset 0 5px 0 #ffe08a,
+    0 6px 0 var(--ink);
+}
+[data-skin='toy'] :is(.hint, .tut) {
+  color: #fff;
+  background: var(--t-deep);
+  border-radius: 14px;
+  box-shadow: none;
+}
+[data-skin='toy'] .banner {
+  border-radius: 16px;
+  font-size: 18px;
+  padding-bottom: 4px;
+  box-shadow:
+    inset 0 -5px 0 rgba(26, 16, 64, 0.2),
+    0 4px 0 var(--ink);
+}
+[data-skin='toy'] .bubble {
+  color: var(--ink);
+  border-radius: 14px 14px 14px 4px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+[data-skin='toy'] .toast {
+  color: #fff;
+  background: var(--t-panel);
+  border-radius: 18px;
+  box-shadow: 0 5px 0 var(--ink);
+}
+[data-skin='toy'] .obj-arrow span {
+  color: var(--ink);
+  border-radius: 8px;
+}
+[data-skin='toy'] .qmodes button {
+  border-radius: 14px;
+}
+[data-skin='toy'] .infside .lb,
+[data-skin='toy'] .infside .minimap {
+  border-radius: 12px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+[data-skin='toy'] .infside .minimap {
+  background: var(--t-deep);
+}
+
+/* ---------- tranziții ---------- */
+[data-skin='toy'] .wipe {
+  background: var(--t-deep);
+}
+[data-skin='toy'] .count span,
+[data-skin='toy'] .boom-word {
+  -webkit-text-stroke: 12px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 10px 0 var(--ink);
+}
+[data-skin='toy'] .count span:nth-child(3) {
+  color: #ff4f8b;
+}
+[data-skin='toy'] .boom-word {
+  color: #fff;
+}

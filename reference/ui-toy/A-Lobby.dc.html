@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Private room (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; gap: 12px; padding: 16px 56px 20px">
+  <div style="display: flex; align-items: center; gap: 10px">
+    <a href="A-Online.dc.html" aria-label="Leave room" style="width: 48px; height: 48px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #FF4F8B; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #D12863, 0 4px 0 #1A1040">
+      <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: #1A1040; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <h1 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040">ROOM</h1>
+    <div style="display: flex; gap: 5px">
+      <span style="width: 40px; height: 46px; display: flex; align-items: center; justify-content: center; font-family: 'Lilita One', sans-serif; font-size: 28px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 12px; box-sizing: border-box; box-shadow: inset 0 -5px 0 #D5D0EA; transform: rotate(-3deg)">B</span>
+      <span style="width: 40px; height: 46px; display: flex; align-items: center; justify-content: center; font-family: 'Lilita One', sans-serif; font-size: 28px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 12px; box-sizing: border-box; box-shadow: inset 0 -5px 0 #D5D0EA; transform: rotate(2deg)">O</span>
+      <span style="width: 40px; height: 46px; display: flex; align-items: center; justify-content: center; font-family: 'Lilita One', sans-serif; font-size: 28px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 12px; box-sizing: border-box; box-shadow: inset 0 -5px 0 #D5D0EA; transform: rotate(-2deg)">O</span>
+      <span style="width: 40px; height: 46px; display: flex; align-items: center; justify-content: center; font-family: 'Lilita One', sans-serif; font-size: 28px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 12px; box-sizing: border-box; box-shadow: inset 0 -5px 0 #D5D0EA; transform: rotate(3deg)">M</span>
+    </div>
+    <button type="button" style="height: 46px; padding: 0 14px; font-family: 'Lilita One', sans-serif; font-size: 16px; color: #1A1040; background: #2FD4FF; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #12A9D6, 0 4px 0 #1A1040; cursor: pointer">Share</button>
+    <div style="margin-left: auto; font-weight: 800; font-size: 13px; color: #D9D2FF; text-align: right; line-height: 1.25">Share the code with your friends,<br>then press Start.</div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; gap: 16px; min-height: 0">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0">
+      <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{slots}}" as="p" hint-placeholder-count="4">
+          <div style="box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: {{p.bg}}; border: 3px {{p.borderStyle}} {{p.border}}; border-radius: 22px; box-shadow: {{p.shadow}}; padding: 6px 4px">
+            <svg viewBox="0 -8 100 118" style="width: 70px; height: 83px; opacity: {{p.opacity}}" aria-hidden="true">
+              <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+              <path d="M50 20 Q60 -4 72 3" style="fill: none; stroke: #12131C; stroke-width: 4; stroke-linecap: round"/>
+              <circle cx="72" cy="4" r="6" fill="{{p.color}}" style="stroke: #12131C; stroke-width: 3"/>
+              <circle cx="50" cy="58" r="38" fill="{{p.color}}" style="stroke: #12131C; stroke-width: 5"/>
+              <ellipse cx="36" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/><ellipse cx="64" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/>
+              <circle cx="38" cy="55" r="4" style="fill: #12131C"/><circle cx="66" cy="55" r="4" style="fill: #12131C"/>
+            </svg>
+            <div style="font-family: 'Lilita One', sans-serif; font-size: 16px; line-height: 1.1">{{p.name}}</div>
+            <div style="font-weight: 800; font-size: 12px; color: #FFC531">{{p.tag}}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 12px; padding-bottom: 5px">
+        <a href="A-Personaje.dc.html" style="flex-grow: 1; height: 52px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 16px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 18px; box-shadow: inset 0 -6px 0 #D5D0EA, 0 5px 0 #1A1040">Your character: Bubu</a>
+        <a href="A-Online.dc.html" style="width: 140px; height: 52px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 16px; color: #1A1040; background: #FF8FB6; border: 3px solid #1A1040; border-radius: 18px; box-shadow: inset 0 -6px 0 #E85C8E, 0 5px 0 #1A1040">Leave room</a>
+      </div>
+    </div>
+
+    <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px">
+      <div style="background: #3A259A; border: 3px solid #1A1040; border-radius: 20px; box-shadow: 0 5px 0 #1A1040; padding: 2px 0; overflow: hidden">
+        <sc-for list="{{rules}}" as="r" hint-placeholder-count="5">
+          <button type="button" style="width: 100%; min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-family: 'Nunito', sans-serif; color: #FFFFFF; background: transparent; border: 0; border-bottom: {{r.line}}; cursor: pointer; text-align: left">
+            <span style="font-weight: 900; font-size: 12px; letter-spacing: 1px; color: #D9D2FF; width: 60px">{{r.label}}</span>
+            <span style="font-family: 'Lilita One', sans-serif; font-size: 16px">{{r.value}}</span>
+            <svg viewBox="0 0 24 24" style="margin-left: auto; width: 16px; height: 16px; fill: none; stroke: #FFFFFF; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </sc-for>
+      </div>
+      <a href="A-RoundStart.dc.html" style="margin-top: auto; margin-bottom: 5px; height: 62px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 30px; letter-spacing: 1px; color: #1A1040; background: #FFC531; border: 3px solid #1A1040; border-radius: 22px; box-shadow: inset 0 -8px 0 #E09A00, inset 0 4px 0 #FFE08A, 0 5px 0 #1A1040">START</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const defs = [
+  { name: 'Gion', color: '#5AD15A', tag: 'Host · Bubu' },
+  { name: 'Mara', color: '#FF9AD0', tag: 'Fifi' },
+  { name: 'Vlad', color: '#2FB4FF', tag: 'Striker' },
+  { name: 'Open seat', color: '#6B58C9', tag: 'a bot takes it', empty: true }
+];
+const slots = defs.map((p) => ({
+  ...p,
+  bg: p.empty ? 'transparent' : '#3A259A',
+  border: p.empty ? '#6B58C9' : '#1A1040',
+  borderStyle: p.empty ? 'dashed' : 'solid',
+  shadow: p.empty ? 'none' : '0 5px 0 #1A1040',
+  opacity: p.empty ? 0.5 : 1
+}));
+const list = [['MODE', 'Free for all'], ['RULES', 'Characters'], ['BOTS', 'Normal'], ['THEME', 'Classic'], ['EVENTS', 'On']];
+const rules = list.map((r, i) => ({ label: r[0], value: r[1], line: i < list.length - 1 ? '3px solid #1A1040' : '0' }));
+return { slots, rules };
+}
+}
+</script>
+</body>
+</html>

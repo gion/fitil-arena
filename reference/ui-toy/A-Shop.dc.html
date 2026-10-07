@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Shop (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; gap: 12px; padding: 16px 56px 22px">
+  <div style="display: flex; align-items: center; gap: 10px">
+    <a href="A-Home.dc.html" aria-label="Back" style="width: 48px; height: 48px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #FF4F8B; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 #D12863, 0 4px 0 #1A1040">
+      <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: #1A1040; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <h1 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040">SHOP</h1>
+    <div role="group" aria-label="Shop category" style="margin-left: 4px; display: flex; background: #1F1259; border: 3px solid #1A1040; border-radius: 18px; padding: 3px; gap: 2px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="6">
+        <button type="button" aria-pressed="{{t.on}}" onClick="{{t.pick}}" style="height: 44px; padding: 0 10px; font-family: 'Lilita One', sans-serif; font-size: 13px; color: {{t.fg}}; background: {{t.bg}}; border: 0; border-radius: 13px; cursor: pointer">{{t.label}}</button>
+      </sc-for>
+    </div>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px 0 6px; background: #1F1259; border: 3px solid #1A1040; border-radius: 20px; font-family: 'Lilita One', sans-serif; font-size: 16px">
+      <span style="width: 24px; height: 24px; border-radius: 50%; background: #FFC531; border: 3px solid #1A1040; box-sizing: border-box"></span>850
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; gap: 18px; min-height: 0">
+    <div style="position: relative; width: 200px; flex-shrink: 0; overflow: hidden; background: #3A259A; border: 3px solid #1A1040; border-radius: 26px; box-shadow: 0 6px 0 #1A1040; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin-bottom: 6px">
+      <div style="position: absolute; left: -160px; top: -150px; width: 520px; height: 520px; border-radius: 50%; background: repeating-conic-gradient(#4A33B8 0deg 15deg, #3A259A 15deg 30deg)"></div>
+      <div style="position: absolute; left: 10px; top: 10px; font-family: 'Lilita One', sans-serif; font-size: 12px; letter-spacing: 1px; color: #1A1040; background: #2FD4FF; border: 3px solid #1A1040; border-radius: 10px; padding: 1px 8px">TRYING ON</div>
+      <svg viewBox="0 -8 100 118" style="position: relative; width: 140px; height: 165px" aria-hidden="true">
+        <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+        <path d="M50 20 Q60 -4 72 3" style="fill: none; stroke: #12131C; stroke-width: 4; stroke-linecap: round"/>
+        <circle cx="72" cy="4" r="6" fill="{{sel.col}}" style="stroke: #12131C; stroke-width: 3"/>
+        <circle cx="50" cy="58" r="38" fill="{{sel.col}}" style="stroke: #12131C; stroke-width: 5"/>
+        <ellipse cx="36" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/><ellipse cx="64" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/>
+        <circle cx="38" cy="55" r="4" style="fill: #12131C"/><circle cx="66" cy="55" r="4" style="fill: #12131C"/>
+      </svg>
+      <div style="position: relative; font-family: 'Lilita One', sans-serif; font-size: 18px; padding: 2px 0 8px">{{sel.name}}</div>
+    </div>
+
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="6">
+          <button type="button" aria-pressed="{{it.on}}" onClick="{{it.pick}}" style="height: 84px; padding: 0 10px; display: flex; align-items: center; gap: 10px; text-align: left; font-family: 'Nunito', sans-serif; color: #FFFFFF; background: {{it.bg}}; border: 3px solid {{it.ring}}; border-radius: 20px; box-shadow: 0 5px 0 #1A1040; cursor: pointer">
+            <span style="width: 40px; height: 40px; flex-shrink: 0; box-sizing: border-box; border-radius: 50%; background: {{it.swatch}}; border: 3px solid #12131C"></span>
+            <span style="display: flex; flex-direction: column; line-height: 1.2; min-width: 0">
+              <span style="font-family: 'Lilita One', sans-serif; font-size: 17px">{{it.name}}</span>
+              <span style="font-weight: 800; font-size: 12px; color: {{it.stateColor}}">{{it.state}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-top: auto; display: flex; align-items: center; gap: 14px; padding-bottom: 6px">
+        <div style="flex-grow: 1; font-weight: 700; font-size: 13px; line-height: 1.3; color: #E4DEFF">Everything here is cosmetic. Nothing in the shop makes you stronger.</div>
+        <button type="button" style="flex-shrink: 0; min-width: 210px; height: 58px; padding: 0 14px; font-family: 'Lilita One', sans-serif; font-size: 19px; letter-spacing: 1px; color: #1A1040; background: {{sel.ctaBg}}; border: 3px solid #1A1040; border-radius: 20px; box-shadow: inset 0 -7px 0 {{sel.ctaLip}}, 0 5px 0 #1A1040; cursor: pointer">{{sel.cta}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const tab = st.tab || 'Colors';
+const tabs = ['Colors', 'Hats', 'Accessories', 'Bombs', 'Trails', 'Voices'].map((label) => ({
+  label,
+  on: label === tab,
+  bg: label === tab ? '#FFC531' : 'transparent',
+  fg: label === tab ? '#1A1040' : '#FFFFFF',
+  pick: () => this.setState({ tab: label })
+}));
+const data = [
+  { id: 'green', name: 'Green', col: '#5AD15A', state: 'Wearing', kind: 'wearing' },
+  { id: 'red', name: 'Hot red', col: '#FF4A3D', state: 'Owned', kind: 'owned' },
+  { id: 'purple', name: 'Purple', col: '#A45CFF', state: '40 Fitile', kind: 'buy', price: 40 },
+  { id: 'black', name: 'Black', col: '#2C2C38', state: '80 Fitile', kind: 'buy', price: 80 },
+  { id: 'gold', name: 'Gold', col: '#FFC933', state: '120 Fitile', kind: 'buy', price: 120 },
+  { id: 'pink', name: 'Ballet pink', col: '#FF9AD0', state: 'Locked · Fifi Lv 5', kind: 'locked' }
+];
+const picked = st.item || 'purple';
+const items = data.map((it) => ({
+  ...it,
+  on: it.id === picked,
+  swatch: it.col,
+  bg: it.id === picked ? '#4A33B8' : '#1F1259',
+  ring: it.id === picked ? '#FFC531' : '#1A1040',
+  stateColor: it.kind === 'locked' ? '#FFB3C7' : '#FFC531',
+  pick: () => this.setState({ item: it.id })
+}));
+const s = data.find((it) => it.id === picked);
+const cta = { wearing: 'WEARING', owned: 'WEAR IT', buy: 'BUY FOR ' + s.price + ' FITILE', locked: 'LOCKED' }[s.kind];
+const gold = s.kind === 'buy';
+return { tabs, items, sel: { ...s, cta, ctaBg: gold ? '#FFC531' : '#FFFFFF', ctaLip: gold ? '#E09A00' : '#D5D0EA' } };
+}
+}
+</script>
+</body>
+</html>

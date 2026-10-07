@@ -10,6 +10,8 @@ Momentan toate grafica și sunetele sunt generate procedural în cod. Orice asse
 
 - `apps/client/src/ui/fonts/bangers-*.woff2` — **Bangers** (Vernon Adams, The Bangers Project Authors), SIL Open Font License 1.1 (`OFL-Bangers.txt`). Fișierele woff2 din pachetul npm `@fontsource/bangers` 5.3.0 (subseturile latin și latin-ext).
 - `apps/client/src/ui/fonts/rubik-*.woff2` — **Rubik** (The Rubik Project Authors), SIL Open Font License 1.1 (`OFL-Rubik.txt`). Din `@fontsource/rubik` 5.3.0: greutățile 500, 700, 800 și 500 italic, subseturile latin și latin-ext.
+- `apps/client/src/ui/fonts/lilita-one-*.woff2` — **Lilita One** (Juan Montoreano), SIL Open Font License 1.1 (`OFL-LilitaOne.txt`). Din `@fontsource/lilita-one` 5.3.0: greutatea 400, subseturile latin și latin-ext. Folosit de skin-ul „Toy”.
+- `apps/client/src/ui/fonts/nunito-*.woff2` — **Nunito** (The Nunito Project Authors), SIL Open Font License 1.1 (`OFL-Nunito.txt`). Din `@fontsource/nunito` 5.3.0: greutățile 700, 800, 900, subseturile latin și latin-ext. Folosit de skin-ul „Toy”.
 - Copiate în repo (nu dependențe), ca aplicația să meargă offline în Capacitor; declarate în `apps/client/src/ui/fonts.css`.
 
 ## Iconiță și ecran de pornire

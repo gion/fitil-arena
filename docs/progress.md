@@ -351,3 +351,21 @@ Ambele: 20.0 cadre/s primite de fiecare client, o singură instanță, RSS ~190 
 - Emote-urile și fatalitățile nu se sincronizează în Infinit online (fatalitatea se alege din ținuta ucigașului, care e în roster, deci merge; emote-urile nu).
 - Shard-urile sunt per proces: la mai multe procese trebuie Redis presence (Q-003).
 - Testele server cu Postgres s-au sărit (fără `TEST_DATABASE_URL` aici); codul de conturi nu s-a schimbat.
+
+## Skin-ul „Toy” (alternativă la „Comic”, 2026-10-07)
+
+**Mini-plan:** un strat CSS peste interfața existentă, fără DOM nou: tokeni, fonturi, apoi fiecare componentă cu fundal deschis, text moștenit sau înclinare; comutator în Settings și parametru în URL; test Playwright care parcurge meniurile în Toy.
+
+**Făcut:**
+
+- `apps/client/src/ui/toy.css` (activ la `<html data-skin="toy">`), `settings.skin` + `applySkin()`, rândul „Look” în Settings, `?skin=toy|comic` pentru sesiunea curentă.
+- Fonturile Lilita One și Nunito împachetate local (`ui/fonts/`, `fonts.css`, `assets/CREDITS.md`).
+- Două stiluri inline din `app.ts` mutate în clase (`.pvbox`, `.cap.info.plain`), ca să poată fi restilizate.
+- Machetele Toy în `reference/ui-toy/` (21), secțiunea „Skin-uri” în `docs/design/ui.md`, decizia D-073.
+- `apps/client/e2e/skin.spec.ts`: comutarea, păstrarea după reîncărcare, parametrul din URL; parcurgerea meniurilor și a HUD-ului în Toy, cu capturi în `docs/screens/ui-toy/`.
+
+**Rămas / cunoscut:**
+
+- Verificat în browser la 844×390: meniul principal, Play, personaje, pagina de personaj, magazin, setări, misiuni, practice, teme, HUD FFA, pauză. **Neverificate vizual în Toy:** Online, camera privată, jocul rapid, finalul de meci, reconectarea, HUD-ul de echipe / steag / 3D / Infinit, tranzițiile, ecranele de cont și legale, panoul DEV.
+- Lilita One e mai lată decât Bangers: câteva texte lungi se rup pe două rânduri (ex. „TUTORIAL · 6 STEPS”), iar taburile din magazin sunt la limită.
+- Neverificat pe telefon real.

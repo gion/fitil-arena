@@ -310,6 +310,17 @@ input:focus-visible {
 .cap.info b {
   font-weight: 800;
 }
+.cap.info.plain {
+  font-size: 12px;
+  background: var(--white);
+}
+/* caseta de previzualizare de sub grile (personaj ales, obiect probat) */
+.pvbox {
+  gap: 6px;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  padding: 6px 12px;
+}
 .say {
   background: var(--white);
   border: 3px solid var(--ink);
@@ -458,6 +469,21 @@ input:focus-visible {
 .switch.slim .stamp {
   font-size: 18px;
   min-width: 40px;
+}
+
+/* rândul „Look” din Settings: aspectul interfeței (settings.skin) */
+.lookrow {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lookrow .label {
+  margin: 0;
+  font-size: 13px;
+}
+.lookrow .seg {
+  flex: 1;
 }
 
 /* selector segmentat */

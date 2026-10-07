@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Quick play, waiting (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #2B1A78; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; gap: 14px; padding: 16px 56px 22px">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <h1 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill; text-shadow: 0 4px 0 #1A1040">QUICK PLAY: FREE FOR ALL</h1>
+    <div style="margin-left: auto; font-weight: 800; font-size: 13px; color: #D9D2FF">Somewhere, strangers are lacing up…</div>
+  </div>
+
+  <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; min-height: 0">
+    <sc-for list="{{slots}}" as="p" hint-placeholder-count="4">
+      <div style="box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: {{p.bg}}; border: 3px {{p.borderStyle}} {{p.border}}; border-radius: 24px; box-shadow: {{p.shadow}}">
+        <sc-if value="{{p.found}}" hint-placeholder-val="{{true}}">
+          <svg viewBox="0 -8 100 118" style="width: 96px; height: 113px" aria-hidden="true">
+            <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+            <path d="M50 20 Q60 -4 72 3" style="fill: none; stroke: #12131C; stroke-width: 4; stroke-linecap: round"/>
+            <circle cx="72" cy="4" r="6" fill="{{p.color}}" style="stroke: #12131C; stroke-width: 3"/>
+            <circle cx="50" cy="58" r="38" fill="{{p.color}}" style="stroke: #12131C; stroke-width: 5"/>
+            <ellipse cx="36" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/><ellipse cx="64" cy="53" rx="8" ry="10" style="fill: #FFFFFF"/>
+            <circle cx="38" cy="55" r="4" style="fill: #12131C"/><circle cx="66" cy="55" r="4" style="fill: #12131C"/>
+          </svg>
+        </sc-if>
+        <sc-if value="{{p.searching}}" hint-placeholder-val="{{false}}">
+          <div style="height: 113px; display: flex; align-items: center; font-family: 'Lilita One', sans-serif; font-size: 96px; line-height: 1; color: #6B58C9; -webkit-text-stroke: 6px #1A1040; paint-order: stroke fill">?</div>
+        </sc-if>
+        <div style="font-family: 'Lilita One', sans-serif; font-size: 18px">{{p.name}}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 16px; padding-bottom: 5px">
+    <div style="flex-grow: 1; background: #1F1259; border: 3px solid #1A1040; border-radius: 18px; padding: 8px 14px; font-weight: 700; font-size: 14px; line-height: 1.3"><span style="font-family: 'Lilita One', sans-serif; color: #FFC531">Starting in 8s…</span> Bots fill the empty seats.</div>
+    <a href="A-Online.dc.html" style="flex-shrink: 0; width: 150px; height: 58px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 20px; color: #1A1040; background: #FF8FB6; border: 3px solid #1A1040; border-radius: 20px; box-shadow: inset 0 -7px 0 #E85C8E, 0 5px 0 #1A1040">Leave</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const defs = [
+  { name: 'Gion (you)', color: '#5AD15A', found: true },
+  { name: 'NoBrakes', color: '#FF9AD0', found: true },
+  { name: 'Searching…', found: false },
+  { name: 'Searching…', found: false }
+];
+const slots = defs.map((p) => ({
+  ...p,
+  searching: !p.found,
+  bg: p.found ? '#3A259A' : 'transparent',
+  border: p.found ? '#1A1040' : '#6B58C9',
+  borderStyle: p.found ? 'solid' : 'dashed',
+  shadow: p.found ? '0 5px 0 #1A1040' : 'none'
+}));
+return { slots };
+}
+}
+</script>
+</body>
+</html>

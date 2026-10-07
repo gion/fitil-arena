@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — Pause (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background-color: #679D48; background-image: linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%), linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%); background-size: 96px 96px; background-position: 0 0, 48px 48px; color: #FFFFFF; font-family: 'Nunito', sans-serif; display: flex; align-items: center; justify-content: center">
+  <div style="position: absolute; left: 96px; top: 48px; width: 48px; height: 48px; background: #646C85; border: 3px solid #12131C; border-radius: 10px; box-sizing: border-box"></div>
+  <div style="position: absolute; left: 720px; top: 48px; width: 48px; height: 48px; background: #C8834A; border: 3px solid #12131C; border-radius: 10px; box-sizing: border-box"></div>
+  <div style="position: absolute; left: 48px; top: 288px; width: 48px; height: 48px; background: #C8834A; border: 3px solid #12131C; border-radius: 10px; box-sizing: border-box"></div>
+  <div style="position: absolute; inset: 0; background: rgba(26,16,64,0.78)"></div>
+
+  <div style="position: relative; width: 580px; box-sizing: border-box; background: #3A259A; border: 3px solid #1A1040; border-radius: 30px; box-shadow: 0 8px 0 #1A1040; padding: 34px 20px 16px; display: flex; flex-direction: column; gap: 12px">
+    <h1 style="position: absolute; left: 50%; top: -30px; margin: 0; transform: translateX(-50%) rotate(-3deg); font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: 3px; color: #1A1040; background: #FFC531; border: 3px solid #1A1040; border-radius: 16px; padding: 2px 28px; box-shadow: inset 0 -6px 0 #E09A00, 0 5px 0 #1A1040">PAUSED</h1>
+    <div style="display: flex; gap: 20px">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px">
+        <a href="A-Game.dc.html" style="height: 76px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 32px; letter-spacing: 1px; color: #1A1040; background: #5BE36A; border: 3px solid #1A1040; border-radius: 22px; box-shadow: inset 0 -8px 0 #2FB843, inset 0 4px 0 #A8F5B1, 0 6px 0 #1A1040">RESUME</a>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <a href="A-Mod.dc.html" style="height: 54px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; text-decoration: none; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 18px; box-shadow: inset 0 -6px 0 #D5D0EA, 0 5px 0 #1A1040"><span style="font-family: 'Lilita One', sans-serif; font-size: 15px">Mode: Free for all</span><span style="font-weight: 800; font-size: 11px">restarts the round</span></a>
+          <a href="A-Home.dc.html" style="height: 54px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 17px; color: #1A1040; background: #FF8FB6; border: 3px solid #1A1040; border-radius: 18px; box-shadow: inset 0 -6px 0 #E85C8E, 0 5px 0 #1A1040">Quit to menu</a>
+        </div>
+      </div>
+      <div style="width: 212px; flex-shrink: 0; box-sizing: border-box; background: #1F1259; border: 3px solid #1A1040; border-radius: 22px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{quick}}" as="q" hint-placeholder-count="2">
+            <button type="button" aria-pressed="{{q.on}}" onClick="{{q.flip}}" style="height: 74px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: 'Lilita One', sans-serif; font-size: 12px; color: #1A1040; background: {{q.bg}}; border: 3px solid #1A1040; border-radius: 16px; box-shadow: inset 0 -5px 0 rgba(26,16,64,0.25); cursor: pointer">
+              <span style="font-size: 20px; line-height: 1">{{q.state}}</span>
+              <span>{{q.label}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <a href="A-Setari.dc.html" style="height: 46px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-family: 'Lilita One', sans-serif; font-size: 15px; color: #FFFFFF; border: 3px solid #6B58C9; border-radius: 16px">Theme: Classic</a>
+      </div>
+    </div>
+    <div style="text-align: center; font-weight: 800; font-size: 13px; color: #E4DEFF">Tip: detonator bombs never go off on their own. You press the button.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+const on = { sound: true, music: true, theme: true, ...((this.state && this.state.on) || {}) };
+const quick = [
+  { id: 'sound', label: 'Sound' },
+  { id: 'music', label: 'Music' }
+].map((q) => ({
+  ...q,
+  on: !!on[q.id],
+  state: on[q.id] ? 'ON' : 'OFF',
+  bg: on[q.id] ? '#2FD4FF' : '#9A8FD6',
+  flip: () => this.setState({ on: { ...on, [q.id]: !on[q.id] } })
+}));
+return { quick };
+}
+}
+</script>
+</body>
+</html>

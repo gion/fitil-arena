@@ -2,7 +2,11 @@ import Phaser from 'phaser';
 import { App } from './app.ts';
 import { DPR, viewportSize } from './display.ts';
 import { ArenaScene } from './render/ArenaScene.ts';
+import { applySkin } from './settings.ts';
 import './ui/styles.css';
+import './ui/toy.css';
+
+applySkin();
 
 const { width, height } = viewportSize();
 const scene = new ArenaScene();

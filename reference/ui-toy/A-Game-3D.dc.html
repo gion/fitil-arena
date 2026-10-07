@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitil — In game, 3D view controls (A)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+body{margin:0}
+a{color:#FFC531}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; position: relative; overflow: hidden; background: #9FD3FF; color: #FFFFFF; font-family: 'Nunito', sans-serif">
+  <div style="position: absolute; left: 0; right: 0; top: 150px; bottom: 0; perspective: 420px; overflow: hidden">
+    <div style="position: absolute; left: -400px; top: -40px; width: 1644px; height: 700px; transform-origin: 50% 0; transform: rotateX(64deg); background-color: #679D48; background-image: linear-gradient(45deg, rgba(0,0,0,0.12) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.12) 75%), linear-gradient(45deg, rgba(0,0,0,0.12) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.12) 75%); background-size: 160px 160px; background-position: 0 0, 80px 80px"></div>
+  </div>
+
+  <div style="position: absolute; left: 110px; top: 96px; width: 120px; height: 100px; box-sizing: border-box; background: #646C85; border: 3px solid #1A1040; border-radius: 12px; box-shadow: inset 0 16px 0 #8D95AE, inset 0 -8px 0 rgba(0,0,0,0.25)"></div>
+  <div style="position: absolute; left: 610px; top: 86px; width: 150px; height: 130px; box-sizing: border-box; background: #C8834A; border: 3px solid #1A1040; border-radius: 14px; box-shadow: inset 0 20px 0 #E0A06A, inset 0 -10px 0 rgba(0,0,0,0.22)"></div>
+  <div style="position: absolute; left: 330px; top: 118px; width: 64px; height: 52px; box-sizing: border-box; background: #646C85; border: 3px solid #1A1040; border-radius: 8px; box-shadow: inset 0 10px 0 #8D95AE"></div>
+
+  <div style="position: absolute; left: 446px; top: 176px; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; background: #1B1C26; border: 3px solid #1A1040; box-shadow: inset 5px 5px 0 rgba(255,255,255,0.2)"></div>
+  <div style="position: absolute; left: 478px; top: 166px; width: 14px; height: 14px; box-sizing: border-box; border-radius: 50%; background: #FFC531; border: 2px solid #1A1040"></div>
+
+  <svg viewBox="0 -8 100 118" style="position: absolute; left: 352px; top: 196px; width: 140px; height: 165px" aria-hidden="true">
+    <ellipse cx="50" cy="104" rx="34" ry="7" style="fill: rgba(0,0,0,0.25)"/>
+    <ellipse cx="36" cy="100" rx="11" ry="6" style="fill: #12131C"/><ellipse cx="64" cy="100" rx="11" ry="6" style="fill: #12131C"/>
+    <path d="M50 20 Q60 -4 72 3" style="fill: none; stroke: #12131C; stroke-width: 4; stroke-linecap: round"/>
+    <circle cx="72" cy="4" r="6" style="fill: #5AD15A; stroke: #12131C; stroke-width: 3"/>
+    <circle cx="50" cy="58" r="38" style="fill: #5AD15A; stroke: #12131C; stroke-width: 5"/>
+    <path d="M22 70 q28 16 56 0" style="fill: none; stroke: #3FA83F; stroke-width: 5; stroke-linecap: round"/>
+  </svg>
+
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 44px; box-sizing: border-box; background: #1F1259; border-bottom: 3px solid #1A1040; display: flex; align-items: center; gap: 8px; padding: 0 56px">
+    <div style="display: flex; align-items: center; gap: 5px; height: 30px; box-sizing: border-box; padding: 0 10px 0 4px; background: #FFC531; color: #1A1040; border: 3px solid #1A1040; border-radius: 15px; font-weight: 900; font-size: 12px"><span style="width: 16px; height: 16px; box-sizing: border-box; border-radius: 50%; background: #5AD15A; border: 2px solid #12131C"></span>You <span style="font-family: 'Lilita One', sans-serif; font-size: 16px; line-height: 1">2</span></div>
+    <div style="display: flex; align-items: center; gap: 5px; height: 30px; box-sizing: border-box; padding: 0 10px 0 4px; background: #3A259A; border: 3px solid #1A1040; border-radius: 15px; font-weight: 900; font-size: 12px"><span style="width: 16px; height: 16px; box-sizing: border-box; border-radius: 50%; background: #FF5F93; border: 2px solid #12131C"></span>Mara <span style="font-family: 'Lilita One', sans-serif; font-size: 16px; line-height: 1">1</span></div>
+    <div style="margin: 0 auto; font-family: 'Lilita One', sans-serif; font-size: 26px; line-height: 1; letter-spacing: 1px; color: #FFC531; -webkit-text-stroke: 4px #1A1040; paint-order: stroke fill">1:42</div>
+    <div style="font-weight: 900; font-size: 12px">Bombs <span style="font-family: 'Lilita One', sans-serif; font-size: 16px; color: #FFC531">1/2</span></div>
+    <button type="button" aria-label="Change camera view" style="width: 48px; height: 44px; padding: 0; background: transparent; border: 0; cursor: pointer">
+      <span style="display: flex; align-items: center; justify-content: center; height: 32px; font-family: 'Lilita One', sans-serif; font-size: 16px; color: #1A1040; background: #FFFFFF; border: 3px solid #1A1040; border-radius: 12px; box-shadow: inset 0 -4px 0 #D5D0EA">3P</span>
+    </button>
+    <a href="A-Pauza.dc.html" aria-label="Pause" style="width: 48px; height: 44px; display: flex; align-items: center; justify-content: center">
+      <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 32px; background: #FF4F8B; border: 3px solid #1A1040; border-radius: 12px; box-shadow: inset 0 -4px 0 #D12863">
+        <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: #1A1040; stroke-width: 5; stroke-linecap: round" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+      </span>
+    </a>
+  </div>
+
+  <div style="position: absolute; left: 56px; top: 54px; width: 154px; height: 76px; box-sizing: border-box; overflow: hidden; background-color: #679D48; background-image: linear-gradient(rgba(26,16,64,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(26,16,64,0.35) 1px, transparent 1px); background-size: 10px 10px; border: 3px solid #1A1040; border-radius: 12px; box-shadow: 0 4px 0 #1A1040">
+    <div style="position: absolute; left: 38px; top: 38px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: #5AD15A; border: 2px solid #1A1040"></div>
+    <div style="position: absolute; left: 108px; top: 18px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: #FF5F93; border: 2px solid #1A1040"></div>
+    <div style="position: absolute; left: 60px; top: 20px; width: 50px; height: 10px; background: #FF7A1A"></div>
+    <div style="position: absolute; left: 80px; top: 0; width: 10px; height: 50px; background: #FF7A1A"></div>
+  </div>
+
+  <div style="position: absolute; left: 76px; bottom: 30px; width: 110px; height: 110px; box-sizing: border-box; border-radius: 50%; background: rgba(255,255,255,0.35); border: 3px solid #1A1040"></div>
+  <div style="position: absolute; left: 114px; bottom: 82px; width: 46px; height: 46px; box-sizing: border-box; border-radius: 50%; background: #FFFFFF; border: 3px solid #1A1040; box-shadow: inset 0 -5px 0 #D5D0EA"></div>
+
+  <button type="button" style="position: absolute; right: 150px; bottom: 80px; width: 104px; height: 104px; padding: 0 0 8px; font-family: 'Lilita One', sans-serif; font-size: 26px; letter-spacing: 1px; color: #1A1040; background: #FFC531; border: 4px solid #1A1040; border-radius: 50%; box-shadow: inset 0 -11px 0 #E09A00, inset 0 5px 0 #FFE08A, 0 6px 0 #1A1040; cursor: pointer">BOMB</button>
+  <div style="position: absolute; right: 56px; bottom: 26px; font-weight: 900; font-size: 13px; background: #1F1259; border: 3px solid #1A1040; border-radius: 14px; padding: 2px 12px">Drag on this side to look around</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
