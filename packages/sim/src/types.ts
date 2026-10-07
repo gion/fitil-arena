@@ -129,6 +129,8 @@ export interface CharKit {
   pigeon?: boolean;
   /** Bombele lui explodează în arie (pătrat umplut în jurul bombei), nu în cruce. */
   burst?: boolean;
+  /** Flăcările propriilor bombe nu o rănesc (Nova). */
+  ownBlastImmune?: boolean;
   /** Alunecare la mișcare puternică a joystick-ului (`Input.slide`): câteva pătrățele fără control. */
   slide?: boolean;
 }
