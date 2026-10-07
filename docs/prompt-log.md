@@ -3,6 +3,12 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-07 — Claude Code (Sonnet 5.5) — Nova imună la propriile bombe
+
+- **Cerut:** Nova moare de la propria bombă (mai ales la început, fără loc de ferit); ales: imună la propriile flăcări, nu la ale altora.
+- **Făcut:** `CharKit.ownBlastImmune` (Nova); în `updatePlayers` flacăra cu proprietarul ei nu o mai rănește; fitilul +0.5s scos; teste (3) în `burst-smoke.test.ts`; D-080, `GAME_DESIGN.md`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm sim:bench`.
+
 ## 2026-10-07 — Claude Code (Sonnet 5.5) — Portia (portal privat) și Slick (alunecare + Smash)
 
 - **Cerut:** două personaje noi: unul cu Ultimate de portal (a doua ușă automată, folosită doar de el și de bombele lui) și unul care alunecă 3–4 pătrățele la un swipe mai puternic al mâinii stângi, cu Ultimate care sparge lăzi cu swipe; testabile gratuit.
