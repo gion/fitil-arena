@@ -8,6 +8,7 @@ Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar isto
 - **Cerut:** un erou ale cărui bombe acoperă o arie (rază mai mică, dar nu doar cruce) și un alt erou cu Ultimate de tip bombă fumigenă (arie plină de fum care ascunde ce e în ea); PR după ce e gata.
 - **Făcut:** `sim`: `Bomb.area`, `areaTiles`/`burstRadius`, explozia refactorizată (`hit`), `GameState.smoke`, Super-urile `nova` și `smoke`, vizibilitate în fum, pericol pentru boți cu arie, bot pentru Shade; `content`: personajele `nova` (epic) și `shade` (legendar); `net`: `area` și fumul în protocolul Infinit; client: fum în 2D și 3D, detalii de aspect, sunet la bomba fumigenă. Decizia D-078, tabelul din `GAME_DESIGN.md`, teste noi în `packages/sim/test/burst-smoke.test.ts`.
 - **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm sim:bench` (1000 meciuri: 0 excepții, 0 desync). Playwright nerulat.
+- **Ajustare (aceeași zi):** la cererea proprietarului, fumul lui Shade are raza 3 și durează 10s (plimbarea fumului, opțională, nu s-a făcut).
 - **Notă operațională:** numele „Nova” și „Shade” sunt de lucru (direcția artistică finală rămâne la proprietar); aspectul lor e generic + un accesoriu.
 
 ## 2026-10-07 — Claude Code (Opus 5.5) — Toy pe toate ecranele; comutatorul vizibil peste tot

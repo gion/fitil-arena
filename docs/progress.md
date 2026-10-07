@@ -433,6 +433,6 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 
 **Rămas / cunoscut:**
 
-- Echilibrul (fitil, raza, 6s de fum) e provizoriu: de jucat cu oameni. `sim:bench` nu măsoară pe personaj.
+- Echilibrul (fitil, raza, 10s de fum) e provizoriu: de jucat cu oameni. `sim:bench` nu măsoară pe personaj.
 - Aspectul lui Nova și Shade e doar un accesoriu peste corpul generic; direcția artistică finală așteaptă proprietarul.
 - Playwright nerulat în containerul de lucru (numărul de carduri din `characters.spec.ts` a fost actualizat la 13).

@@ -409,7 +409,7 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     cons: ['At most 5 bombs', 'No shield or health tricks'],
     ultimate: {
       name: 'Smoke Bomb',
-      desc: 'Throws a smoke bomb up to 3 tiles ahead: a cloud hides everyone inside for 6 seconds.',
+      desc: 'Throws a smoke bomb up to 3 tiles ahead: a big cloud hides everyone inside for 10 seconds.',
       kind: 'smoke',
       pct: 85,
     },
