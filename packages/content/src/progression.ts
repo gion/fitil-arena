@@ -1,5 +1,5 @@
 import { deriveRng, shuffle } from '@fitil/sim';
-import { CHARACTERS, RARITY, charById } from './characters.ts';
+import { CHARACTERS, FREE_CHARS, RARITY, charById } from './characters.ts';
 import type { Rarity } from './characters.ts';
 import type { Profile } from './economy.ts';
 import { MODE_IDS, MODES } from './texts.ts';
@@ -107,7 +107,9 @@ export const daysUntil = (from: string, to: string): number => day(to) - day(fro
 /** Cele 2 personaje gratuite ale săptămânii (luni–duminică), dintre cele lansate și necomune. */
 export function weeklyRotation(date: string): string[] {
   const week = Math.floor((day(date) - day('2026-01-05')) / 7); // 5 ian. 2026 e luni
-  const pool = CHARACTERS.filter((c) => c.rarity !== 'common' && released(c.id, date)).map((c) => c.id);
+  const pool = CHARACTERS.filter(
+    (c) => c.rarity !== 'common' && !FREE_CHARS.includes(c.id) && released(c.id, date),
+  ).map((c) => c.id);
   return shuffle(deriveRng(week, 0x707a), pool).slice(0, 2);
 }
 

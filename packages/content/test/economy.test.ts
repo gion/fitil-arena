@@ -26,7 +26,7 @@ describe('personaje', () => {
     expect(CHARACTERS).toHaveLength(13);
     expect(new Set(CHARACTERS.map((c) => c.id)).size).toBe(13);
     expect(new Set(CHARACTERS.map((c) => c.rarity))).toEqual(new Set(Object.keys(RARITY)));
-    expect(FREE_CHARS).toEqual(['bubu', 'gugu', 'zuzu']);
+    expect(FREE_CHARS).toEqual(['bubu', 'gugu', 'zuzu', 'nova', 'shade']); // Nova și Shade: gratuite provizoriu, pentru testare
   });
 
   it('fiecare personaj are plusuri, minusuri, semnătură și Ultimate', () => {

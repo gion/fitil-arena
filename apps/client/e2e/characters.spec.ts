@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { CHARACTERS, CHAR_RELEASE, SHOP, SHOP_CATS, weeklyRotation } from '@fitil/content';
+import { CHARACTERS, CHAR_RELEASE, FREE_CHARS, SHOP, SHOP_CATS, weeklyRotation } from '@fitil/content';
 
 type Win = {
   __fitil: {
@@ -61,7 +61,11 @@ const DATE = '2026-10-07';
 const fixDate = (page: Page) => page.clock.setFixedTime(new Date(`${DATE}T12:00:00`));
 // un Epic lansat care nu e gratuit săptămâna asta (altfel nu s-ar cumpăra)
 const EPIC = CHARACTERS.find(
-  (c) => c.rarity === 'epic' && !CHAR_RELEASE[c.id] && !weeklyRotation(DATE).includes(c.id),
+  (c) =>
+    c.rarity === 'epic' &&
+    !CHAR_RELEASE[c.id] &&
+    !FREE_CHARS.includes(c.id) &&
+    !weeklyRotation(DATE).includes(c.id),
 )!;
 
 test('personaje: pagina personajului, cumpărare, meci cu personajul ales și recompense', async ({ page }) => {

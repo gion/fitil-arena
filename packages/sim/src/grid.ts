@@ -47,8 +47,8 @@ export function playerAt(s: GameState, x: number, y: number): Player | undefined
 export const padIndex = (s: GameState, x: number, y: number): number =>
   s.pads.findIndex(([px, py]) => px === x && py === y);
 
-/** Raza ariei unei bombe în arie, din raza ei de cruce. */
-export const burstRadius = (range: number): number => Math.min(range + 1, BURST_CAP);
+/** Raza ariei unei bombe în arie: raza ei de cruce (crește cu bonusurile de rază), cu plafon. */
+export const burstRadius = (range: number): number => Math.min(range, BURST_CAP);
 
 /**
  * Pătrățelele unei arii de rază `r`: cele de la cel mult `r` pe orizontală și pe verticală, la care

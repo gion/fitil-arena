@@ -380,8 +380,8 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     rarity: 'epic',
     tagline: 'Why aim down a line when you can hit the whole block?',
     kit: { speed: 160, range: 1, bombs: 1, maxBombs: 6, lives: 1, burst: true, fuseAdd: 10 },
-    signature: 'Her bombs blast a whole area around them (radius = range + 1, up to 3), not a cross.',
-    pros: ['Blast covers an area, corners included', 'Great against campers'],
+    signature: 'Her bombs blast a whole area around them (radius = bomb range, up to 3), not a cross.',
+    pros: ['Blast covers an area, corners included', 'Grows with every range pickup'],
     cons: ['Short reach: nothing beyond the area', 'Fuse +0.5s', 'At most 6 bombs'],
     ultimate: {
       name: 'Supernova',
@@ -429,7 +429,11 @@ export const charById = (id: string | null | undefined): Character =>
   CHARACTERS.find((c) => c.id === id) ?? CHARACTERS[0]!;
 export const charPrice = (c: Character): number => RARITY[c.rarity].price;
 /** Personajele gratuite de la început. */
-export const FREE_CHARS = CHARACTERS.filter((c) => c.rarity === 'common').map((c) => c.id);
+/** Provizoriu: Nova și Shade sunt gratuite, ca proprietarul să le poată încerca (de scos la lansare). */
+const FREE_FOR_TESTING = ['nova', 'shade'];
+export const FREE_CHARS = CHARACTERS.filter(
+  (c) => c.rarity === 'common' || FREE_FOR_TESTING.includes(c.id),
+).map((c) => c.id);
 
 /**
  * Personajele boților: amestecate din seed (identic pe server și client), altele decât cele
