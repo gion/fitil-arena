@@ -90,12 +90,8 @@ function urlSkin(): Skin | null {
   }
 }
 
-/**
- * Skin-ul afișat acum: cel din URL, altfel cel din setări. Setarea salvată contează doar în
- * build-urile de dezvoltare (acolo apare rândul „Look”); în rest, fără `?skin=`, e mereu „Comic” (D-073).
- */
-export const currentSkin = (): Skin =>
-  urlSkin() ?? (__DEV_TOOLS__ && SKINS.includes(settings.skin) ? settings.skin : 'comic');
+/** Skin-ul afișat acum: cel din URL, altfel cel din setări. */
+export const currentSkin = (): Skin => urlSkin() ?? (SKINS.includes(settings.skin) ? settings.skin : 'comic');
 
 /** Pune skin-ul pe `<html data-skin>`; CSS-ul face restul. */
 export function applySkin(): void {

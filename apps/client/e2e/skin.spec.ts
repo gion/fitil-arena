@@ -3,9 +3,9 @@ import type { Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
 /**
- * Skin-ul „Toy” (D-073, doar pentru comparație): rândul Settings › Look apare numai în build-urile
- * de dezvoltare; testele rulează pe build-ul de producție, unde „Comic” e implicit și Toy se
- * deschide cu `?skin=toy`, doar pentru sesiunea curentă.
+ * Skin-ul „Toy” (D-073, în paralel cu „Comic” până la alegere): se alege din Settings › Look,
+ * se aplică pe loc și se păstrează; `?skin=` îl schimbă doar pentru sesiunea curentă. Mai jos,
+ * toate ecranele sunt parcurse în Toy: fără erori, ținte de minimum 44px, capturi în docs/screens/ui-toy/.
  */
 
 test.use({ viewport: { width: 844, height: 390 }, deviceScaleFactor: 2 });
@@ -20,36 +20,34 @@ const skin = (page: Page) => page.evaluate(() => document.documentElement.datase
 const pageBg = (page: Page) =>
   page.evaluate(() => getComputedStyle(document.querySelector('.page')!).backgroundColor);
 
-test('build de store: fără rândul „Look”, Comic implicit; ?skin=toy doar pentru sesiune', async ({
-  page,
-}) => {
+test('Settings › Look: Comic implicit, Toy se aplică pe loc și se păstrează', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
 
-  // o setare salvată dintr-un build de dezvoltare nu contează aici
   await page.goto('/');
-  await page.evaluate(() => localStorage.setItem('fitil-settings', JSON.stringify({ skin: 'toy' })));
-  await page.reload();
   await page.waitForSelector('[data-test="settings"]');
   expect(await skin(page)).toBe('comic');
   expect(await pageBg(page)).toBe(PAPER);
-  await page.click('[data-test="settings"]');
-  await expect(page.locator('[data-toggle=sound]')).toBeVisible();
-  await expect(page.locator('[data-skin-pick]')).toHaveCount(0);
 
-  // parametrul din URL schimbă aspectul, fără să atingă setările
-  await page.goto('/?skin=toy');
-  await page.waitForSelector('[data-test="settings"]');
+  await page.click('[data-test="settings"]');
+  await page.click('[data-skin-pick="toy"]');
   expect(await skin(page)).toBe('toy');
   expect(await pageBg(page)).toBe(INDIGO);
+  await expect(page.locator('[data-skin-pick="toy"]')).toHaveAttribute('aria-pressed', 'true');
   // fontul de titluri al skin-ului e cel împachetat local
   await page.evaluate(() => document.fonts.ready);
   expect(await page.evaluate(() => document.fonts.check("28px 'Lilita One'"))).toBe(true);
 
+  await page.reload();
+  await page.waitForSelector('[data-test="settings"]');
+  expect(await skin(page)).toBe('toy');
+
+  // parametrul din URL bate setarea, fără s-o schimbe
   await page.goto('/?skin=comic');
   await page.waitForSelector('[data-test="settings"]');
   expect(await skin(page)).toBe('comic');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fitil-settings')!).skin)).toBe('toy');
 
   expect(errors).toEqual([]);
 });
@@ -74,27 +72,48 @@ async function small(page: Page): Promise<string[]> {
   });
 }
 
-test('Toy: meniurile și HUD-ul se deschid fără erori, cu ținte de minimum 44px', async ({ page }) => {
+type App = {
+  start(k: unknown): void;
+  setView(v: string, p: boolean): Promise<void>;
+  roundOver(e: unknown): void;
+  connLost(): void;
+  connBack(): void;
+  match: { s: { tick: number } } | null;
+};
+type W = { __fitil: { app: App } };
+
+function watch(page: Page): string[] {
   const errors: string[] = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
+  return errors;
+}
 
-  await page.goto('/?skin=toy');
+/** Profil cu ceva progres, mișcare oprită (capturi stabile), skin-ul Toy salvat. */
+async function toy(page: Page): Promise<void> {
+  await page.goto('/');
   await page.evaluate(() => {
     localStorage.clear();
-    localStorage.setItem('fitil-settings', JSON.stringify({ motion: false, name: 'Gion' }));
+    localStorage.setItem('fitil-settings', JSON.stringify({ motion: false, name: 'Gion', skin: 'toy' }));
     localStorage.setItem('fitil-profile', JSON.stringify({ coins: 900, xp: { bubu: 400 } }));
   });
   await page.reload();
-  await page.waitForSelector('[data-test=play]');
+  await page.waitForFunction(() => (window as unknown as W).__fitil);
   expect(await skin(page)).toBe('toy');
+}
 
-  const check = async (name: string) => {
-    await page.waitForTimeout(350);
-    expect(await small(page), `ținte sub 44px pe ${name}`).toEqual([]);
-    await page.screenshot({ path: `${OUT}/${name}.jpg`, type: 'jpeg', quality: 75 });
-    expect(errors, `erori pe ${name}`).toEqual([]);
-  };
+async function shot(page: Page, name: string, errors: string[]): Promise<void> {
+  await page.waitForTimeout(350);
+  expect(await small(page), `ținte sub 44px pe ${name}`).toEqual([]);
+  await page.screenshot({ path: `${OUT}/${name}.jpg`, type: 'jpeg', quality: 75 });
+  expect(errors, `erori pe ${name}`).toEqual([]);
+}
+
+test('Toy: meniurile se deschid fără erori, cu ținte de minimum 44px', async ({ page }) => {
+  const errors = watch(page);
+
+  await toy(page);
+  const check = (name: string) => shot(page, name, errors);
   const back = () => page.locator('[data-test=back]').click();
 
   await check('home');
@@ -129,13 +148,80 @@ test('Toy: meniurile și HUD-ul se deschid fără erori, cu ținte de minimum 44
     await back();
   }
 
-  // în joc: HUD-ul și pauza
+  // textele legale din Settings
+  await page.locator('[data-test=settings]').click();
+  await page.locator('[data-test=privacy]').click();
+  await expect(page.locator('.ptitle')).toBeVisible();
+  await check('legal');
+});
+
+test('Toy: Online, camera privată, foaia de opțiuni, jocul rapid', async ({ browser }) => {
+  const page = await (await browser.newContext()).newPage();
+  const errors = watch(page);
+  await toy(page);
+  await page.locator('[data-test=online]').click();
+  await expect(page.locator('[data-test=create]')).toBeVisible();
+  await shot(page, 'online', errors);
+  await page.locator('[data-test=create]').click();
+  await expect(page.locator('[data-test=room-code]')).toHaveText(/^[A-Z]{4}$/);
+  await shot(page, 'lobby', errors);
+  await page.locator('[data-rule=bots]').click();
+  await expect(page.locator('.sheet [data-level=hard]')).toBeVisible();
+  await shot(page, 'lobby-sheet', errors);
+  await page.locator('.sheet [data-level=hard]').click();
+  await page.locator('[data-test=back]').click();
+  await expect(page.locator('[data-test=quick]')).toBeVisible();
+  await page.locator('[data-test=quick]').click();
+  await expect(page.locator('[data-test=lobby-status]')).toContainText(/Starting in|Waiting/);
+  await shot(page, 'quick', errors);
+  await page.context().close();
+});
+
+test('Toy: în joc — HUD FFA / echipe / steag, 3D, pauză, conexiune, final', async ({ page }) => {
+  const errors = watch(page);
+  await toy(page);
+  const play = async (mode: string, view = '2d') => {
+    await page.evaluate(
+      async ([m, v]) => {
+        const { app } = (window as unknown as W).__fitil;
+        await app.setView(v!, false);
+        app.start({ type: 'mode', mode: m });
+      },
+      [mode, view],
+    );
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as W).__fitil.app.match?.s.tick ?? 0))
+      .toBeGreaterThan(20);
+    await page.waitForTimeout(300);
+  };
+  await play('ffa');
+  await expect(page.locator('.hudbar .chip').first()).toBeVisible();
+  expect((await page.locator('.hudbar').boundingBox())!.height).toBe(44);
+  await shot(page, 'game-ffa', errors);
+  await page.locator('[data-test=pause]').click();
+  await expect(page.locator('[data-test=resume]')).toBeVisible();
+  await shot(page, 'pause', errors);
+  await page.locator('[data-test=resume]').click();
+  await expect(page.locator('[data-test=resume]')).toHaveCount(0);
+
+  await page.evaluate(() => (window as unknown as W).__fitil.app.connLost());
+  await expect(page.locator('[data-test=conn] .ptitle')).toHaveText('CONNECTION LOST');
+  await shot(page, 'reconnect', errors);
+  await page.evaluate(() => (window as unknown as W).__fitil.app.connBack());
+
   await page.evaluate(() =>
-    (window as unknown as { __fitil: { app: { start(k: unknown): void } } }).__fitil.app.start({
-      type: 'mode',
-      mode: 'ffa',
-    }),
+    (window as unknown as W).__fitil.app.roundOver({ type: 'over', winner: 0, team: null }),
   );
-  await page.waitForSelector('.hudbar');
-  await check('game-ffa');
+  await expect(page.locator('[data-test=again]')).toBeVisible();
+  await shot(page, 'final', errors);
+
+  await play('team2');
+  await expect(page.locator('.hudbar .chip.team')).toHaveCount(2);
+  await shot(page, 'game-teams', errors);
+  await play('ctf');
+  await shot(page, 'game-ctf', errors);
+  await play('ffa', 'chase');
+  await expect(page.locator('.bomb3')).toBeVisible();
+  await page.waitForTimeout(1200);
+  await shot(page, 'game-3d', errors);
 });

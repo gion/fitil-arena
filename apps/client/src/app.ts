@@ -2352,28 +2352,27 @@ export class App {
             this.scene.motion = settings.motion;
             this.applyMotion();
           }),
-          // aspectul interfeței (Comic / Toy), doar în build-urile de dezvoltare: e pentru comparație (D-073)
-          DEV_TOOLS &&
-            h(
-              'div',
-              { class: 'lookrow' },
-              h('div', { class: 'label' }, 'Look'),
-              seg(
-                'Interface look',
-                [
-                  ['comic', 'Comic'],
-                  ['toy', 'Toy'],
-                ] as const,
-                currentSkin(),
-                (s) => {
-                  settings.skin = s;
-                  save();
-                  applySkin();
-                  this.showScreen(self);
-                },
-                'data-skin-pick',
-              ),
+          // aspectul interfeței (Comic / Toy): cât timp sunt două, e pentru comparație (D-073)
+          h(
+            'div',
+            { class: 'lookrow' },
+            h('div', { class: 'label' }, 'Look'),
+            seg(
+              'Interface look',
+              [
+                ['comic', 'Comic'],
+                ['toy', 'Toy'],
+              ] as const,
+              currentSkin(),
+              (s) => {
+                settings.skin = s;
+                save();
+                applySkin();
+                this.showScreen(self);
+              },
+              'data-skin-pick',
             ),
+          ),
         ),
         panel(
           'tr col side',

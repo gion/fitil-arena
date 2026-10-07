@@ -605,7 +605,7 @@
 }
 /* Lilita One e mai lată decât Bangers: butoanele secundare din panouri au text mai mic */
 [data-skin='toy'] .mpanel .b:not(.main) {
-  font-size: 15px !important;
+  font-size: 13px !important;
   padding-left: 10px;
   padding-right: 10px;
 }
@@ -614,6 +614,8 @@
   border-radius: 22px;
 }
 [data-skin='toy'] .mpanel h1.ptitle {
+  font-size: 30px;
+  letter-spacing: 1px;
   color: var(--ink);
   background: var(--paper);
   border: 3px solid var(--ink);

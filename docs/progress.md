@@ -366,6 +366,6 @@ Ambele: 20.0 cadre/s primite de fiecare client, o singură instanță, RSS ~190 
 
 **Rămas / cunoscut:**
 
-- Verificat în browser la 844×390: meniul principal, Play, personaje, pagina de personaj, magazin, setări, misiuni, practice, teme, HUD FFA, pauză. **Neverificate vizual în Toy:** Online, camera privată, jocul rapid, finalul de meci, reconectarea, HUD-ul de echipe / steag / 3D / Infinit, tranzițiile, ecranele de cont și legale, panoul DEV.
+- Verificat vizual în Toy, din capturile testului (844×390): meniul principal, Play, personaje, pagina de personaj, magazin, setări, misiuni, practice, teme, texte legale, Online, camera privată și foaia de opțiuni, jocul rapid, HUD FFA / echipe / steag / 3D, pauză, reconectare, final de meci. **Neverificate în Toy:** tranzițiile (fitil, bandă), HUD-ul din Infinit, finalul de misiune și de provocare, tutorialul, ecranele de cont, panoul DEV.
 - Lilita One e mai lată decât Bangers: câteva texte lungi se rup pe două rânduri (ex. „TUTORIAL · 6 STEPS”), iar taburile din magazin sunt la limită.
 - Neverificat pe telefon real.

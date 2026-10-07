@@ -3,6 +3,12 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-07 — Claude Code (Opus 5.5) — Toy pe toate ecranele; comutatorul vizibil peste tot
+
+- **Cerut:** verificate și ecranele rămase în Toy; comutatorul să nu fie doar în build-urile de dezvoltare.
+- **Făcut:** rândul „Look” e din nou în Settings în orice build, iar setarea salvată contează peste tot. `e2e/skin.spec.ts` parcurge acum în Toy și Online, camera privată, foaia de opțiuni, jocul rapid, HUD-ul FFA / echipe / steag / 3D, pauza, reconectarea, finalul și textele legale (21 de capturi în `docs/screens/ui-toy/`). Două ajustări în `toy.css` (titlul panourilor modale, butoanele secundare din ele). D-073 și `docs/design/ui.md` actualizate.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test`; Playwright `skin.spec.ts` + `ui.spec.ts`; capturile Toy privite una câte una.
+
 ## 2026-10-07 — Claude Code (Opus 5.5) — Comutatorul de skin, doar în build-urile de dezvoltare
 
 - **Cerut:** ambele skin-uri rămân în paralel până la decizie; comutatorul să nu ajungă în build-urile de store.
