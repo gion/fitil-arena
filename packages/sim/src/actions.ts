@@ -1,5 +1,16 @@
 import { BIG_BOMB_EXTRA, BOUNCES, FREEZE_TAP, LINE_MAX_EXTRA, REMOTE_FUSE } from './constants.ts';
-import { bombAt, getBomb, idx, padIndex, playerAt, tileAt, tileX, tileY, walkable } from './grid.ts';
+import {
+  bombAt,
+  burstRadius,
+  getBomb,
+  idx,
+  padIndex,
+  playerAt,
+  tileAt,
+  tileX,
+  tileY,
+  walkable,
+} from './grid.ts';
 import { useCharge } from './items.ts';
 import { isTeamMode } from './setup.ts';
 import { DX, DY, EMPTY } from './types.ts';
@@ -41,6 +52,7 @@ export function newBomb(
     stuck: null,
     sticky: o.sticky ?? false,
     bounce: 0,
+    area: s.players[owner]?.kit?.burst ? burstRadius(range) : 0,
   };
   s.bombs.push(b);
   s.events.push({ type: 'bombPlaced', bomb: b.id, x, y, owner });

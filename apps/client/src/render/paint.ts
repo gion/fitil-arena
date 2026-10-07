@@ -1807,6 +1807,25 @@ function extras(look: Look, face: [number, number], alive: boolean): void {
       for (let i = 0; i < 4; i++)
         ctx.fillRect(ex - r * 0.26 + i * r * 0.14, ey + r * 0.39, r * 0.08, r * 0.08);
       break;
+    case 'nova':
+      // coroană de raze, ca un soare mic
+      ctx.fillStyle = '#ffe14d';
+      for (let i = 0; i < 5; i++) {
+        const a = -Math.PI / 2 + (i - 2) * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a - 0.12) * r * 0.7, top + r * 0.35 + Math.sin(a - 0.12) * r * 0.7);
+        ctx.lineTo(Math.cos(a) * r * 1.15, top + r * 0.35 + Math.sin(a) * r * 1.15);
+        ctx.lineTo(Math.cos(a + 0.12) * r * 0.7, top + r * 0.35 + Math.sin(a + 0.12) * r * 0.7);
+        ctx.fill();
+      }
+      break;
+    case 'shade':
+      // glugă întunecată cu o fâșie de mască peste ochi
+      ctx.fillStyle = '#1f2937';
+      ctx.fillRect(-r * 0.98, ey - r * 0.2, r * 1.96, r * 0.4);
+      ctx.fillStyle = '#a78bfa';
+      ctx.fillRect(-r * 0.98, ey + r * 0.2, r * 1.96, r * 0.05);
+      break;
     case 'striker':
       // bentiță albă cu dungă și o minge lângă picior
       ctx.fillStyle = '#ffffff';
@@ -2351,6 +2370,22 @@ export function toxic(): void {
     ctx.fill();
   }
   noGlow();
+}
+
+/** Fum (bomba fumigenă) pe un pătrățel, origine în centru; `v` variază umflăturile ca norul să nu pară dalat. */
+export function smoke(v: number): void {
+  ctx.fillStyle = 'rgba(176,182,196,0.92)';
+  for (let i = 0; i < 6; i++) {
+    const a = hash(i, v, 77) * 6.28;
+    const d = 0.12 + hash(i, v, 78) * 0.22;
+    circle(Math.cos(a) * d * T, Math.sin(a) * d * T, T * (0.22 + hash(i, v, 79) * 0.12));
+    ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(226,230,240,0.55)';
+  for (let i = 0; i < 3; i++) {
+    circle((hash(i, v, 80) - 0.5) * T * 0.5, (hash(i, v, 81) - 0.6) * T * 0.4, T * 0.15);
+    ctx.fill();
+  }
 }
 
 /**

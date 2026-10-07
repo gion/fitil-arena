@@ -103,6 +103,8 @@ Raritate: Comun · Rar · Epic · Legendar — raritatea aduce abilități mai n
 | Tanti Veta | Epic | Scut 1 lovitură/meci | Poșeta: aruncă o bombă peste tot ecranul |
 | Maestrul Fitil | Legendar | Vede timerul bombelor | Oprește timpul pentru bombele lui 1.5s |
 | Robo-Mici | Legendar | Lasă o capcană la moarte | Teleport pe orice portal |
+| Nova | Epic | Bombele explodează **în arie**, nu în cruce (rază = raza bombei + 1, maxim 3; ocolește stâlpii, lăzile o opresc); fitil +0.5s, maxim 6 bombe | Supernova: bombă uriașă cu aria cu o treaptă peste plafon |
+| Shade | Legendar | Cel mai rapid (185), maxim 5 bombe | Bomba fumigenă: la 3 pătrățele în față, nor de rază 3, 10s; cine e în fum nu se vede de la mai mult de 1 pătrățel, iar cine e în fum nu vede de departe (coechipierii se văd mereu) |
 
 ### Afinități de arenă
 Fiecare arenă/temă dă bonusuri sau penalizări mici anumitor personaje, ca meciurile să nu fie identice:

@@ -66,6 +66,7 @@ const CELL_FIELDS = [
   ['toxic', 0],
   ['toxicOwner', -1],
   ['bush', 0],
+  ['smoke', 0],
 ] as const;
 
 /** Adaugă un slot nou la stocare (toate tablourile pe celulă cresc cu un chunk). */

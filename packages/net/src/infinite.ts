@@ -187,7 +187,8 @@ export function cellCode(s: GameState, k: number): number {
     ((s.items[k] ? (ITEM_INDEX.get(s.items[k]) ?? 0) : 0) << 7) |
     ((s.bush[k] ? 1 : 0) << 12) |
     ((s.toxic[k]! > 0 ? 1 : 0) << 13) |
-    ((s.oil[k]! > 0 ? 1 : 0) << 14)
+    ((s.oil[k]! > 0 ? 1 : 0) << 14) |
+    ((s.smoke[k]! > 0 ? 1 : 0) << 15)
   );
 }
 
@@ -211,6 +212,7 @@ export function applyCell(s: GameState, k: number, code: number): void {
   s.bush[k] = (code >> 12) & 1;
   s.toxic[k] = (code >> 13) & 1 ? 20 : 0;
   s.oil[k] = (code >> 14) & 1 ? 10 : 0;
+  s.smoke[k] = (code >> 15) & 1 ? 20 : 0;
 }
 
 const bit = (v: boolean | number, n: number): number => (v ? 1 << n : 0);
@@ -266,7 +268,8 @@ export function packBomb(b: Bomb): number[] {
     bit(b.remote, 3) |
     bit(!!b.big, 4) |
     (BOMB_KINDS.indexOf(b.kind) << 5) |
-    bit(b.free, 7);
+    bit(b.free, 7) |
+    (b.area << 8);
   const w = [b.id, b.x, b.y, b.fuse, b.owner, bits, b.prog, b.held ?? -1, b.stuck ?? -1, b.range];
   if (b.fly) w.push(b.fly.sx, b.fly.sy, b.fly.dir, b.fly.steps, b.fly.t, b.fly.dur);
   return w;
@@ -298,6 +301,7 @@ export function unpackBomb(w: number[]): Bomb {
     stuck: stuck! >= 0 ? stuck! : null,
     sticky: false,
     bounce: 0,
+    area: (bits! >> 8) & 7,
   };
 }
 

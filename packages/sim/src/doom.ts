@@ -15,7 +15,7 @@ function doomDanger(s: GameState, p: Player): Uint8Array {
     if (b.held !== null || b.fly !== null || (b.remote && b.fuse > REMOTE_SAFE)) continue;
     const owner = s.players[b.owner];
     if (team && owner && owner.team === p.team) continue;
-    blast(s, b.x, b.y, b.range, d);
+    blast(s, b.x, b.y, b.range, d, b.area);
   }
   return d;
 }

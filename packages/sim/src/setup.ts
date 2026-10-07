@@ -338,6 +338,7 @@ export function createGame(setup: GameSetup): GameState {
     toxic: new Array<number>(N).fill(0),
     toxicOwner: new Array<number>(N).fill(-1),
     bush: new Array<number>(N).fill(0),
+    smoke: new Array<number>(N).fill(0),
     traps: [],
     timeStop: null,
     crown: null,

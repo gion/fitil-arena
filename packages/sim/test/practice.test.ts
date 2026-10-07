@@ -143,14 +143,23 @@ describe('provocări', () => {
     for (let ch = 1; ch <= 5; ch++)
       for (let i = 0; i < 3; i++)
         c = track(c, s, [
-          { type: 'explode', bomb: ch * 10 + i, x: 1, y: 1, range: 1, owner: i === 0 ? 0 : 2, chain: ch },
+          {
+            type: 'explode',
+            bomb: ch * 10 + i,
+            x: 1,
+            y: 1,
+            range: 1,
+            area: 0,
+            owner: i === 0 ? 0 : 2,
+            chain: ch,
+          },
         ]);
     expect(c.count).toBe(5);
     expect(c.status).toBe('done');
     // lanțurile pornite de alții nu contează
     let c2 = startChallenge('chains');
     for (let i = 0; i < 3; i++)
-      c2 = track(c2, s, [{ type: 'explode', bomb: i, x: 1, y: 1, range: 1, owner: 1, chain: 9 }]);
+      c2 = track(c2, s, [{ type: 'explode', bomb: i, x: 1, y: 1, range: 1, area: 0, owner: 1, chain: 9 }]);
     expect(c2.count).toBe(0);
   });
 

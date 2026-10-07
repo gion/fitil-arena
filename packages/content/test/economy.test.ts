@@ -22,9 +22,9 @@ import type { MatchSummary } from '../src/index.ts';
 const idle: MatchSummary = { boxes: 0, kills: 0, won: false, team: false, caps: 0, stars: 0 };
 
 describe('personaje', () => {
-  it('11 personaje valide, cu id-uri unice, pe toate raritățile', () => {
-    expect(CHARACTERS).toHaveLength(11);
-    expect(new Set(CHARACTERS.map((c) => c.id)).size).toBe(11);
+  it('13 personaje valide, cu id-uri unice, pe toate raritățile', () => {
+    expect(CHARACTERS).toHaveLength(13);
+    expect(new Set(CHARACTERS.map((c) => c.id)).size).toBe(13);
     expect(new Set(CHARACTERS.map((c) => c.rarity))).toEqual(new Set(Object.keys(RARITY)));
     expect(FREE_CHARS).toEqual(['bubu', 'gugu', 'zuzu']);
   });

@@ -1,3 +1,4 @@
+import { BURST_CAP } from './constants.ts';
 import { DIRS, DX, DY, EMPTY, HARD, SOFT, U } from './types.ts';
 import type { Bomb, GameState, Player } from './types.ts';
 
@@ -46,8 +47,48 @@ export function playerAt(s: GameState, x: number, y: number): Player | undefined
 export const padIndex = (s: GameState, x: number, y: number): number =>
   s.pads.findIndex(([px, py]) => px === x && py === y);
 
-/** Marchează în `out` pătrățelele atinse de o explozie (cruce oprită de ziduri; lăzile opresc flacăra). */
-export function blast(s: GameState, x: number, y: number, range: number, out: Uint8Array): void {
+/** Raza ariei unei bombe în arie, din raza ei de cruce. */
+export const burstRadius = (range: number): number => Math.min(range + 1, BURST_CAP);
+
+/**
+ * Pătrățelele unei arii de rază `r`: cele de la cel mult `r` pe orizontală și pe verticală, la care
+ * flăcara ajunge mergând cel mult `2r` pași printre pătrățele libere. Stâlpii și zidurile o opresc
+ * (ocolește colțurile), lăzile sunt lovite dar o opresc. Ordinea e deterministă (lățime).
+ */
+export function areaTiles(s: GameState, x: number, y: number, r: number): [number, number][] {
+  const out: [number, number][] = [[x, y]];
+  const seen = new Set<number>([idx(s, x, y)]);
+  const qx = [x];
+  const qy = [y];
+  const qd = [0];
+  for (let h = 0; h < qx.length; h++) {
+    if (qd[h]! >= 2 * r) continue;
+    const cx = qx[h]!;
+    const cy = qy[h]!;
+    // un pătrățel cu ladă primește flacăra, dar n-o mai trece mai departe
+    if (h > 0 && tileAt(s, cx, cy) === SOFT) continue;
+    for (const d of DIRS) {
+      const nx = cx + DX[d]!;
+      const ny = cy + DY[d]!;
+      if (Math.abs(nx - x) > r || Math.abs(ny - y) > r || tileAt(s, nx, ny) === HARD) continue;
+      const k = idx(s, nx, ny);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push([nx, ny]);
+      qx.push(nx);
+      qy.push(ny);
+      qd.push(qd[h]! + 1);
+    }
+  }
+  return out;
+}
+
+/** Marchează în `out` pătrățelele atinse de o explozie (cruce oprită de ziduri; lăzile opresc flacăra). `area` > 0: explozie în arie. */
+export function blast(s: GameState, x: number, y: number, range: number, out: Uint8Array, area = 0): void {
+  if (area > 0) {
+    for (const [ax, ay] of areaTiles(s, x, y, area)) out[idx(s, ax, ay)] = 1;
+    return;
+  }
   out[idx(s, x, y)] = 1;
   for (const d of DIRS) {
     for (let i = 1; i <= range; i++) {

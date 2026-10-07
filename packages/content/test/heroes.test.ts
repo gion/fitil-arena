@@ -13,9 +13,9 @@ import {
 } from '../src/index.ts';
 
 describe('content/heroes', () => {
-  it('11 personaje, fiecare cu alt Ultimate', () => {
-    expect(CHARACTERS).toHaveLength(11);
-    expect(new Set(CHARACTERS.map((c) => c.ultimate.kind)).size).toBe(11);
+  it('13 personaje, fiecare cu alt Ultimate', () => {
+    expect(CHARACTERS).toHaveLength(13);
+    expect(new Set(CHARACTERS.map((c) => c.ultimate.kind)).size).toBe(13);
   });
 
   it('afinitățile sunt mici (±15%, max +1 inimă) și doar pe teme existente', () => {
