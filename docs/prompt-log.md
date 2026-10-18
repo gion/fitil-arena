@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-18 — Claude Code (Opus 5.5) — Clipurile salvate au sunet
+
+- **Cerut:** clipul salvat după moarte nu are sunet (cel puțin pe iOS).
+- **Făcut:** înregistrarea lua doar pista video a canvasului; sunetul jocului (WebAudio) nu ajungea în ea, pe nicio platformă. `Sfx.tap()` leagă master + muzica de un `MediaStreamAudioDestinationNode`; `ClipRecorder.start()` primește fluxul și pune pista audio lângă video (pista audio e comună, nu se oprește la `stop()`). Formatul preferat cere explicit codecul audio (`avc1,mp4a.40.2`, apoi `vp9/vp8,opus`), plus `audioBitsPerSecond`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` trecute. Neverificat pe iPhone real / simulator.
+- **Notă operațională:** dacă efectele sunt oprite din setări, clipul are doar muzica (cum se aude și în joc).
+
 ## 2026-10-07 — Claude Code (Sonnet 5.5) — Nova imună la propriile bombe
 
 - **Cerut:** Nova moare de la propria bombă (mai ales la început, fără loc de ferit); ales: imună la propriile flăcări, nu la ale altora.

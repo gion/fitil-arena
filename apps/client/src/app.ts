@@ -1010,7 +1010,7 @@ export class App {
   private recordClip(): void {
     if (!settings.clips) return this.clip.stop();
     const cv = this.view === '2d' ? this.game.canvas : document.querySelector<HTMLCanvasElement>('#cv3');
-    if (cv) this.clip.start(cv);
+    if (cv) this.clip.start(cv, this.sfx.tap());
   }
 
   /** „Save clip”: ultimele 10–20s din arenă, partajate sau descărcate. */
