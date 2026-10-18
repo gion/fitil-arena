@@ -22,7 +22,7 @@ const BURST_KIT: CharKit = {
   maxBombs: 6,
   lives: 1,
   burst: true,
-  fuseAdd: 10,
+  ownBlastImmune: true,
 };
 const PLAIN_KIT: CharKit = { speed: 160, range: 1, bombs: 1, maxBombs: 6, lives: 1 };
 
@@ -137,6 +137,34 @@ describe('bombă în arie (Nova)', () => {
     const inp: (Input | undefined)[] = [{ dir: null, super: true }];
     step(s, inp);
     expect(s.bombs.at(-1)!.area).toBe(BURST_CAP + 1);
+  });
+});
+
+describe('imunitatea lui Nova la propriile bombe', () => {
+  const blow = (kit: CharKit): GameState => {
+    const s = game([{ kit }, { kit: PLAIN_KIT }]);
+    put(s.players[1]!, 13, 9);
+    placeBomb(s, put(s.players[0]!, 5, 5));
+    s.bombs[0]!.fuse = 1;
+    for (let t = 0; t < 4; t++) step(s, []);
+    return s;
+  };
+
+  it('stă în propria arie și nu o doare', () => {
+    expect(blow(BURST_KIT).players[0]!.alive).toBe(true);
+  });
+
+  it('fără imunitate, aceeași bombă o omoară', () => {
+    expect(blow({ ...BURST_KIT, ownBlastImmune: false }).players[0]!.alive).toBe(false);
+  });
+
+  it('bomba unui adversar o rănește normal', () => {
+    const s = game([{ kit: BURST_KIT }, { kit: PLAIN_KIT }]);
+    put(s.players[0]!, 5, 5);
+    placeBomb(s, put(s.players[1]!, 5, 4));
+    s.bombs[0]!.fuse = 1;
+    for (let t = 0; t < 4; t++) step(s, []);
+    expect(s.players[0]!.alive).toBe(false);
   });
 });
 

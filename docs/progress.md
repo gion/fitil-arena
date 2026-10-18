@@ -427,7 +427,7 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 **Făcut:**
 
 - `sim`: `Bomb.area` + `areaTiles` (rază `min(range+1, 3)`, ocolește stâlpii, lada oprește aria); Super-urile `nova` (Supernova) și `smoke` (bomba fumigenă); `GameState.smoke`; `canSee` ține cont de fum; boții evită aria și folosesc fumul.
-- `content`: Nova (epic, `burst`, fitil +0.5s, 6 bombe) și Shade (legendar, viteză 185, 5 bombe); roster de 13 personaje.
+- `content`: Nova (epic, `burst`, 6 bombe, imună la propriile flăcări) și Shade (legendar, viteză 185, 5 bombe); roster de 13 personaje.
 - `net` (Infinit): aria în bombă, fumul în codul celulei. Client: fum în 2D/3D, accesorii, sunet.
 - Teste: `packages/sim/test/burst-smoke.test.ts` (15).
 

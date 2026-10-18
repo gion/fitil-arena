@@ -86,6 +86,7 @@ const KitSchema = z.object({
   ghost: z.boolean().optional(),
   pigeon: z.boolean().optional(),
   burst: z.boolean().optional(),
+  ownBlastImmune: z.boolean().optional(),
   slide: z.boolean().optional(),
 }) satisfies z.ZodType<CharKit>;
 
@@ -382,10 +383,11 @@ export const CHARACTERS: Character[] = z.array(CharSchema).parse([
     name: 'Nova',
     rarity: 'epic',
     tagline: 'Why aim down a line when you can hit the whole block?',
-    kit: { speed: 160, range: 1, bombs: 1, maxBombs: 6, lives: 1, burst: true, fuseAdd: 10 },
-    signature: 'Her bombs blast a whole area around them (radius = bomb range, up to 3), not a cross.',
+    kit: { speed: 160, range: 1, bombs: 1, maxBombs: 6, lives: 1, burst: true, ownBlastImmune: true },
+    signature:
+      'Her bombs blast a whole area around them (radius = bomb range, up to 3), not a cross. Her own blasts never hurt her.',
     pros: ['Blast covers an area, corners included', 'Grows with every range pickup'],
-    cons: ['Short reach: nothing beyond the area', 'Fuse +0.5s', 'At most 6 bombs'],
+    cons: ['Short reach: nothing beyond the area', 'Enemy blasts still hurt', 'At most 6 bombs'],
     ultimate: {
       name: 'Supernova',
       desc: 'Drops a giant bomb whose area blast is one step wider than any normal bomb.',

@@ -588,7 +588,8 @@ function updatePlayers(s: GameState, inputs: readonly (Input | undefined)[]): vo
       }
     } else if (s.flame[k]! > 0 && p.graceT === 0) {
       const ownerId = s.flameOwner[k]!;
-      const friendly = friendlyTo(ownerId);
+      // Nova: flăcările bombelor ei nu o rănesc (aria nu-i lasă colțuri de ascuns)
+      const friendly = friendlyTo(ownerId) || (ownerId === p.id && !!p.kit?.ownBlastImmune);
       if (!friendly && !shieldSave(s, p, GRACE)) {
         const via = s.flameVia[k]!;
         damage(
