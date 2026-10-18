@@ -43,6 +43,24 @@ export class Sfx {
     }
   }
 
+  private rec: MediaStreamAudioDestinationNode | null = null;
+
+  /** Sunetul jocului (efecte + muzică) ca flux, pentru clipuri. Creat la prima cerere, apoi refolosit. */
+  tap(): MediaStream | null {
+    const c = this.ctx;
+    if (!c) return null;
+    if (!this.rec) {
+      try {
+        this.rec = c.createMediaStreamDestination();
+      } catch {
+        return null;
+      }
+      this.master.connect(this.rec);
+      this.mus.connect(this.rec);
+    }
+    return this.rec.stream;
+  }
+
   private on(): AudioContext | null {
     return this.sfxOn ? this.ctx : null;
   }

@@ -6,13 +6,23 @@ import { isNative } from './native.ts';
 const CYCLE = 20_000;
 const FPS = 30;
 const BITRATE = 2_000_000;
+const AUDIO_BITRATE = 128_000;
 /** Clipul e o copie micșorată a arenei (lățime maximă): codarea la rezoluția ecranului ar costa FPS pe telefon. */
 const MAX_W = 960;
 
-/** Formatul video suportat: mp4 (Safari, Chrome nou), altfel webm. */
+/**
+ * Formatul video suportat: mp4 (Safari, Chrome nou), altfel webm. Codecul audio e cerut explicit:
+ * pe iOS, `video/mp4;codecs=avc1` (doar video) scotea clipuri fără sunet.
+ */
 export function clipType(): string | null {
   if (typeof MediaRecorder === 'undefined') return null;
-  for (const t of ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'])
+  for (const t of [
+    'video/mp4;codecs="avc1,mp4a.40.2"',
+    'video/mp4',
+    'video/webm;codecs="vp9,opus"',
+    'video/webm;codecs="vp8,opus"',
+    'video/webm',
+  ])
     if (MediaRecorder.isTypeSupported(t)) return t;
   return null;
 }
@@ -47,14 +57,20 @@ export class ClipRecorder {
     return this.recs.some((r) => r !== null);
   }
 
-  /** Pornește (sau mută pe alt canvas, ex. la schimbarea vederii). */
-  start(canvas: HTMLCanvasElement): void {
+  /**
+   * Pornește (sau mută pe alt canvas, ex. la schimbarea vederii). `audio`: sunetul jocului
+   * (`Sfx.tap()`), adăugat în clip; pista lui e comună, deci nu se oprește la `stop()`.
+   */
+  start(canvas: HTMLCanvasElement, audio?: MediaStream | null): void {
     if (!this.supported) return;
     if (this.src === canvas && this.recording) return;
     this.stop();
     this.src = canvas;
     this.canvas = document.createElement('canvas');
-    this.stream = this.canvas.captureStream(FPS);
+    this.stream = new MediaStream([
+      ...this.canvas.captureStream(FPS).getVideoTracks(),
+      ...(audio?.getAudioTracks() ?? []),
+    ]);
     this.copy(0);
     this.cycle(0);
     this.timers.push(setTimeout(() => this.cycle(1), CYCLE / 2));
@@ -66,7 +82,7 @@ export class ClipRecorder {
     cancelAnimationFrame(this.raf);
     for (const r of this.recs) if (r && r.r.state !== 'inactive') r.r.stop();
     this.recs = [null, null];
-    for (const tr of this.stream?.getTracks() ?? []) tr.stop();
+    for (const tr of this.stream?.getVideoTracks() ?? []) tr.stop();
     this.stream = null;
     this.src = null;
     this.canvas = null;
@@ -108,6 +124,7 @@ export class ClipRecorder {
       const r = new MediaRecorder(this.stream, {
         mimeType: this.type,
         videoBitsPerSecond: BITRATE,
+        audioBitsPerSecond: AUDIO_BITRATE,
       });
       const rec: Rec = { r, chunks: [], t0: performance.now() };
       r.ondataavailable = (e) => e.data.size && rec.chunks.push(e.data);
