@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+.git
+.env
+.env.*
+deploy/.env
+deploy/backups
+apps/client/android
+apps/client/ios
+apps/client/store-shots
+apps/client/test-results
+apps/client/playwright-report
+tools/voice
+docs
+reference

@@ -448,3 +448,24 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 - Boții nu alunecă și nu folosesc Ultimate-urile `gate`/`smash`; porțile nu sunt sincronizate în Infinit.
 - Pragul swipe-ului (56 px în 110 ms) e o primă estimare: de reglat pe telefon real.
 - Pe telefon nu există încă un indiciu în joc pentru swipe (doar descrierea personajului).
+
+## Producție și test de multiplayer (2026-10-18)
+
+**Mini-plan:** (1) kit de deploy pe un VPS (Docker Compose: Postgres, server, Caddy cu TLS, backup) + workflow de deploy cu test de fum; (2) plan de test cu oameni reali + statistici de rețea în joc și în telemetrie; (3) Faza 9 (separat).
+
+**Făcut:**
+
+- **Deploy** (D-081): `Dockerfile` (imaginile `server` și `web`), `deploy/docker-compose.yml`, `deploy/Caddyfile` (`DOMAIN`, `api.`, `play.`), `deploy/setup-server.sh` (Docker, firewall, actualizări automate), `.github/workflows/deploy.yml` (după CI verde pe main; inactiv fără `DEPLOY_HOST`), ghid `docs/deploy.md`. API-ul are `TRUST_PROXY=1` în spatele lui Caddy (limitarea pe IP vedea doar IP-ul proxy-ului).
+- **Test de fum** `pnpm --filter @fitil/server smoke <wss> <api>`: `/health`, doi clienți în aceeași cameră prin cod, ~15s de joc, 0 desync.
+- **Statistici de rețea**: Settings → **Network stats** (sau `?net=1`) arată în meciurile online `ping · buf · in · desync`; `match_end` online primește `ping_avg/p95/max`, `drops`, `desyncs`, `resyncs` (`online/netstats.ts`, ping prin `room.ping` la 2s).
+- **Plan de test** cu oameni: `docs/multiplayer-test.md` (13 scenarii: link de invitație, 4G, schimbare de rețea, fundal, revanșă, Quick Play, Infinit, Android mediu, browser + aplicație).
+- **Nume**: cercetare preliminară în `docs/propuneri/nume-joc.md`; Q-010 redeschis.
+
+**Verificat:** stiva de producție pornită local cu `DOMAIN=localhost` (certificat intern Caddy): pagina 200, `www` → 301, `api/health` cu conturi, adresele `wss://play.…` / `https://api.…` în build-ul web, backup scris, `smoke` prin Caddy: 2 jucători, 201 cadre fiecare, 0 desync. `pnpm lint`, `typecheck`, `format:check`, `test` (server cu Postgres: 18/18), e2e `online.spec.ts` (2/2, cu overlay-ul verificat).
+
+**Rămas / cunoscut:**
+
+- Deploy-ul real așteaptă VPS-ul, DNS-ul și secretele (`docs/deploy.md` §1–2).
+- Un deploy repornește serverul: meciurile în curs se pierd (un singur proces, camere în memorie).
+- Testul cu oameni reali (`docs/multiplayer-test.md`) după deploy.
+- În containerul de lucru build-ul Docker a avut nevoie de CA-ul proxy-ului local (override doar pentru test, nu e în repo).

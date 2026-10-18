@@ -1,0 +1,52 @@
+name: Deploy
+# Producție pe VPS (D-081): la fiecare push pe main, după CI, codul se copiază pe server și se reconstruiesc
+# imaginile; apoi un test de fum joacă un meci scurt prin wss://play.<domeniu>. Inactiv până se setează
+# variabila de repo DEPLOY_HOST (vezi docs/deploy.md).
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: vars.DEPLOY_HOST != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      HOST: ${{ vars.DEPLOY_HOST }}
+      DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Cheia SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Copiază codul
+        run: >
+          rsync -az --delete
+          --exclude .git --exclude node_modules --exclude '**/node_modules' --exclude '**/dist'
+          --exclude deploy/.env --exclude deploy/backups
+          ./ "root@$HOST:/opt/fuse-arena/"
+      - name: Construiește și pornește
+        run: >
+          ssh "root@$HOST"
+          'cd /opt/fuse-arena && docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build --remove-orphans
+          && docker image prune -f'
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Test de fum (meci prin wss)
+        run: |
+          for i in 1 2 3 4 5 6; do curl -fsS "https://api.$DOMAIN/health" && break; sleep 10; done
+          pnpm --filter @fitil/server smoke "wss://play.$DOMAIN" "https://api.$DOMAIN"

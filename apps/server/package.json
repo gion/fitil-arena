@@ -12,7 +12,8 @@
     "serve": "tsx src/main.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "load:inf": "tsx scripts/load-infinite.ts"
+    "load:inf": "tsx scripts/load-infinite.ts",
+    "smoke": "tsx scripts/smoke.ts"
   },
   "dependencies": {
     "@colyseus/core": "^0.18.18",

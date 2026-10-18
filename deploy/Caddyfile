@@ -1,0 +1,27 @@
+# DOMAIN = jocul pe web, api.DOMAIN = API-ul (Fastify), play.DOMAIN = serverul de joc (Colyseus, wss).
+# Certificatele TLS vin automat de la Let's Encrypt (porturile 80 și 443 deschise, DNS-ul trimis spre server).
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	root * /srv
+	encode zstd gzip
+	@hashed path /assets/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	header ?Cache-Control "no-cache"
+	file_server
+}
+
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}
+
+api.{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy server:3000
+}
+
+play.{$DOMAIN} {
+	reverse_proxy server:2567
+}

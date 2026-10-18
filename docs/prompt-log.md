@@ -3,6 +3,13 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-18 — Claude Code (Opus 5.5) — Kit de deploy, statistici de rețea, plan de test multiplayer, cercetare nume
+
+- **Cerut:** ce mai trebuie pentru store și bani; grafic de progres; proprietarul ia server + domeniu și îmi lasă proiectul: (1) pregătirea deploy-ului, (2) testul de multiplayer, (3) Faza 9; un subagent caută numele final.
+- **Făcut:** `Dockerfile`, `deploy/` (compose, Caddyfile, setup-server.sh, .env.example), `.github/workflows/deploy.yml`, `apps/server/scripts/smoke.ts`, `TRUST_PROXY` în API; „Network stats” în client (`online/netstats.ts`, HUD, câmpuri noi în `match_end`); `docs/deploy.md`, `docs/multiplayer-test.md`, `docs/propuneri/nume-joc.md`; D-081; Q-003 și Q-010 actualizate.
+- **Verificat:** stiva de producție local prin Caddy (TLS intern) + `smoke` (0 desync); `pnpm lint`, `typecheck`, `format:check`, `test`, e2e `online.spec.ts`.
+- **Notă operațională:** deploy-ul e inactiv până la variabila de repo `DEPLOY_HOST`. „Fuse Arena” are risc de marcă: nu se cumpără domeniul înainte de decizia de nume.
+
 ## 2026-10-07 — Claude Code (Sonnet 5.5) — Nova imună la propriile bombe
 
 - **Cerut:** Nova moare de la propria bombă (mai ales la început, fără loc de ferit); ales: imună la propriile flăcări, nu la ale altora.

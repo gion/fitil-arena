@@ -144,6 +144,8 @@ export class App {
   /** „Save clip”: arena înregistrată continuu în meci. */
   private clip = new ClipRecorder();
   private matchT0 = 0;
+  /** Contoarele `NetClient` la începutul meciului online (cresc pe toată durata camerei). */
+  private netBase = { desyncs: 0, snaps: 0 };
   /** Lumea Infinit online (D-070). */
   inf: InfiniteSession | null = null;
   private onlineErr = '';
@@ -198,6 +200,7 @@ export class App {
   private overlay!: HTMLElement;
   private drawer!: HTMLElement;
   private banner!: HTMLElement;
+  private netHud!: HTMLElement;
   private bubble!: HTMLElement;
   private toast!: HTMLElement;
   private tut!: HTMLElement;
@@ -283,6 +286,27 @@ export class App {
         void account.flushClaims((q) => this.adopt(q));
       });
     if (!OFFLINE_ONLY) void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
+    if (!OFFLINE_ONLY) {
+      if (new URLSearchParams(location.search).get('net') === '1') settings.netStats = true;
+      setInterval(() => this.updateNetHud(), 500);
+    }
+  }
+
+  /** Ping, cadre în buffer, input-uri neconfirmate, desync-uri: doar online, cu „Network stats”. */
+  private updateNetHud(): void {
+    const o = this.online;
+    const on = settings.netStats && !!o && this.match?.net === o.net;
+    show(this.netHud, on);
+    if (!on || !o) return;
+    const net = o.net;
+    const rtt = o.stats.rtt;
+    this.netHud.classList.toggle('bad', rtt > 200 || o.status !== 'online');
+    this.netHud.textContent = [
+      o.status === 'online' ? `${rtt || '–'} ms` : o.status,
+      `buf ${net.buffered}`,
+      `in ${net.unacked}`,
+      `desync ${net.desyncs - this.netBase.desyncs}`,
+    ].join(' · ');
   }
 
   /* ---------- DOM ---------- */
@@ -360,6 +384,7 @@ export class App {
     this.drawer = h('div', { class: 'drawer hidden' });
     this.conn = h('div', { class: 'drawer hidden', 'data-test': 'conn' });
     this.banner = h('div', { class: 'banner hidden' });
+    this.netHud = h('div', { class: 'nethud hidden', 'data-test': 'nethud' });
     this.bubble = h('div', { class: 'bubble hidden' });
     this.toast = h('div', { class: 'toast hidden' });
     this.tut = h('div', { class: 'tut hidden' });
@@ -378,6 +403,7 @@ export class App {
       this.dark,
       ...this.hints,
       this.banner,
+      this.netHud,
       this.bubble,
       this.toast,
       this.tut,
@@ -1613,6 +1639,8 @@ export class App {
     const net = o.net;
     if (!net.view || !net.cfg) return;
     if (net.me < 0) return;
+    o.stats.reset();
+    this.netBase = { desyncs: net.desyncs, snaps: net.snaps };
     this.setTheme(net.cfg.theme, false);
     this.beginPlay();
     const kind: PlayKind = { type: 'mode', mode: net.cfg.mode };
@@ -2465,6 +2493,15 @@ export class App {
                 telemetry.enabled = settings.stats;
               },
             ),
+          !OFFLINE_ONLY &&
+            this.toggle(
+              'Network stats',
+              'Ping and sync info during online matches',
+              settings.netStats,
+              () => {
+                settings.netStats = !settings.netStats;
+              },
+            ),
           this.clip.supported &&
             this.toggle('Record clips', 'Keeps the last seconds of a match to share', settings.clips, () => {
               settings.clips = !settings.clips;
@@ -3189,6 +3226,14 @@ export class App {
         online: m.net !== null,
         won: e.win,
         duration_s: Math.round((performance.now() - this.matchT0) / 1000),
+        ...(m.net && this.online?.net === m.net
+          ? {
+              ...this.online.stats.summary(),
+              drops: this.online.stats.drops,
+              desyncs: this.online.net.desyncs - this.netBase.desyncs,
+              resyncs: Math.max(0, this.online.net.snaps - this.netBase.snaps - 1),
+            }
+          : {}),
       });
     if (e.type === 'tutorialDone' || e.type === 'tutorialFail')
       telemetry.track(e.type === 'tutorialDone' ? 'tutorial_done' : 'tutorial_fail', {

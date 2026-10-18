@@ -7,6 +7,8 @@ import type { Db } from './db/index.ts';
 export interface AppOpts {
   /** Cereri pe minut pe IP (0 = fără limită); `/auth/anon` primește a zecea parte. */
   rate?: number;
+  /** În spatele unui proxy (Caddy): IP-ul clientului din `X-Forwarded-For`, pentru limitarea pe IP. */
+  trustProxy?: boolean;
 }
 
 /** Limitare simplă în memorie (fereastră fixă de un minut). Cu mai multe procese s-ar muta în Redis. */
@@ -25,7 +27,7 @@ function rateLimiter(perMin: number) {
 }
 
 export function buildApp(db?: Db, opts: AppOpts = {}) {
-  const app = Fastify({ logger: false });
+  const app = Fastify({ logger: false, trustProxy: opts.trustProxy ?? false });
   // fără cookie-uri (tokenul vine în antet), deci orice origine poate apela API-ul în siguranță
   app.addHook('onRequest', async (req, reply) => {
     void reply

@@ -2043,6 +2043,22 @@ input:focus-visible {
 .hint.r {
   right: calc(230px + var(--sr));
 }
+/* „Network stats”: ping și sincronizare, sub HUD, în stânga (testele de rețea) */
+.nethud {
+  position: absolute;
+  left: calc(8px + var(--sl));
+  top: calc(var(--hud) + 6px);
+  z-index: 4;
+  pointer-events: none !important;
+  font: 700 11px/1.3 var(--body);
+  font-variant-numeric: tabular-nums;
+  color: var(--white);
+  background: rgb(17 17 17 / 0.72);
+  padding: 2px 6px;
+}
+.nethud.bad {
+  background: var(--red);
+}
 /* onomatopee, baloane, anunțuri peste arenă (țin de interfață, nu de temă) */
 .banner {
   position: absolute;

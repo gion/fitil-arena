@@ -11,7 +11,7 @@ if (database) {
   await runMigrations(database);
   console.log('Postgres conectat, migrații aplicate');
 } else console.log('DATABASE_URL lipsește: fără conturi (doar vizitatori)');
-const app = buildApp(database?.db);
+const app = buildApp(database?.db, { trustProxy: process.env.TRUST_PROXY === '1' });
 await app.listen({ port, host: '0.0.0.0' });
 console.log(`API pe http://localhost:${port}`);
 await buildGameServer(database?.db ?? null).listen(gamePort);

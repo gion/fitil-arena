@@ -4,6 +4,7 @@ import { NetClient, lagFromQuery, lagLink } from '@fitil/net';
 import type { LagOpts, Link, MatchOutcome, MeMsg, RoomCfg } from '@fitil/net';
 import type { ModeId } from '@fitil/content';
 import { account } from './account.ts';
+import { NetStats } from './netstats.ts';
 
 /** Adresa serverului de joc: `VITE_SERVER_URL` sau același host ca pagina, portul 2567. */
 export function serverUrl(): string {
@@ -33,6 +34,8 @@ export type SessionStatus = 'online' | 'reconnecting' | 'closed';
 export class OnlineSession {
   readonly net: NetClient;
   readonly lag: LagOpts | null;
+  readonly stats = new NetStats();
+  private pinger: ReturnType<typeof setInterval>;
   status: SessionStatus = 'online';
   onStatus: (s: SessionStatus, reason?: string) => void = () => {};
   /** Ce ai primit de la server după meci (trofee, monede, XP); doar cu cont. */
@@ -47,12 +50,23 @@ export class OnlineSession {
     this.net = new NetClient(this.lag ? lagLink(link, this.lag) : link);
     room.reconnection.minUptime = 1000;
     store(room.reconnectionToken);
-    room.onDrop(() => this.set('reconnecting'));
+    room.onDrop(() => {
+      this.stats.drops++;
+      this.set('reconnecting');
+    });
     room.onReconnect(() => {
       store(room.reconnectionToken);
       this.set('online');
     });
+    this.pinger = setInterval(() => {
+      try {
+        room.ping((ms) => this.stats.add(ms));
+      } catch {
+        /* conexiunea e căzută: ping-ul reia după reconectare */
+      }
+    }, 2000);
     room.onLeave((_code, reason) => {
+      clearInterval(this.pinger);
       store(null);
       this.set('closed', reason);
     });
@@ -141,6 +155,7 @@ export class OnlineSession {
   }
 
   leave(): void {
+    clearInterval(this.pinger);
     this.status = 'closed';
     store(null);
     void this.room.leave(true).catch(() => {});

@@ -35,6 +35,8 @@ export interface Settings {
   clips: boolean;
   /** Statistici anonime (PostHog) și rapoarte de erori (Sentry); doar dacă build-ul are chei. */
   stats: boolean;
+  /** Ping și starea sincronizării în colțul ecranului, în meciurile online (testele de rețea). */
+  netStats: boolean;
 }
 
 const KEY = 'fitil-settings';
@@ -66,6 +68,7 @@ function load(): Settings {
     classic: false,
     clips: true,
     stats: true,
+    netStats: false,
   };
   try {
     const raw = localStorage.getItem(KEY);

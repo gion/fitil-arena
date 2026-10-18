@@ -28,3 +28,6 @@ tools/voice/**/.venv
 tools/voice/out
 __pycache__
 store-shots
+
+# backup-urile bazei de producție (deploy/docker-compose.yml)
+deploy/backups

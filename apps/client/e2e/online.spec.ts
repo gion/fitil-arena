@@ -42,7 +42,8 @@ test('online: gazda creează camera, al doilea jucător intră cu codul, meciul 
   const code = (await host.locator('[data-test=room-code]').textContent())!.trim();
   expect(code).toMatch(/^[A-Z]{4}$/);
 
-  await guest.goto('/');
+  // oaspetele are „Network stats” pornit din URL (?net=1)
+  await guest.goto('/?net=1');
   await guest.locator('[data-test=online]').click();
   await guest.locator('[data-test=name]').fill('Guest');
   await guest.locator('[data-test=code]').fill(code.toLowerCase());
@@ -63,6 +64,12 @@ test('online: gazda creează camera, al doilea jucător intră cu codul, meciul 
   expect(b!.mode).toBe('teams');
   // pe echipe oamenii se împart: gazda la albaștri (0), al doilea la roșii (2)
   expect([a!.me, b!.me]).toEqual([0, 2]);
+  // ping-ul (la 2s) apare doar la oaspete
+  await expect(guest.locator('[data-test=nethud]')).toContainText(/\d+ ms · buf \d+ · in \d+ · desync 0/, {
+    timeout: 6000,
+  });
+  await expect(host.locator('[data-test=nethud]')).toBeHidden();
+  await guest.screenshot({ path: 'test-results/nethud.png' });
 
   // gazda se mișcă: poziția ei se schimbă și la oaspete
   const pos = (page: Page) =>
