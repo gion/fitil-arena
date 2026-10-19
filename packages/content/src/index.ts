@@ -10,3 +10,5 @@ export * from './arena.ts';
 export * from './fatalities.ts';
 export * from './trophies.ts';
 export * from './legal.ts';
+export * from './pass.ts';
+export * from './offers.ts';

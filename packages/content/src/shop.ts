@@ -34,6 +34,8 @@ const ItemSchema = z.object({
   win: z.array(z.string()).optional(),
   /** Obiect exclusiv: nu se cumpără, se deblochează la nivelul personajului. */
   unlock: z.object({ char: z.string(), level: z.number().int().min(2).max(10) }).optional(),
+  /** Obiect exclusiv: nu se cumpără, vine din battle pass (`s1`, `s2`…) sau din starter pack (`starter`). */
+  exclusive: z.string().optional(),
 });
 export type ShopItem = z.infer<typeof ItemSchema>;
 
@@ -104,6 +106,25 @@ export const SHOP: ShopItem[] = z.array(ItemSchema).parse([
     fatality: f.id,
   })),
   ...EMOTES.map((e) => ({ id: `e_${e.id}`, cat: 'emote', name: e.name, price: 40, emote: e.id })),
+  // exclusive din battle pass-ul sezonului 1 (pass.ts) și din starter pack (offers.ts)
+  { id: 's1_ember', cat: 'color', name: 'Ember', price: 0, col: '#ff6a2b', exclusive: 's1' },
+  { id: 's1_lava', cat: 'bomb', name: 'Lava', price: 0, col: '#ff4a1c', exclusive: 's1' },
+  { id: 's1_sparks', cat: 'trail', name: 'Sparks', price: 0, col: '#ffb02e', shape: 'star', exclusive: 's1' },
+  { id: 's1_frost', cat: 'color', name: 'Frost', price: 0, col: '#8fe1ff', exclusive: 's1' },
+  { id: 's1_comet', cat: 'trail', name: 'Comet', price: 0, col: '#9fe3ff', shape: 'dot', exclusive: 's1' },
+  { id: 's1_toxic', cat: 'bomb', name: 'Toxic', price: 0, col: '#7dff6a', exclusive: 's1' },
+  { id: 's1_neon', cat: 'color', name: 'Neon pink', price: 0, col: '#ff4fd8', exclusive: 's1' },
+  {
+    id: 's1_rings',
+    cat: 'trail',
+    name: 'Pink rings',
+    price: 0,
+    col: '#ff8fd8',
+    shape: 'ring',
+    exclusive: 's1',
+  },
+  { id: 's1_goldfuse', cat: 'bomb', name: 'Golden fuse', price: 0, col: '#ffcf33', exclusive: 's1' },
+  { id: 'x_rocket', cat: 'bomb', name: 'Rocket red', price: 0, col: '#e5262b', exclusive: 'starter' },
 ]);
 
 export const shopItem = (id: string | null | undefined): ShopItem | undefined =>

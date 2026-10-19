@@ -4,6 +4,7 @@ import { NO_OUTFIT, SHOP, SHOP_CATS, cleanOutfit, shopItem } from './shop.ts';
 import { THEMES } from './themes.ts';
 import { charState, eventThemes, playerLevel, themeState, totalXp, unlocksAt } from './progression.ts';
 import type { Access } from './progression.ts';
+import { addPassXp } from './pass.ts';
 import type { Outfit, ShopCat } from './shop.ts';
 
 /**
@@ -34,7 +35,24 @@ export interface Profile {
   themes: string[];
   /** Deblocările deja văzute (pentru insignele „NEW”). */
   seen: string[];
+  /** Gemuri: moneda cumpărată cu bani reali (Faza 9); le adaugă doar serverul, după validarea plății. */
+  gems: number;
+  /** Battle pass-ul sezonului în curs (vezi `pass.ts`). */
+  pass: PassProgress;
+  /** Produsele unice cumpărate (starter pack…), ca să nu se poată cumpăra de două ori. */
+  purchases: string[];
 }
+
+export interface PassProgress {
+  /** Sezonul la care se referă progresul (`s1`…); alt sezon = progres nou. */
+  season: string;
+  xp: number;
+  premium: boolean;
+  /** Treptele luate: `f12` (gratuit), `p12` (premium). */
+  claimed: string[];
+}
+
+export const NO_PASS: PassProgress = { season: '', xp: 0, premium: false, claimed: [] };
 
 export function defaultProfile(): Profile {
   return {
@@ -48,6 +66,9 @@ export function defaultProfile(): Profile {
     daily: '',
     themes: [],
     seen: [],
+    gems: 0,
+    pass: { ...NO_PASS },
+    purchases: [],
   };
 }
 
@@ -63,6 +84,14 @@ const Raw = z
     daily: z.string(),
     themes: z.array(z.string()),
     seen: z.array(z.string()),
+    gems: z.number().int().min(0),
+    pass: z.object({
+      season: z.string(),
+      xp: z.number().int().min(0),
+      premium: z.boolean(),
+      claimed: z.array(z.string()),
+    }),
+    purchases: z.array(z.string()),
   })
   .partial();
 
@@ -91,6 +120,9 @@ export function loadProfile(raw: unknown): Profile {
     daily: v.daily ?? '',
     themes: (v.themes ?? []).filter((t) => THEMES.some((x) => x.id === t)),
     seen: v.seen ?? [],
+    gems: v.gems ?? 0,
+    pass: v.pass ?? { ...NO_PASS },
+    purchases: v.purchases ?? [],
   };
 }
 
@@ -121,7 +153,7 @@ export function buyItem(p: Profile, id: string): Result {
   const it = shopItem(id);
   if (!it) return { ok: false, why: 'unknown' };
   if (p.owned.includes(id)) return { ok: false, why: 'owned' };
-  if (it.unlock) return { ok: false, why: 'locked' };
+  if (it.unlock || it.exclusive) return { ok: false, why: 'locked' };
   if (p.coins < it.price) return { ok: false, why: 'funds' };
   return { ok: true, profile: { ...p, coins: p.coins - it.price, owned: [...p.owned, id] } };
 }
@@ -212,6 +244,8 @@ export interface Rewards {
   playerUps: { level: number; unlocks: string[] }[];
   /** Temele de eveniment câștigate pentru totdeauna cu meciul ăsta. */
   keptThemes: string[];
+  /** XP de battle pass și treptele noi atinse. */
+  pass: { xp: number; tiersUp: number };
   profile: Profile;
 }
 
@@ -241,6 +275,8 @@ export function reward(p: Profile, m: MatchSummary, today: string): Rewards {
   const playerUps = [];
   for (let l = pBefore + 1; l <= pAfter; l++) playerUps.push({ level: l, unlocks: unlocksAt(l) });
   const keptThemes = eventThemes(today).filter((t) => !p.themes.includes(t));
+  const passXp = matchXp(m);
+  const withPass = addPassXp(p, passXp, today);
   return {
     coins,
     xp,
@@ -249,8 +285,9 @@ export function reward(p: Profile, m: MatchSummary, today: string): Rewards {
     levelUps,
     playerUps,
     keptThemes,
+    pass: { xp: passXp, tiersUp: withPass.tiersUp },
     profile: {
-      ...p,
+      ...withPass.profile,
       coins: p.coins + coins,
       xp: { ...p.xp, [ch]: total },
       xpDay: { ...p.xpDay, [ch]: today },
