@@ -309,10 +309,11 @@ export class App {
     // cont anonim (în fundal): dacă serverul nu răspunde, jocul rămâne offline
     if (!OFFLINE_ONLY)
       void account.bootstrap(store.real).then((p) => {
+        // plățile pornesc oricum (fără cont: doar mesajul de ce nu se poate cumpăra)
+        void payments.init();
         if (!p) return;
         this.adopt(p);
         void account.flushClaims((q) => this.adopt(q));
-        void payments.init();
       });
     if (!OFFLINE_ONLY) void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
     if (!OFFLINE_ONLY) {
@@ -2441,7 +2442,9 @@ export class App {
       refresh();
     };
     const products = PRODUCTS.filter((pr) => pr.kind === 'consumable' || !p.purchases.includes(pr.id));
-    return this.page(
+    // plățile încă pornesc (contul abia s-a legat): ecranul se redesenează când sunt gata
+    if (payments.pending && !can) void payments.ready.then(() => el.isConnected && refresh());
+    const el = this.page(
       'gems-page',
       head('GEMS', this.backTo(back), h('div', { class: 'push' }), coins(p.coins), gems(p.gems)),
       h(
@@ -2534,6 +2537,7 @@ export class App {
         ),
       ),
     );
+    return el;
   }
 
   /** Aplică recompensele meciului pe profil; întoarce rândul „You got” și ce s-a deblocat. */

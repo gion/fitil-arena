@@ -22,14 +22,24 @@ type Rc = typeof RcModule;
 let rc: Rc | null = null;
 type StoreProduct = Awaited<ReturnType<Rc['Purchases']['getProducts']>>['products'][number];
 const storeProducts = new Map<string, StoreProduct>();
+let done: () => void = () => {};
 
 export const payments = {
   mode: 'none' as PayMode,
+  /** Pornirea e încă în curs (ecranul Gems așteaptă `ready` și se redesenează). */
+  pending: true,
+  ready: new Promise<void>((res) => (done = res)),
   /** De ce nu se poate cumpăra (pentru mesajul din ecran). */
   why: 'Purchases are available in the app.',
 
   /** Pornește o dată, după ce contul e legat de server. */
   async init(): Promise<void> {
+    await this.start().catch(() => {});
+    this.pending = false;
+    done();
+  },
+
+  async start(): Promise<void> {
     if (!account.linked || !account.stored) {
       this.why = 'Connect to the internet to buy Gems.';
       return;

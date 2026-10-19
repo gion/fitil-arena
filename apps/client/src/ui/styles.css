@@ -2689,6 +2689,7 @@ canvas.fatprev.big {
   background: var(--cyan);
 }
 button.coins.gems {
+  height: 44px;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
 }

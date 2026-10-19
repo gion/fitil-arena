@@ -7,7 +7,7 @@ Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar isto
 
 - **Cerut:** proprietarul lasă proiectul în grija agentului; după deploy și testul de multiplayer, Faza 9 (monetizare).
 - **Făcut:** Gemuri, battle pass sezonier, magazin zilnic, produse plătite (`content/pass.ts`, `content/offers.ts`); plăți RevenueCat validate pe server (`server/purchases.ts`, migrația `0002_purchases`, rute noi); ecranele PASS, GEMS și categoria Deals în client (`online/purchases.ts`, dependența `@revenuecat/purchases-capacitor` 13.7.0); D-082 – D-084, Q-017, Q-018, `docs/payments.md`.
-- **Verificat:** `pnpm lint`, `typecheck`, `format:check`, `test` (server cu Postgres), e2e `monetization.spec.ts`; capturi în `docs/screens/faza9/`.
+- **Verificat:** `pnpm lint`, `typecheck`, `format:check`, `test` (server cu Postgres), suita e2e completă: 40/43, cele 3 rămase (FPS în `smoke.spec.ts`) pică la fel pe `main` în container; capturi în `docs/screens/faza9/`. Reparate și două teste vechi (numărul de personaje, o cursă în Quick Play).
 - **Notă operațională:** plățile reale cer conturile de store + RevenueCat (`docs/payments.md`); local, `FAKE_PURCHASES=1` pe server. Prețurile sunt provizorii (Q-017).
 
 ## 2026-10-18 — Claude Code (Opus 5.5) — Kit de deploy, statistici de rețea, plan de test multiplayer, cercetare nume

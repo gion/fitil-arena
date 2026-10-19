@@ -105,6 +105,8 @@ test('joc rapid: doi jucători aleg personaje, camera publică 1 vs 1 se umple �
   const heroes = ['zuzu', 'gugu'];
   for (const [i, page] of pages.entries()) {
     await page.goto('/');
+    // contul creat la prima încărcare nu trebuie să apară după ce îl ștergem (altfel revine profilul implicit)
+    await page.waitForLoadState('networkidle');
     await page.evaluate((h) => {
       localStorage.setItem('fitil-settings', JSON.stringify({ mode: 'vs', name: `P${h}` }));
       localStorage.removeItem('fitil-account');

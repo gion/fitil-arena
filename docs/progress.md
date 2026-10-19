@@ -481,7 +481,7 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 - **client**: tile-ul **PASS** (cu numărul de recompense gata) și chip-ul **Gems** în meniul principal; ecranul **SEASON PASS** (bară de progres, două piste derulabile, CLAIM / CLAIM ALL, GET PREMIUM); ecranul **GEMS** (pachete cu preț localizat, starter pack, schimb în Fitile, RESTORE PURCHASES, mesaj pentru părinți); categoria **Deals** în magazin (6 oferte cu reducere, contor până la ofertele noi); rândul de recompense arată XP-ul de pass; `online/purchases.ts` (D-084).
 - **Docs**: `docs/payments.md` (pașii pentru store-uri și RevenueCat), Q-017 (prețuri), Q-018 (reclame, categoria Kids), store-checklist.
 
-**Verificat:** content 55 de teste (16 noi), server 26 (8 noi, cu Postgres), e2e `monetization.spec.ts` (fără cont: Deals/Pass/Gems; cu cont și plăți simulate: starter pack o dată, 550 Gemuri, premium, profilul rămâne după reîncărcare), capturi în `docs/screens/faza9/`; lint, typecheck, format.
+**Verificat:** content 55 de teste (16 noi), server 26 (8 noi, cu Postgres), e2e `monetization.spec.ts` (fără cont: Deals/Pass/Gems; cu cont și plăți simulate: starter pack o dată, 550 Gemuri, premium, profilul rămâne după reîncărcare), capturi în `docs/screens/faza9/`; lint, typecheck, format. Suita e2e completă (cu Postgres): 40 / 43; cele 3 rămase sunt testele de FPS din `smoke.spec.ts`, care pică identic pe `main` în containerul de lucru (CPU încărcat), nu au legătură cu faza. Reparate pe drum: testul de personaje număra 13 (acum `CHARACTERS.length`, după Portia și Slick) și o cursă în testul Quick Play (contul creat la prima încărcare reapărea după ce testul îl ștergea).
 
 **Rămas / cunoscut:**
 
