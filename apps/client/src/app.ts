@@ -509,7 +509,12 @@ export class App {
               : MENU_LINES.unmute);
     const ms = kind === 'mute' ? 800 : 1300;
     this.portraits.react(expr, ms);
-    if (kind !== 'mute' && kind !== 'unmute' && (text === undefined || text === MENU_LINES.locked) && !shopItem(store.profile.eq?.voice))
+    if (
+      kind !== 'mute' &&
+      kind !== 'unmute' &&
+      (text === undefined || text === MENU_LINES.locked) &&
+      !shopItem(store.profile.eq?.voice)
+    )
       void this.voice.sayOwn?.(line, c.id);
     const el = this.sayEl;
     if (!el || !el.isConnected) return;
@@ -3397,7 +3402,11 @@ export class App {
         const bot = m.s.players[e.player]!.bot !== null;
         if (slot?.ch) this.sfx.voiceLine(this.voiceOf(e.player));
         if (!bot || Math.random() < 0.5)
-          this.voice.say(pickOne(this.linesOf(e.player, 'quips')), 1.1 + (slot?.voice ?? 0) * 0.25, this.chOf(e.player));
+          this.voice.say(
+            pickOne(this.linesOf(e.player, 'quips')),
+            1.1 + (slot?.voice ?? 0) * 0.25,
+            this.chOf(e.player),
+          );
         const victim = m.s.players[e.player]!;
         if (e.killerId === m.meId && e.player !== m.meId && !(m.team && victim.team === me.team)) {
           this.sum.kills++;

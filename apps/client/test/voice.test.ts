@@ -22,7 +22,9 @@ function setup() {
     },
   };
   const sfx = { ctx, sfxOn: true, master: {} } as unknown as Sfx;
-  vi.stubGlobal('fetch', (u: string) => Promise.resolve({ arrayBuffer: () => Promise.resolve(new TextEncoder().encode(u).buffer) }));
+  vi.stubGlobal('fetch', (u: string) =>
+    Promise.resolve({ arrayBuffer: () => Promise.resolve(new TextEncoder().encode(u).buffer) }),
+  );
   const said: string[] = [];
   const fallback = { say: (l: string) => said.push(l), scream: () => undefined } as unknown as VoicePack;
   const v = new FileVoice(

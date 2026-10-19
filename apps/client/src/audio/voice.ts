@@ -80,7 +80,9 @@ export class FileVoice implements VoicePack {
 
   /** Încarcă fișierele globale (erorile lasă replica pe sinteză). */
   async load(): Promise<void> {
-    await this.fetchAll([...Object.values(this.m.screams ?? {}), ...Object.values(this.m.lines ?? {})].flat());
+    await this.fetchAll(
+      [...Object.values(this.m.screams ?? {}), ...Object.values(this.m.lines ?? {})].flat(),
+    );
   }
 
   private async fetchAll(urls: string[]): Promise<void> {
