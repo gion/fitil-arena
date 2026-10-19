@@ -8,7 +8,12 @@ export interface VoicePack {
   id: string;
   name: string;
   scream(voice: number): void;
-  say(line: string, pitch: number): void;
+  /** `ch` = personajul care vorbește (id din content); pachetele cu replici per personaj îl folosesc. */
+  say(line: string, pitch: number, ch?: string): void;
+  /** Încarcă în avans replicile personajelor (fără efect pe sinteză). */
+  preload?(chars: readonly string[]): void;
+  /** Spune replica doar dacă există fișier pentru `ch` (fără sinteză); se rezolvă la final, `false` dacă n-a sunat nimic. */
+  sayOwn?(line: string, ch: string): Promise<boolean>;
 }
 
 /** Țipete sintetizate + replici prin speechSynthesis (ca în prototip). */
@@ -49,6 +54,8 @@ export interface VoiceManifest {
   name: string;
   screams?: Record<number, string[]>;
   lines?: Record<string, string | string[]>;
+  /** Replici per personaj: id personaj -> text -> variante (fișiere). Au prioritate față de `lines`. */
+  characters?: Record<string, Record<string, string[]>>;
 }
 
 const pick = (v: string | string[] | undefined): string | undefined =>
@@ -69,11 +76,18 @@ export class FileVoice implements VoicePack {
     this.name = m.name;
   }
 
-  /** Încarcă toate fișierele (erorile lasă replica pe sinteză). */
+  private chars = new Map<string, Promise<void>>();
+
+  /** Încarcă fișierele globale (erorile lasă replica pe sinteză). */
   async load(): Promise<void> {
+    await this.fetchAll(
+      [...Object.values(this.m.screams ?? {}), ...Object.values(this.m.lines ?? {})].flat(),
+    );
+  }
+
+  private async fetchAll(urls: string[]): Promise<void> {
     const c = this.sfx.ctx;
     if (!c) return;
-    const urls = [...Object.values(this.m.screams ?? {}), ...Object.values(this.m.lines ?? {})].flat();
     await Promise.all(
       urls.map(async (u) => {
         try {
@@ -86,22 +100,58 @@ export class FileVoice implements VoicePack {
     );
   }
 
-  private play(url: string | undefined): boolean {
+  /** Replicile unui personaj, o singură dată (sunt ~30 de fișiere mici). */
+  private loadChar(ch: string): Promise<void> {
+    let p = this.chars.get(ch);
+    if (!p) {
+      p = this.fetchAll(Object.values(this.m.characters?.[ch] ?? {}).flat());
+      this.chars.set(ch, p);
+    }
+    return p;
+  }
+
+  preload(chars: readonly string[]): void {
+    for (const ch of chars) void this.loadChar(ch);
+  }
+
+  private start(url: string | undefined): AudioBufferSourceNode | null {
     const c = this.sfx.ctx;
     const b = url ? this.buffers.get(url) : undefined;
-    if (!c || !b || !this.sfx.sfxOn) return false;
+    if (!c || !b || !this.sfx.sfxOn) return null;
     const n = c.createBufferSource();
     n.buffer = b;
     n.connect(this.sfx.master);
     n.start();
-    return true;
+    return n;
+  }
+
+  private play(url: string | undefined): boolean {
+    return this.start(url) !== null;
+  }
+
+  sayOwn(line: string, ch: string): Promise<boolean> {
+    const own = this.m.characters?.[ch]?.[line];
+    if (!own) return Promise.resolve(false);
+    const n = this.start(pick(own));
+    if (!n) {
+      void this.loadChar(ch);
+      return Promise.resolve(false);
+    }
+    return new Promise((done) => {
+      n.onended = () => done(true);
+    });
   }
 
   scream(voice: number): void {
     if (!this.play(pick(this.m.screams?.[voice]))) this.fallback.scream(voice);
   }
 
-  say(line: string, pitch: number): void {
+  say(line: string, pitch: number, ch?: string): void {
+    const own = ch ? this.m.characters?.[ch]?.[line] : undefined;
+    if (ch && own) {
+      if (this.play(pick(own))) return;
+      void this.loadChar(ch); // încă nu e încărcat: data viitoare vorbește cu vocea lui
+    }
     if (!this.play(pick(this.m.lines?.[line]))) this.fallback.say(line, pitch);
   }
 }

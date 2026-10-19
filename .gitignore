@@ -28,3 +28,5 @@ tools/voice/**/.venv
 tools/voice/out
 __pycache__
 store-shots
+tools/voice/ref/*.wav
+tools/voice/ref/*.mp3

@@ -122,6 +122,10 @@ const CharSchema = z.object({
 });
 export type Character = z.infer<typeof CharSchema>;
 
+/** Descrierea citită cu voce tare de crainic pe pagina personajului (și cheia ei în manifestul de voce). */
+export const charBlurb = (c: Pick<Character, 'name' | 'tagline' | 'signature'>): string =>
+  `${c.name}. ${c.tagline} ${c.signature}`;
+
 /** Rosterul (nume de lucru, originale). Viteza e în unități pe tick: 3.3 pătrățele/s = 165. */
 export const CHARACTERS: Character[] = z.array(CharSchema).parse([
   {

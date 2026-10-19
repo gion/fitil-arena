@@ -3,6 +3,55 @@
 Istoricul cererilor făcute agenților LLM în proiect, cele mai noi primele. Regula și formatul sunt în `AGENTS.md`.
 Jurnalul începe pe 2026-09-28; fazele 0–2b au fost făcute înainte, iar istoricul lor e în `docs/progress.md` și în git.
 
+## 2026-10-19 — Claude Code (Sonnet 5.5) — Voci în meniuri și descrierea personajului
+
+- **Cerut:** replicile de meniu („Ready when you are.” etc.) să se audă după selectarea unui personaj; la preview, descrierea personajului să se audă.
+- **Făcut:** `VoicePack.sayOwn` (doar fișiere, fără sinteză; se rezolvă la final). Meniul principal spune replica de repaus a personajului ales (`menuSay`, max o dată la 2,5s); `react()` spune replicile de luptă/bucurie/necaz/„Not yet!”; butonul LISTEN de pe pagina personajului: crainicul citește `charBlurb` (nume + tagline + semnătură), apoi personajul reacționează cu vocea lui; fără fișiere: comportamentul vechi. Vocile se încarcă de la primul gest, nu doar la primul meci. `lines.json` are acum 559 replici (+`menu_locked`, `menu_lost`, 15 descrieri la crainic). Test în `apps/client/test/voice.test.ts`.
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, test voce (4). Redarea n-a fost ascultată.
+- **Notă:** replicile noi se generează într-un al doilea pas, pornit automat după primul. Descrierea nu era voiced înainte: LISTEN spunea doar o replică de victorie sau de rănire.
+
+## 2026-10-19 — Claude Code (Sonnet 5.5) — Voci per personaj în joc (OmniVoice din glimpse-studio)
+
+- **Cerut:** generarea tuturor vocilor cu OmniVoice (instalat în `/private/var/www/glimpse-studio`) și folosirea lor în joc; pilot pe 2 personaje, apoi restul.
+- **Făcut:** `tools/voice/omnivoice/` (`seeds.json`, `prepare_refs.sh`, `gen.py`, `run.sh`, `publish.py`, `lines.json` din `packages/content/scripts/export-voice-lines.ts`): clonare din seed-uri, verificare cu whisper, apel prin venv-ul din glimpse (modelul e în cache-ul global HF, fără descărcare). Client: `VoicePack.say(line, pitch, ch?)`, `FileVoice` cu `characters` în manifest (`voice/manifest.json`), încărcare în avans per meci, `chOf()` în `app.ts` (nul când poartă pachet de voce din magazin), crainic pentru „Hurry up!”. Test nou `apps/client/test/voice.test.ts`. Fișierele audio și manifestul sunt în `.gitignore` (licența ElevenLabs neclarificată).
+- **Verificat:** `pnpm lint`, `pnpm typecheck`, `pnpm test` trec. Pilot Gugu + Zuzu: 16 replici, whisper le înțelege. Generarea completă (514 replici) rulează; redarea în joc nu a fost ascultată.
+- **Notă:** personajul `Master Fitil` are id-ul `maestru` în content. Replicile de meniu (`menu_fight`/`menu_idle`) sunt generate, dar nu sunt încă legate în UI.
+
+## 2026-10-19 — Claude Code (Sonnet 5.5) — Seed-uri generate în ElevenLabs
+
+- **Cerut:** automatizarea în browser: pentru fiecare personaj, alege vocea, lipește seed-ul, generează, descarcă.
+- **Făcut:** 14 seed-uri generate prin extensia Chrome (Bubu era deja făcut de utilizator), salvate în `~/Downloads/<personaj>.mp3` (bubu, gugu, zuzu, striker, fifi, veta, chef, fitil, robo, ghost, magician, nova, shade, portia, slick). ~1.800 credite consumate. Vocile luate din „My voices" după nume, conform `docs/voice-casting.md`.
+- **Verificat:** nume de fișier = vocea dorită (ElevenLabs pune numele vocii în nume), durate 8–18s (ffprobe). Audio neascultat.
+- **Notă:** durata reală e 8–18s, nu 25–30s; textele sunt scurte. Seed-ul crainicului (Hal) a fost adăugat ulterior: `~/Downloads/crainic.mp3`, 11.8s. Textul lui e doar în conversație, nu în `docs/voice-script.md`.
+
+## 2026-10-19 — Claude Code (Sonnet 5.5) — Seed concatenat A+B+C per personaj
+
+- **Cerut:** tabelul refăcut, cu seed-ul fiecărui personaj ca A, B, C concatenate (ca la Bubu).
+- **Făcut:** `docs/voice-script.md`, secțiunea 2: coloane Personaj / Voce (din `docs/voice-casting.md`) / Seed (A+B+C pe rânduri separate).
+- **Verificat:** —
+- **Notă:** vocile noi (Valf Energetic, Gravel Midnight, Retro Robot) rămân fără voice_id.
+
+## 2026-10-19 — Claude Code (Sonnet 5.5) — Corecturi la distribuția vocilor
+
+- **Cerut:** Veta→Minnie, Zuzu→Cherry Twinkle, Robo-Mici→Retro Robot, Bubu→Valf Energetic, Gugu→Gravel Midnight, Chef→Will, Nova→Laura, Crainic→Hal; restul rămân.
+- **Făcut:** actualizat `docs/voice-casting.md` (alternativele schimbate în consecință, lista de test pe 6 voci ajustată).
+- **Verificat:** —
+- **Notă:** voice_id lipsește pentru vocile noi (Retro Robot, Valf Energetic, Gravel Midnight, Hal).
+
+## 2026-10-19 — Claude Code (Sonnet 5.5) — Distribuția vocilor pe personaje
+
+- **Cerut:** potrivirea vocilor disponibile (listă lipită din biblioteca de voci) cu personajele, apoi un test pe câteva.
+- **Făcut:** `docs/voice-casting.md` — voce aleasă + alternativă + voice_id pentru cele 15 personaje și crainic; propunere de test pe 6 voci. Fără schimbări de cod.
+- **Verificat:** —
+- **Notă:** potrivire după descrieri, neascultată. Robo-Mici cere procesare în post (nu există voce robotică în listă).
+
+## 2026-10-19 — Claude Code (Sonnet 5.5) — Scripturi de seed pentru Omni Voice
+
+- **Cerut:** o narație de ~20s pentru seed-ul vocilor în Omni Voice, apoi narații/replici separate per personaj și o listă de pași.
+- **Făcut:** `docs/voice-script.md` — narație de seed (două variante), 3 seed-uri scurte (prezentare/victorie/pierdere) pentru cele 15 personaje, lista de lucru și ținta de variante per replică. Fără schimbări de cod.
+- **Verificat:** —
+- **Notă:** textele sunt în engleză (D-028). Clonarea din voce reală cere consimțământ scris.
+
 ## 2026-10-07 — Claude Code (Sonnet 5.5) — Nova imună la propriile bombe
 
 - **Cerut:** Nova moare de la propria bombă (mai ales la început, fără loc de ferit); ales: imună la propriile flăcări, nu la ale altora.

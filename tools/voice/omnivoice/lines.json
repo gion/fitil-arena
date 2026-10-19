@@ -1,0 +1,3388 @@
+{
+  "bubu": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Hee hee hee, I won!",
+      "text": "Hee hee hee, I won!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Hee hee, too easy!",
+      "text": "Hee hee, too easy!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Hee hee… ouch!",
+      "text": "Hee hee... ouch!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Oopsie!",
+      "text": "Oopsie!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Not fair!",
+      "text": "Not fair!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Hee hee!",
+      "text": "Hee hee!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Boop!",
+      "text": "Boop!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "gugu": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Ho ho ho!",
+      "text": "Ho ho ho!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Ho ho, who’s the boss?",
+      "text": "Ho ho, who's the boss?"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Ho ho… ouch!",
+      "text": "Ho ho... ouch!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Hmpf!",
+      "text": "Hmpf!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "I’ll get up…",
+      "text": "I'll get up..."
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Ho!",
+      "text": "Ho!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Down you go.",
+      "text": "Down you go."
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "zuzu": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Yee-haw!",
+      "text": "Yee-haw!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "You didn’t even see me!",
+      "text": "You didn't even see me!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Too fast!",
+      "text": "Too fast!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Eeek!",
+      "text": "Eeek!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "I slipped!",
+      "text": "I slipped!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Zoom!",
+      "text": "Zoom!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Yee-haw!",
+      "text": "Yee-haw!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "striker": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "GOOOAL!",
+      "text": "GOOOAL!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Champions!",
+      "text": "Champions!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Foul!",
+      "text": "Foul!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Offside!",
+      "text": "Offside!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Red card?!",
+      "text": "Red card?!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Goal!",
+      "text": "Goal!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Top corner!",
+      "text": "Top corner!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "fifi": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Whee-hoo!",
+      "text": "Whee-hoo!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "With grace!",
+      "text": "With grace!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "My dress!",
+      "text": "My dress!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Not like that!",
+      "text": "Not like that!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Ugh!",
+      "text": "Ugh!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Tee-hee!",
+      "text": "Tee-hee!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Pardon me!",
+      "text": "Pardon me!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "veta": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Shame on all of you!",
+      "text": "Shame on all of you!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "That’s manners!",
+      "text": "That's manners!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Oh my goodness!",
+      "text": "Oh my goodness!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "You rascals!",
+      "text": "You rascals!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "My hair!",
+      "text": "My hair!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Serves you right!",
+      "text": "Serves you right!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Tsk tsk!",
+      "text": "Tsk tsk!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "chef": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Bon appétit!",
+      "text": "Bon appétit!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Chef’s kiss!",
+      "text": "Chef's kiss!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Burnt!",
+      "text": "Burnt!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Too much salt!",
+      "text": "Too much salt!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Mamma mia!",
+      "text": "Mamma mia!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Well done!",
+      "text": "Well done!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Order up!",
+      "text": "Order up!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "maestru": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Mwa-ha-ha!",
+      "text": "Mwa-ha-ha!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "All according to plan!",
+      "text": "All according to plan!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Impossible!",
+      "text": "Impossible!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "My calculations…",
+      "text": "My calculations..."
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Nooo!",
+      "text": "Nooo!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Predictable.",
+      "text": "Predictable."
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Mwa-ha!",
+      "text": "Mwa-ha!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "robo": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Beep-boop! Victory!",
+      "text": "Beep-boop! Victory!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Mission complete!",
+      "text": "Mission complete!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Fatal error!",
+      "text": "Fatal error!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Beep… boop…",
+      "text": "Beep... boop..."
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Rebooting…",
+      "text": "Rebooting..."
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Target down.",
+      "text": "Target down."
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Beep!",
+      "text": "Beep!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "ghost": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Boo-yah!",
+      "text": "Boo-yah!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Spooky win!",
+      "text": "Spooky win!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Boo… hoo!",
+      "text": "Boo... hoo!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "I’m see-through!",
+      "text": "I'm see-through!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Not again!",
+      "text": "Not again!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Boo!",
+      "text": "Boo!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Gotcha!",
+      "text": "Gotcha!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "magician": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Ta-daaa!",
+      "text": "Ta-daaa!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "And for my next trick…",
+      "text": "And for my next trick..."
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "That wasn’t the trick!",
+      "text": "That wasn't the trick!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Abracada… ouch!",
+      "text": "Abracada... ouch!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Where’s my hat?",
+      "text": "Where's my hat?"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Poof!",
+      "text": "Poof!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Ta-da!",
+      "text": "Ta-da!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "nova": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Shine bright!",
+      "text": "Shine bright!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Boom, area cleared!",
+      "text": "Boom, area cleared!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Too bright!",
+      "text": "Too bright!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Supernova… down!",
+      "text": "Supernova... down!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Burned out!",
+      "text": "Burned out!"
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Blast radius!",
+      "text": "Blast radius!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Right in the glow!",
+      "text": "Right in the glow!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "shade": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Vanished into victory!",
+      "text": "Vanished into victory!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "You never saw me.",
+      "text": "You never saw me."
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Caught in the smoke!",
+      "text": "Caught in the smoke!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Not fast enough!",
+      "text": "Not fast enough!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Cough… cough…",
+      "text": "Cough... cough..."
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Poof!",
+      "text": "Poof!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Gone in smoke!",
+      "text": "Gone in smoke!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "portia": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Right on time, wherever!",
+      "text": "Right on time, wherever!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Gate to victory!",
+      "text": "Gate to victory!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Wrong door!",
+      "text": "Wrong door!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Portal closed!",
+      "text": "Portal closed!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "I saw that coming… somewhere else.",
+      "text": "I saw that coming... somewhere else."
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Step through!",
+      "text": "Step through!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Gone through the gap!",
+      "text": "Gone through the gap!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "slick": [
+    {
+      "id": "win_1",
+      "kind": "win",
+      "key": "Smooth victory!",
+      "text": "Smooth victory!"
+    },
+    {
+      "id": "win_2",
+      "kind": "win",
+      "key": "Slid right in!",
+      "text": "Slid right in!"
+    },
+    {
+      "id": "quip_1",
+      "kind": "quip",
+      "key": "Whoa, whoa, whoa!",
+      "text": "Whoa, whoa, whoa!"
+    },
+    {
+      "id": "quip_2",
+      "kind": "quip",
+      "key": "Slipped up!",
+      "text": "Slipped up!"
+    },
+    {
+      "id": "quip_3",
+      "kind": "quip",
+      "key": "Cold floor…",
+      "text": "Cold floor..."
+    },
+    {
+      "id": "kill_1",
+      "kind": "kill",
+      "key": "Slide into this!",
+      "text": "Slide into this!"
+    },
+    {
+      "id": "kill_2",
+      "kind": "kill",
+      "key": "Ice to meet you!",
+      "text": "Ice to meet you!"
+    },
+    {
+      "id": "bye_1",
+      "kind": "bye",
+      "key": "bye bye…",
+      "text": "bye bye..."
+    },
+    {
+      "id": "menu_fight_1",
+      "kind": "menu_fight",
+      "key": "I feel dangerous today.",
+      "text": "I feel dangerous today."
+    },
+    {
+      "id": "menu_fight_2",
+      "kind": "menu_fight",
+      "key": "Let’s blow stuff up!",
+      "text": "Let's blow stuff up!"
+    },
+    {
+      "id": "menu_fight_3",
+      "kind": "menu_fight",
+      "key": "Light the fuse!",
+      "text": "Light the fuse!"
+    },
+    {
+      "id": "menu_fight_4",
+      "kind": "menu_fight",
+      "key": "Bombs away!",
+      "text": "Bombs away!"
+    },
+    {
+      "id": "menu_fight_5",
+      "kind": "menu_fight",
+      "key": "Stand back!",
+      "text": "Stand back!"
+    },
+    {
+      "id": "menu_idle_1",
+      "kind": "menu_idle",
+      "key": "Go on, press something.",
+      "text": "Go on, press something."
+    },
+    {
+      "id": "menu_idle_2",
+      "kind": "menu_idle",
+      "key": "Ready when you are.",
+      "text": "Ready when you are."
+    },
+    {
+      "id": "menu_idle_3",
+      "kind": "menu_idle",
+      "key": "Nice day for a blast.",
+      "text": "Nice day for a blast."
+    },
+    {
+      "id": "menu_idle_4",
+      "kind": "menu_idle",
+      "key": "Psst. Over here.",
+      "text": "Psst. Over here."
+    },
+    {
+      "id": "menu_locked_1",
+      "kind": "menu_locked",
+      "key": "Not yet!",
+      "text": "Not yet!"
+    },
+    {
+      "id": "menu_lost_1",
+      "kind": "menu_lost",
+      "key": "Hello? Anyone?",
+      "text": "Hello? Anyone?"
+    },
+    {
+      "id": "hero_speed_1",
+      "kind": "hero_speed",
+      "key": "I’m lightning!",
+      "text": "I'm lightning!"
+    },
+    {
+      "id": "hero_speed_2",
+      "kind": "hero_speed",
+      "key": "Catch me if you can!",
+      "text": "Catch me if you can!"
+    },
+    {
+      "id": "hero_speed_3",
+      "kind": "hero_speed",
+      "key": "Zoooom!",
+      "text": "Zoooom!"
+    },
+    {
+      "id": "hero_speed_4",
+      "kind": "hero_speed",
+      "key": "Brakes are optional.",
+      "text": "Brakes are optional."
+    },
+    {
+      "id": "hero_bombs_1",
+      "kind": "hero_bombs",
+      "key": "Bombs for days!",
+      "text": "Bombs for days!"
+    },
+    {
+      "id": "hero_bombs_2",
+      "kind": "hero_bombs",
+      "key": "Who wants fireworks?",
+      "text": "Who wants fireworks?"
+    },
+    {
+      "id": "hero_bombs_3",
+      "kind": "hero_bombs",
+      "key": "Bomb shop: open!",
+      "text": "Bomb shop: open!"
+    },
+    {
+      "id": "hero_fire_1",
+      "kind": "hero_fire",
+      "key": "My blast covers everything!",
+      "text": "My blast covers everything!"
+    },
+    {
+      "id": "hero_fire_2",
+      "kind": "hero_fire",
+      "key": "All the way to the horizon!",
+      "text": "All the way to the horizon!"
+    },
+    {
+      "id": "hero_fire_3",
+      "kind": "hero_fire",
+      "key": "Maximum heat!",
+      "text": "Maximum heat!"
+    },
+    {
+      "id": "hero_win_1",
+      "kind": "hero_win",
+      "key": "Too easy!",
+      "text": "Too easy!"
+    },
+    {
+      "id": "hero_win_2",
+      "kind": "hero_win",
+      "key": "I’m a legend!",
+      "text": "I'm a legend!"
+    },
+    {
+      "id": "hero_win_3",
+      "kind": "hero_win",
+      "key": "Who’s next?",
+      "text": "Who's next?"
+    },
+    {
+      "id": "hero_win_4",
+      "kind": "hero_win",
+      "key": "Applause, please!",
+      "text": "Applause, please!"
+    },
+    {
+      "id": "hero_team_1",
+      "kind": "hero_team",
+      "key": "Unstoppable team!",
+      "text": "Unstoppable team!"
+    },
+    {
+      "id": "hero_team_2",
+      "kind": "hero_team",
+      "key": "Teamwork!",
+      "text": "Teamwork!"
+    },
+    {
+      "id": "hero_team_3",
+      "kind": "hero_team",
+      "key": "Champions, baby!",
+      "text": "Champions, baby!"
+    }
+  ],
+  "crainic": [
+    {
+      "id": "hurry_up",
+      "kind": "announcer",
+      "key": "Hurry up! The arena is shrinking!",
+      "text": "Hurry up! The arena is shrinking!"
+    },
+    {
+      "id": "go",
+      "kind": "announcer",
+      "key": "Three, two, one... go!",
+      "text": "Three, two, one... go!"
+    },
+    {
+      "id": "round_over",
+      "kind": "announcer",
+      "key": "And that's the round, folks!",
+      "text": "And that's the round, folks!"
+    },
+    {
+      "id": "champion",
+      "kind": "announcer",
+      "key": "We have a champion!",
+      "text": "We have a champion!"
+    },
+    {
+      "id": "desc_bubu",
+      "kind": "desc",
+      "key": "Bubu. Round, cheerful, starts with a bang. First bomb of every round is huge (+2 range).",
+      "text": "Bubu. Round, cheerful, starts with a bang. First bomb of every round is huge (+2 range)."
+    },
+    {
+      "id": "desc_gugu",
+      "kind": "desc",
+      "key": "Gugu. Heavy, stubborn, hard to get rid of. Two lives: survives the first hit.",
+      "text": "Gugu. Heavy, stubborn, hard to get rid of. Two lives: survives the first hit."
+    },
+    {
+      "id": "desc_zuzu",
+      "kind": "desc",
+      "key": "Zuzu. Blink and you missed her. Fastest character in the game.",
+      "text": "Zuzu. Blink and you missed her. Fastest character in the game."
+    },
+    {
+      "id": "desc_striker",
+      "kind": "desc",
+      "key": "Striker. Every bomb is a ball. Permanent Kick; kicked bombs bounce back once.",
+      "text": "Striker. Every bomb is a ball. Permanent Kick; kicked bombs bounce back once."
+    },
+    {
+      "id": "desc_fifi",
+      "kind": "desc",
+      "key": "Fifi. Graceful, and grabs everything. Magnet: picks up good power-ups from neighbouring tiles.",
+      "text": "Fifi. Graceful, and grabs everything. Magnet: picks up good power-ups from neighbouring tiles."
+    },
+    {
+      "id": "desc_veta",
+      "kind": "desc",
+      "key": "Auntie Veta. Handbag, headscarf, zero patience. Permanent Glove and an 8-second shield at the start.",
+      "text": "Auntie Veta. Handbag, headscarf, zero patience. Permanent Glove and an 8-second shield at the start."
+    },
+    {
+      "id": "desc_chef",
+      "kind": "desc",
+      "key": "Chef. Cooks with fire. Literally. His blasts leave oil for 2s that slows everyone else.",
+      "text": "Chef. Cooks with fire. Literally. His blasts leave oil for 2s that slows everyone else."
+    },
+    {
+      "id": "desc_maestru",
+      "kind": "desc",
+      "key": "Master Fitil. Knows every fuse by heart. Sees the countdown of every bomb.",
+      "text": "Master Fitil. Knows every fuse by heart. Sees the countdown of every bomb."
+    },
+    {
+      "id": "desc_robo",
+      "kind": "desc",
+      "key": "Robo-Mici. Beep. Boop. Boom. Immune to slow, reverse, dizzy and hiccups; permanent Kick.",
+      "text": "Robo-Mici. Beep. Boop. Boom. Immune to slow, reverse, dizzy and hiccups; permanent Kick."
+    },
+    {
+      "id": "desc_ghost",
+      "kind": "desc",
+      "key": "Ghost. Crates? What crates? Walks through one crate every 20 seconds.",
+      "text": "Ghost. Crates? What crates? Walks through one crate every 20 seconds."
+    },
+    {
+      "id": "desc_magician",
+      "kind": "desc",
+      "key": "Magician. Now you see the bomb… now it’s a pigeon. Once per round, an enemy bomb that would hit him turns into a pigeon.",
+      "text": "Magician. Now you see the bomb... now it's a pigeon. Once per round, an enemy bomb that would hit him turns into a pigeon."
+    },
+    {
+      "id": "desc_nova",
+      "kind": "desc",
+      "key": "Nova. Why aim down a line when you can hit the whole block? Her bombs blast a whole area around them (radius = bomb range, up to 3), not a cross. Her own blasts never hurt her.",
+      "text": "Nova. Why aim down a line when you can hit the whole block? Her bombs blast a whole area around them (radius = bomb range, up to 3), not a cross. Her own blasts never hurt her."
+    },
+    {
+      "id": "desc_shade",
+      "kind": "desc",
+      "key": "Shade. Now you see him… now it’s just smoke. The fastest hero, but carries few bombs.",
+      "text": "Shade. Now you see him... now it's just smoke. The fastest hero, but carries few bombs."
+    },
+    {
+      "id": "desc_portia",
+      "kind": "desc",
+      "key": "Portia. Why walk around when you can step through? Starts with the boot: kicks bombs from the first second.",
+      "text": "Portia. Why walk around when you can step through? Starts with the boot: kicks bombs from the first second."
+    },
+    {
+      "id": "desc_slick",
+      "kind": "desc",
+      "key": "Slick. Fast hands, faster feet, and a lot of ice. Flick the joystick (Shift + arrow on keyboard) to slide 3 tiles. No steering mid-slide.",
+      "text": "Slick. Fast hands, faster feet, and a lot of ice. Flick the joystick (Shift + arrow on keyboard) to slide 3 tiles. No steering mid-slide."
+    }
+  ]
+}

@@ -13,3 +13,5 @@ GAME_DESIGN.md
 BUSINESS.md
 # worktree-uri locale ale sesiunilor de agenți
 .claude/worktrees
+# generat de tools/voice/omnivoice/publish.py
+apps/client/public/voice/manifest.json
