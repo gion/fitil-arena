@@ -1,0 +1,98 @@
+{
+  "bubu": {
+    "name": "Bubu",
+    "elevenlabsVoice": "Valf Energetic",
+    "seedText": "Hi! I'm Bubu. I'm round, I'm happy, and my first bomb is always the biggest one. Hee hee hee, I won! Did you see that? Too easy! Oh no, oh no, my cheeks! That was so not fair!",
+    "download": "bubu"
+  },
+  "gugu": {
+    "name": "Gugu",
+    "elevenlabsVoice": "Gravel Midnight",
+    "seedText": "Name's Gugu. Heavy feet, thick skin, and two lives. Come and try. Ho ho ho! Who's the boss now? That's right, me. Hmpf. Again? I had a second life for this one.",
+    "download": "gugu"
+  },
+  "zuzu": {
+    "name": "Zuzu",
+    "elevenlabsVoice": "Cherry Twinkle",
+    "seedText": "Zuzu here! Fastest legs in the arena. Blink and you missed me. Yee-haw! You didn't even see me coming! Ow! Okay, okay, I was going too fast. Again!",
+    "download": "zuzu"
+  },
+  "striker": {
+    "name": "Striker",
+    "elevenlabsVoice": "Charlie",
+    "seedText": "Striker. Every bomb is a ball, and I never miss a penalty. GOOOAL! Champions! Put that on the scoreboard! Offside?! That was never a foul. Rematch!",
+    "download": "striker"
+  },
+  "fifi": {
+    "name": "Fifi",
+    "elevenlabsVoice": "Lily Soft, Cute and Sweet",
+    "seedText": "Fifi, darling. Graceful, charming, and I pick up everything that sparkles. Whee-hoo! With grace, of course. My bow! Do you know how long that took me?",
+    "download": "fifi"
+  },
+  "veta": {
+    "name": "Auntie Veta",
+    "elevenlabsVoice": "Minnie",
+    "seedText": "I'm Auntie Veta. Handbag, headscarf, and absolutely zero patience. Shame on all of you! That's what manners get you! Vai… oh dear, oh dear. What is this world coming to?",
+    "download": "veta"
+  },
+  "chef": {
+    "name": "Chef",
+    "elevenlabsVoice": "Will",
+    "seedText": "I'm the Chef. I cook with fire. Literally. Dinner is served. Bon appétit! Chef's kiss! Order up! My soufflé! You ruined my soufflé!",
+    "download": "chef"
+  },
+  "maestru": {
+    "name": "Master Fitil",
+    "elevenlabsVoice": "Callum",
+    "seedText": "I am Master Fitil. I know every fuse by heart. Every tick. Every spark. Mwa-ha-ha! All according to plan, my dear apprentices. Impossible… I counted the seconds. I counted them twice!",
+    "download": "fitil"
+  },
+  "robo": {
+    "name": "Robo-Mici",
+    "elevenlabsVoice": "Retro Robot",
+    "seedText": "Beep. Boop. I am Robo-Mici. Illness protocols: disabled. Boom protocols: online. Beep-boop! Victory! Mission complete! Warning. Warning. Power low. Ouch, in robot.",
+    "download": "robo"
+  },
+  "ghost": {
+    "name": "Ghost",
+    "elevenlabsVoice": "Fergy Frog",
+    "seedText": "Crates? What crates? I'm just passing through. Boo-hoo-hoo! You never saw me, did you? Wait, I'm already… oh, never mind.",
+    "download": "ghost"
+  },
+  "magician": {
+    "name": "Magician",
+    "elevenlabsVoice": "Horatius",
+    "seedText": "Ladies and gentlemen! Now you see the bomb… now it's a pigeon! Ta-da! Thank you, thank you, you've been a wonderful audience. Where did my hat go?! It was right here!",
+    "download": "magician"
+  },
+  "nova": {
+    "name": "Nova",
+    "elevenlabsVoice": "Laura",
+    "seedText": "Nova! Why aim down a line when you can hit the whole block? Supernova, baby! Light them all up! Too close… I overcooked it.",
+    "download": "nova"
+  },
+  "shade": {
+    "name": "Shade",
+    "elevenlabsVoice": "Craig",
+    "seedText": "Shade. Now you see me… now it's just smoke. Smoke clears. I'm still here. Sloppy. I was careless. It won't happen twice.",
+    "download": "shade"
+  },
+  "portia": {
+    "name": "Portia",
+    "elevenlabsVoice": "Lily Velvety Actress",
+    "seedText": "I am Portia. Why walk around when you can step through? Bravissima! Take a bow, everyone, take a bow! Oh, the tragedy! The drama! The humiliation!",
+    "download": "portia"
+  },
+  "slick": {
+    "name": "Slick",
+    "elevenlabsVoice": "Jerry B",
+    "seedText": "Name's Slick. Fast hands, faster feet, and a whole lot of ice. Smooth. Like butter, like ice, like me. Whoa, whoa, I slipped. Totally on purpose.",
+    "download": "slick"
+  },
+  "crainic": {
+    "name": "Crainic",
+    "elevenlabsVoice": "Hal - Your Animated Social Media Buddy",
+    "seedText": "Welcome to Fitil Arena! Light the fuse, and may the best bomber win. Three, two, one... go! What a blast! We have a champion! And that's the round, folks. Better luck next time!",
+    "download": "crainic"
+  }
+}

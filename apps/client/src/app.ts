@@ -34,6 +34,7 @@ import {
   MODES,
   MODE_IDS,
   MENU_LINES,
+  charBlurb,
   QUIPS,
   TAUNTS,
   TEAMS,
@@ -77,7 +78,7 @@ import type { MatchSummary, ModeId, Outfit, Profile, Rewards, ShopCat, Theme } f
 import { Music } from './audio/music.ts';
 import { Sfx } from './audio/sfx.ts';
 import { DEFAULT_VOICE, FileVoice, SynthVoice } from './audio/voice.ts';
-import type { VoicePack } from './audio/voice.ts';
+import type { VoiceManifest, VoicePack } from './audio/voice.ts';
 import { Match } from './game/match.ts';
 import type { MatchEvent } from './game/match.ts';
 import type { PlayKind } from './game/setup.ts';
@@ -390,6 +391,7 @@ export class App {
     installPress(this.ui, {
       sound: (k) => {
         this.sfx.init();
+        this.loadVoice(); // vocile din meniuri: de la primul gest (când există AudioContext)
         this.sfx.ui(k);
       },
       vibrate: (p) => vibrate(p),
@@ -507,6 +509,8 @@ export class App {
               : MENU_LINES.unmute);
     const ms = kind === 'mute' ? 800 : 1300;
     this.portraits.react(expr, ms);
+    if (kind !== 'mute' && kind !== 'unmute' && (text === undefined || text === MENU_LINES.locked) && !shopItem(store.profile.eq?.voice))
+      void this.voice.sayOwn?.(line, c.id);
     const el = this.sayEl;
     if (!el || !el.isConnected) return;
     const before = el.textContent;
@@ -515,6 +519,16 @@ export class App {
     this.sayTimer = setTimeout(() => {
       if (el.isConnected && el.textContent === line) el.textContent = before;
     }, ms + 600);
+  }
+
+  private lastMenuSay = 0;
+
+  /** Replica de repaus a personajului din meniu, cu vocea lui (nu mai des de 2,5s, ca să nu se repete la fiecare redesenare). */
+  private menuSay(line: string, ch: string): void {
+    const t = performance.now();
+    if (t - this.lastMenuSay < 2500 || shopItem(store.profile.eq?.voice)) return;
+    this.lastMenuSay = t;
+    setTimeout(() => void this.voice.sayOwn?.(line, ch), 500);
   }
 
   /** O replică din listă, fără s-o repete imediat pe ultima. */
@@ -536,6 +550,8 @@ export class App {
     const ch = charById(this.playCh());
     const lv = levelOf(p.xp[ch.id] ?? 0).level;
     const pl = playerLevel(totalXp(p));
+    const idle = this.line(MENU_LINES.idle);
+    this.menuSay(idle, ch.id);
     return this.page(
       'home',
       h(
@@ -560,7 +576,7 @@ export class App {
         this.heroBox(
           'tl',
           { ch: ch.id, outfit: p.eq },
-          this.line(MENU_LINES.idle),
+          idle,
           h(
             'button',
             { class: 'foot', 'data-test': 'characters', onclick: () => this.go(() => this.charactersMenu()) },
@@ -1804,11 +1820,23 @@ export class App {
     const lv = levelOf(xp);
     const listen = () => {
       this.sfx.init();
-      this.sfx.voiceLine(c.voice);
+      this.loadVoice();
       const line = pickOne([...c.win, ...c.quips]);
-      this.portraits.react('happy', 1600);
-      if (this.sayEl) this.sayEl.textContent = line;
-      setTimeout(() => this.voice.say(line, 1.2), 450);
+      const react = () => {
+        this.portraits.react('happy', 1600);
+        if (this.sayEl) this.sayEl.textContent = line;
+      };
+      // crainicul citește descrierea, apoi personajul reacționează cu vocea lui; fără fișiere: ca înainte
+      void (this.voice.sayOwn?.(charBlurb(c), 'crainic') ?? Promise.resolve(false)).then((ok) => {
+        if (ok) {
+          react();
+          this.voice.say(line, 1.2, id);
+          return;
+        }
+        this.sfx.voiceLine(c.voice);
+        react();
+        setTimeout(() => this.voice.say(line, 1.2, id), 450);
+      });
     };
     const refresh = () => this.showScreen(() => this.characterPage(id, back));
     type Stat = 'speed' | 'range' | 'maxBombs' | 'lives';
@@ -2206,6 +2234,19 @@ export class App {
   private voiceOf(id: number): string {
     const sl = this.match?.slots[id];
     return shopItem(sl?.outfit?.voice)?.voice ?? charById(sl?.ch).voice;
+  }
+
+  /** Personajul ale cărui fișiere de voce se folosesc (nul dacă poartă un pachet de voce din magazin sau joacă clasic). */
+  private chOf(id: number): string | undefined {
+    const sl = this.match?.slots[id];
+    return sl?.ch && !shopItem(sl.outfit?.voice) ? sl.ch : undefined;
+  }
+
+  /** Personajele din meciul curent (plus crainicul), pentru încărcarea în avans a vocilor. */
+  private voiceChars(): string[] {
+    const chars = new Set<string>(['crainic']);
+    for (const sl of this.match?.slots ?? []) if (sl.ch) chars.add(sl.ch);
+    return [...chars];
   }
 
   private linesOf(id: number, kind: 'quips' | 'win'): readonly string[] {
@@ -2821,8 +2862,16 @@ export class App {
   private loadVoice(): void {
     if (this.voiceLoading || !this.sfx.ctx) return;
     this.voiceLoading = true;
-    const pack = new FileVoice(DEFAULT_VOICE, this.sfx, this.synth);
-    void pack.load().then(() => (this.voice = pack));
+    void (async () => {
+      // replicile per personaj (tools/voice/omnivoice/publish.py); lipsesc? rămân cele globale
+      const extra = (await fetch('voice/manifest.json')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)) as Pick<VoiceManifest, 'characters'> | null;
+      const pack = new FileVoice({ ...DEFAULT_VOICE, characters: extra?.characters }, this.sfx, this.synth);
+      await pack.load();
+      this.voice = pack;
+      pack.preload(this.voiceChars());
+    })();
   }
 
   private aspect(): number {
@@ -2856,6 +2905,7 @@ export class App {
 
   private attach(m: Match): void {
     this.match = m;
+    this.voice.preload?.(this.voiceChars());
     this.sum = { boxes: 0, kills: 0, won: false, team: false, caps: 0, stars: 0 };
     this.deaths = [];
     m.on((e) => this.onEvent(e));
@@ -3347,7 +3397,7 @@ export class App {
         const bot = m.s.players[e.player]!.bot !== null;
         if (slot?.ch) this.sfx.voiceLine(this.voiceOf(e.player));
         if (!bot || Math.random() < 0.5)
-          this.voice.say(pickOne(this.linesOf(e.player, 'quips')), 1.1 + (slot?.voice ?? 0) * 0.25);
+          this.voice.say(pickOne(this.linesOf(e.player, 'quips')), 1.1 + (slot?.voice ?? 0) * 0.25, this.chOf(e.player));
         const victim = m.s.players[e.player]!;
         if (e.killerId === m.meId && e.player !== m.meId && !(m.team && victim.team === me.team)) {
           this.sum.kills++;
@@ -3415,7 +3465,7 @@ export class App {
         break;
       case 'hurryUp':
         this.showBanner('Hurry up! The arena is shrinking!', 1800, 'bad');
-        this.voice.say('Hurry up! The arena is shrinking!', 1.2);
+        this.voice.say('Hurry up! The arena is shrinking!', 1.2, 'crainic');
         this.sfx.bad();
         break;
       case 'flagTake': {
@@ -3456,7 +3506,7 @@ export class App {
         break;
       case 'hero':
         this.sfx.win();
-        setTimeout(() => this.voice.say(e.hero.text, 1.25), 250);
+        setTimeout(() => this.voice.say(e.hero.text, 1.25, this.chOf(e.hero.player)), 250);
         vibrate([30, 40, 30, 40, 80]);
         break;
       case 'emote': {
@@ -3470,7 +3520,7 @@ export class App {
         break;
       }
       case 'bye':
-        this.voice.say('Bye bye!', 1.5);
+        this.voice.say('Bye bye!', 1.5, this.chOf(m.meId));
         break;
       case 'ko':
         this.showToast(e.msg);
@@ -3824,7 +3874,7 @@ export class App {
         title = `${w.name.toUpperCase()} WINS!`;
         msg = 'Dancing on the ruins!';
         if (w.ch) this.sfx.voiceLine(this.voiceOf(e.winner));
-        this.voice.say(pickOne(this.linesOf(e.winner, 'win')), 1.2 + w.voice * 0.25);
+        this.voice.say(pickOne(this.linesOf(e.winner, 'win')), 1.2 + w.voice * 0.25, this.chOf(e.winner));
       }
     } else {
       title = 'DRAW!';
