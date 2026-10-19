@@ -158,6 +158,17 @@ export function coins(n: number): HTMLElement {
   );
 }
 
+/** Gemurile (moneda cumpărată, Faza 9); cu `onclick`, chip-ul duce la ecranul Gemurilor. */
+export function gems(n: number, onclick?: () => void): HTMLElement {
+  return h(
+    onclick ? 'button' : 'div',
+    { class: 'coins gems', 'data-test': 'gems', onclick },
+    h('i'),
+    h('span', {}, String(n)),
+    h('small', {}, 'Gems'),
+  );
+}
+
 /* ---------- răspunsul la apăsare ---------- */
 
 export interface PressHooks {

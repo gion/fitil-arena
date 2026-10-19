@@ -28,6 +28,9 @@ Stare: ✅ gata în repo · 🔧 de făcut în cod · 👤 checkpoint uman (cont
 | 👤  | Capturile finale alese, texte de prezentare, video de prezentare                     | din `store-shots/`                                                                                                                     |
 | 👤  | Politica de confidențialitate și termenii (URL public)                               | Q-011; acum lorem ipsum (D-068), `privacy.html` / `terms.html`                                                                         |
 | 👤  | Clasificarea de vârstă (IARC / App Store) și secțiunea pentru copii                  | „cartoon, fără sânge” (CLAUDE.md §8); fără reclame personalizate (BUSINESS.md §3)                                                      |
+| ✅  | Cumpărături în aplicație (Gemuri, starter pack), battle pass, magazin zilnic         | Faza 9, D-082 – D-084; „Restore purchases” în ecranul Gems                                                                             |
+| 👤  | Produsele în store + RevenueCat + prețuri                                            | `docs/payments.md`, Q-017                                                                                                              |
+| 👤  | Reclame / categoria Kids (verificare parentală la cumpărare)                         | Q-018; acum fără reclame                                                                                                               |
 | ✅  | Ștergerea contului din aplicație                                                     | Setări → Delete account (`DELETE /me`, D-068) — cerință App Store și Google Play                                                       |
 
 ## Android (Google Play)

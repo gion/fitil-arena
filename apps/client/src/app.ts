@@ -72,8 +72,35 @@ import {
   themeOpen,
   themeState,
   totalXp,
+  COIN_PACKS,
+  PASS_PRICE_GEMS,
+  PASS_TIERS,
+  PRODUCTS,
+  TIER_XP,
+  buyCoins,
+  buyOffer,
+  buyPremium,
+  claimAll,
+  claimTier,
+  dailyOffers,
+  passOf,
+  passTier,
+  seasonAt,
+  seasonDaysLeft,
+  tierState,
 } from '@fitil/content';
-import type { MatchSummary, ModeId, Outfit, Profile, Rewards, ShopCat, Theme } from '@fitil/content';
+import type {
+  MatchSummary,
+  ModeId,
+  Outfit,
+  Profile,
+  Rewards,
+  ShopCat,
+  Theme,
+  TierReward,
+  Track,
+} from '@fitil/content';
+import { payments } from './online/purchases.ts';
 import { Music } from './audio/music.ts';
 import { Sfx } from './audio/sfx.ts';
 import { DEFAULT_VOICE, FileVoice, SynthVoice } from './audio/voice.ts';
@@ -116,6 +143,7 @@ import {
   sq,
   stampSwitch,
   tag,
+  gems,
 } from './ui/comic.ts';
 
 /** Build-ul demo (GitHub Pages) n-are server de joc: fără meniul Online (`VITE_OFFLINE_ONLY=1`). */
@@ -284,6 +312,7 @@ export class App {
         if (!p) return;
         this.adopt(p);
         void account.flushClaims((q) => this.adopt(q));
+        void payments.init();
       });
     if (!OFFLINE_ONLY) void OnlineSession.resume().then((o) => o && !this.online && this.enterRoom(o));
     if (!OFFLINE_ONLY) {
@@ -578,6 +607,7 @@ export class App {
         h('div', { class: 'push' }),
         this.installBtn(),
         coins(p.coins),
+        gems(p.gems, () => this.go(() => this.gemsMenu())),
         sq(icon.gear(), 'Settings', () => this.go(() => this.settingsMenu()), { 'data-test': 'settings' }),
       ),
       h(
@@ -629,6 +659,12 @@ export class App {
               'button',
               { class: 'tile', 'data-test': 'shop', onclick: () => this.go(() => this.shopMenu('color')) },
               'SHOP',
+            ),
+            h(
+              'button',
+              { class: 'tile', 'data-test': 'pass', onclick: () => this.go(() => this.passMenu()) },
+              'PASS',
+              this.passBadge(),
             ),
             h(
               'button',
@@ -2009,14 +2045,27 @@ export class App {
     );
   }
 
-  private shopMenu(cat: ShopCat): HTMLElement {
+  private shopMenu(tab: ShopCat | 'daily'): HTMLElement {
     const p = store.profile;
-    const refresh = () => this.showScreen(() => this.shopMenu(cat));
-    const items = SHOP.filter(
-      (i) => i.cat === cat && (!i.unlock || p.owned.includes(i.id) || i.unlock.char === p.ch),
-    );
+    const refresh = () => this.showScreen(() => this.shopMenu(tab));
+    const daily = tab === 'daily';
+    const offers = daily ? dailyOffers(today()) : [];
+    const offerOf = (id: string) => offers.find((o) => o.item === id);
+    const items = daily
+      ? offers.map((o) => shopItem(o.item)!)
+      : SHOP.filter(
+          (i) =>
+            i.cat === tab &&
+            (!i.unlock || p.owned.includes(i.id) || i.unlock.char === p.ch) &&
+            (!i.exclusive || p.owned.includes(i.id)),
+        );
     const sel =
-      items.find((i) => i.id === this.shopPick) ?? items.find((i) => p.eq[cat] === i.id) ?? items[0];
+      items.find((i) => i.id === this.shopPick) ??
+      (daily ? undefined : items.find((i) => p.eq[tab] === i.id)) ??
+      items[0];
+    // categoria obiectului ales (în „Daily” obiectele sunt din categorii diferite)
+    const cat: ShopCat = sel ? sel.cat : daily ? 'color' : tab;
+    const priceOf = (id: string, base: number) => offerOf(id)?.price ?? base;
     const ch = this.playCh();
     const tryOn = sel && cat !== 'voice' && cat !== 'trail' ? { ...p.eq, [cat]: sel.id } : p.eq;
     const own = !!sel && p.owned.includes(sel.id);
@@ -2060,14 +2109,18 @@ export class App {
             : lock(
                 btn(
                   'main',
-                  `BUY FOR ${sel.price} FITILE`,
+                  `BUY FOR ${priceOf(sel.id, sel.price)} FITILE`,
                   () => {
-                    const r = buyItem(store.profile, sel.id);
+                    const r = daily
+                      ? buyOffer(store.profile, sel.id, today())
+                      : buyItem(store.profile, sel.id);
                     if (!r.ok) return;
                     const e = equip(r.profile, cat, sel.id);
                     this.commit(
                       e.ok ? e.profile : r.profile,
-                      { path: '/shop/buy', body: { id: sel.id } },
+                      daily
+                        ? { path: '/offers/buy', body: { id: sel.id } }
+                        : { path: '/shop/buy', body: { id: sel.id } },
                       { path: '/shop/equip', body: { cat, id: sel.id } },
                     );
                     this.celebrate('buy');
@@ -2076,7 +2129,7 @@ export class App {
                   },
                   { 'data-test': 'shop-cta', 'data-why': `You have ${p.coins} Fitile.`, style: ctaStyle },
                 ),
-                p.coins < sel.price,
+                p.coins < priceOf(sel.id, sel.price),
               );
     return this.page(
       'shop fit',
@@ -2085,8 +2138,8 @@ export class App {
         this.backTo(),
         seg(
           'Shop category',
-          SHOP_CATS.map((k) => [k, CAT_NAMES[k]] as const),
-          cat,
+          [['daily', 'Deals'] as const, ...SHOP_CATS.map((k) => [k, CAT_NAMES[k]] as const)],
+          tab,
           (k) => {
             this.shopPick = null;
             this.showScreen(() => this.shopMenu(k));
@@ -2095,6 +2148,7 @@ export class App {
         ),
         h('div', { class: 'push' }),
         coins(p.coins),
+        gems(p.gems, () => this.go(() => this.gemsMenu(() => this.shopMenu(tab)))),
       ),
       h(
         'div',
@@ -2122,30 +2176,36 @@ export class App {
             { class: 'cards' },
             ...items.map((it) => {
               const o = p.owned.includes(it.id);
-              const w = p.eq[cat] === it.id;
+              const w = p.eq[it.cat] === it.id;
+              const off = offerOf(it.id);
               const ic =
-                cat === 'color'
+                it.cat === 'color'
                   ? h('i', {
                       class: 'sicon',
                       style: `background:${it.col === 'rainbow' ? 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' : (it.col ?? '#fff')}`,
                     })
-                  : cat === 'fatality'
+                  : it.cat === 'fatality'
                     ? this.fatPreviews.add({ id: it.fatality!, ch })
-                    : cat === 'emote'
+                    : it.cat === 'emote'
                       ? h('i', { class: 'sicon' }, emoteById(it.emote)?.icon ?? '?')
-                      : cat === 'voice' || cat === 'trail'
+                      : it.cat === 'voice' || it.cat === 'trail'
                         ? h(
                             'i',
                             { class: 'sicon', style: it.col ? `color:${it.col}` : '' },
-                            cat === 'voice' ? '🔊' : '✦',
+                            it.cat === 'voice' ? '🔊' : '✦',
                           )
-                        : this.portraits.add({ ch, outfit: { ...p.eq, [cat]: it.id }, bomb: cat === 'bomb' });
+                        : this.portraits.add({
+                            ch,
+                            outfit: { ...p.eq, [it.cat]: it.id },
+                            bomb: it.cat === 'bomb',
+                          });
               return h(
                 'button',
                 {
                   class: 'card sitem' + (w ? ' eq' : ''),
                   'data-item': it.id,
                   'aria-pressed': String(sel === it),
+                  ...(off ? { 'data-off': `-${off.off}%` } : {}),
                   onclick: () => {
                     this.sfx.init();
                     if (it.voice) this.sfx.voiceLine(it.voice);
@@ -2167,7 +2227,9 @@ export class App {
                         ? 'Owned'
                         : it.unlock
                           ? `Locked · ${charById(it.unlock.char).name} Lv ${it.unlock.level}`
-                          : `${it.price} Fitile`,
+                          : off
+                            ? h('span', {}, h('s', {}, String(off.was)), ` ${off.price} Fitile`)
+                            : `${it.price} Fitile`,
                   ),
                 ),
               );
@@ -2178,12 +2240,297 @@ export class App {
             'div',
             { style: 'display:flex;align-items:center;gap:14px' },
             caption(
-              'Everything here is cosmetic. Nothing in the shop makes you stronger.',
+              daily
+                ? `New deals every day (in ${this.untilMidnight()}). Same deals for everyone.`
+                : 'Everything here is cosmetic. Nothing in the shop makes you stronger.',
               undefined,
               'grow info',
             ),
             cta,
           ),
+        ),
+      ),
+    );
+  }
+
+  /** Timpul până la miezul nopții UTC (oferte noi, sezon nou). */
+  private untilMidnight(): string {
+    const t = now();
+    const left = Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate() + 1) - t.getTime();
+    const hrs = Math.floor(left / 3_600_000);
+    return hrs > 0 ? `${hrs}h ${Math.floor((left % 3_600_000) / 60_000)}m` : `${Math.ceil(left / 60_000)}m`;
+  }
+
+  /** Câte recompense de pass sunt gata de luat (insigna de pe tile). */
+  private passBadge(): HTMLElement | null {
+    const p = store.profile;
+    const d = today();
+    let n = 0;
+    for (const track of ['free', 'premium'] as const)
+      for (let t = 1; t <= PASS_TIERS; t++) if (tierState(p, track, t, d) === 'ready') n++;
+    if (!n) return null;
+    const b = tag(String(n), 'new pulse');
+    b.dataset.test = 'pass-ready';
+    return b;
+  }
+
+  private rewardLabel(r: TierReward): { ic: HTMLElement; txt: string } {
+    const it = r.item ? shopItem(r.item) : undefined;
+    if (it)
+      return {
+        ic: h(
+          'i',
+          {
+            class: 'sicon',
+            style: it.cat === 'color' ? `background:${it.col}` : `color:${it.col ?? 'var(--ink)'}`,
+          },
+          it.cat === 'color' ? '' : it.cat === 'bomb' ? '●' : '✦',
+        ),
+        txt: it.name,
+      };
+    if (r.gems) return { ic: h('i', { class: 'gem-ic' }), txt: `${r.gems} Gems` };
+    return { ic: h('i', { class: 'coin-ic' }), txt: `${r.coins ?? 0} Fitile` };
+  }
+
+  /** Battle pass-ul sezonului: două piste (gratuită și premium), 30 de trepte. */
+  private passMenu(): HTMLElement {
+    const p = store.profile;
+    const d = today();
+    const season = seasonAt(d);
+    const pp = passOf(p, d);
+    const tier = passTier(pp);
+    const refresh = () => this.showScreen(() => this.passMenu());
+    const into = tier >= PASS_TIERS ? TIER_XP : pp.xp - tier * TIER_XP;
+    let ready = 0;
+    for (const track of ['free', 'premium'] as const)
+      for (let t = 1; t <= PASS_TIERS; t++) if (tierState(p, track, t, d) === 'ready') ready++;
+    const claim = (track: Track, t: number) => {
+      const r = claimTier(store.profile, track, t, d);
+      if (!r.ok) return;
+      this.commit(r.profile, { path: '/pass/claim', body: { track, tier: t } });
+      this.celebrate('buy');
+      refresh();
+    };
+    const cell = (track: Track, t: number) => {
+      const st = tierState(p, track, t, d);
+      const { ic, txt } = this.rewardLabel(season[track][t - 1]!);
+      return h(
+        'button',
+        {
+          class: `pcell ${track} ${st}`,
+          'data-test': `tier-${track}-${t}`,
+          'data-state': st,
+          'aria-label': `Tier ${t} ${track}: ${txt} (${st})`,
+          onclick: st === 'ready' ? () => claim(track, t) : undefined,
+        },
+        ic,
+        h('small', {}, txt),
+        st === 'claimed'
+          ? h('b', { class: 'pmark' }, '✓')
+          : st === 'ready'
+            ? h('b', { class: 'pmark' }, 'CLAIM')
+            : null,
+      );
+    };
+    const premiumBtn = pp.premium
+      ? h('span', { class: 'pchip', 'data-test': 'pass-premium-on' }, 'PREMIUM ✓')
+      : btn(
+          'main',
+          `GET PREMIUM · ${PASS_PRICE_GEMS} GEMS`,
+          () => {
+            const r = buyPremium(store.profile, d);
+            if (!r.ok) return this.go(() => this.gemsMenu(() => this.passMenu()));
+            this.commit(r.profile, { path: '/pass/premium', body: {} });
+            this.celebrate('level');
+            refresh();
+          },
+          { 'data-test': 'pass-premium', style: 'min-height:48px;font-size:20px' },
+        );
+    // la deschidere, pista pornește de la treapta curentă
+    const track = h(
+      'div',
+      { class: 'ptrack', 'data-test': 'pass-track' },
+      h('div', { class: 'plabels' }, h('b', {}, 'PREMIUM'), h('b', {}, 'TIER'), h('b', {}, 'FREE')),
+      ...Array.from({ length: PASS_TIERS }, (_, i) => {
+        const t = i + 1;
+        return h(
+          'div',
+          { class: 'pcol' + (t <= tier ? ' reached' : ''), 'data-tier': t },
+          cell('premium', t),
+          h('div', { class: 'pnum' }, String(t)),
+          cell('free', t),
+        );
+      }),
+    );
+    requestAnimationFrame(() => {
+      const col = track.querySelector<HTMLElement>(`[data-tier="${tier}"]`);
+      if (!col || tier <= 2) return;
+      const dx = col.getBoundingClientRect().left - track.getBoundingClientRect().left;
+      track.scrollLeft += dx - 2 * col.offsetWidth;
+    });
+    return this.page(
+      'pass fit',
+      head(
+        'SEASON PASS',
+        this.backTo(),
+        caption(`${season.name} · ${seasonDaysLeft(season, d)} days left`, `Season ${season.n}:`),
+        h('div', { class: 'push' }),
+        coins(p.coins),
+        gems(p.gems, () => this.go(() => this.gemsMenu(() => this.passMenu()))),
+      ),
+      h(
+        'div',
+        { class: 'col grow', style: 'gap:12px;min-width:0' },
+        h(
+          'div',
+          { class: 'pbar-row' },
+          h(
+            'div',
+            { class: 'ptier' },
+            h('small', {}, 'TIER'),
+            h('b', { 'data-test': 'pass-tier' }, String(tier)),
+          ),
+          h(
+            'div',
+            { class: 'pbar' },
+            h('i', { style: `--w:${Math.round((into / TIER_XP) * 100)}%` }),
+            h('small', {}, tier >= PASS_TIERS ? 'MAX' : `${into}/${TIER_XP} XP to tier ${tier + 1}`),
+          ),
+          ready > 1 &&
+            btn(
+              'cyan',
+              `CLAIM ALL (${ready})`,
+              () => {
+                this.commit(claimAll(store.profile, d), { path: '/pass/claim-all', body: {} });
+                this.celebrate('level');
+                refresh();
+              },
+              { 'data-test': 'pass-claim-all', style: 'min-height:48px;font-size:20px' },
+            ),
+          premiumBtn,
+        ),
+        track,
+        caption(
+          'Play any match to earn pass XP. Only cosmetics, Fitile and Gems: nothing here makes you stronger.',
+          undefined,
+          'info',
+        ),
+      ),
+    );
+  }
+
+  /** Gemurile: pachete din store, starter pack, schimbul în Fitile, restaurarea cumpărăturilor. */
+  private gemsMenu(back: () => HTMLElement = () => this.mainMenu()): HTMLElement {
+    const p = store.profile;
+    const refresh = () => this.showScreen(() => this.gemsMenu(back));
+    const can = payments.mode !== 'none';
+    const busy = { on: false };
+    const buy = async (id: string) => {
+      if (busy.on) return;
+      busy.on = true;
+      this.showBanner('Talking to the store…', 1600);
+      const r = await payments.buy(id);
+      busy.on = false;
+      if (r.ok) {
+        this.adopt(r.profile);
+        this.celebrate('level');
+        this.showBanner('Thanks! Your purchase is in.', 2400, 'gold');
+      } else if (r.why === 'pending') this.showBanner('Payment received. It will show up in a moment.', 3200);
+      else if (r.why === 'error')
+        this.showBanner('The purchase did not go through. You were not charged.', 3200, 'bad');
+      refresh();
+    };
+    const products = PRODUCTS.filter((pr) => pr.kind === 'consumable' || !p.purchases.includes(pr.id));
+    return this.page(
+      'gems-page',
+      head('GEMS', this.backTo(back), h('div', { class: 'push' }), coins(p.coins), gems(p.gems)),
+      h(
+        'div',
+        { class: 'col grow', style: 'gap:14px;min-width:0' },
+        h(
+          'div',
+          { class: 'cards', style: '--cols:4' },
+          ...products.map((pr) =>
+            h(
+              'div',
+              { class: 'card gpack' + (pr.kind === 'once' ? ' starter' : ''), 'data-product': pr.id },
+              pr.kind === 'once' ? tag('ONE TIME', 'new') : null,
+              h('b', {}, pr.name),
+              pr.kind === 'once' &&
+                h(
+                  'small',
+                  {},
+                  [
+                    pr.gems && `${pr.gems} Gems`,
+                    pr.coins && `${pr.coins} Fitile`,
+                    ...(pr.items ?? []).map((i) => shopItem(i)?.name),
+                  ]
+                    .filter(Boolean)
+                    .join(' + '),
+                ),
+              lock(
+                btn('main', payments.price(pr.id), can ? () => void buy(pr.id) : null, {
+                  'data-test': `buy-${pr.id}`,
+                  'data-why': payments.why,
+                }),
+                !can,
+              ),
+            ),
+          ),
+        ),
+        h('h3', { class: 'gsub' }, 'Swap Gems for Fitile'),
+        h(
+          'div',
+          { class: 'cards', style: '--cols:3' },
+          ...COIN_PACKS.map((c) =>
+            h(
+              'div',
+              { class: 'card gpack' },
+              h('b', {}, `${c.coins} Fitile`),
+              lock(
+                btn(
+                  'sec',
+                  `${c.gems} GEMS`,
+                  () => {
+                    const r = buyCoins(store.profile, c.id);
+                    if (!r.ok) return;
+                    this.commit(r.profile, { path: '/gems/coins', body: { id: c.id } });
+                    this.celebrate('buy');
+                    refresh();
+                  },
+                  { 'data-test': `swap-${c.id}`, 'data-why': `You have ${p.gems} Gems.` },
+                ),
+                p.gems < c.gems,
+              ),
+            ),
+          ),
+        ),
+        h(
+          'div',
+          { style: 'display:flex;align-items:center;gap:14px;flex-wrap:wrap' },
+          caption(
+            can
+              ? 'Gems cost real money. Ask a grown-up before you buy. Nothing you buy makes you stronger.'
+              : payments.why,
+            undefined,
+            'grow info',
+          ),
+          can &&
+            btn(
+              'sec',
+              'RESTORE PURCHASES',
+              async () => {
+                const r = await payments.restore();
+                if (r.ok) this.adopt(r.profile);
+                this.showBanner(
+                  r.ok ? 'Purchases restored.' : 'Could not reach the store.',
+                  2400,
+                  r.ok ? 'gold' : 'bad',
+                );
+                refresh();
+              },
+              { 'data-test': 'restore' },
+            ),
         ),
       ),
     );
@@ -2214,12 +2561,20 @@ export class App {
         u.unlocks.length ? `Unlocked: ${u.unlocks.join(', ')}` : '',
       ]),
       ...r.keptThemes.map((t): [string, string] => [`${themeById(t).name} theme`, 'It’s yours to keep!']),
+      ...(r.pass.tiersUp > 0
+        ? [
+            [
+              `Season pass tier ${passTier(passOf(r.profile, today()))}`,
+              'New rewards are waiting in PASS.',
+            ] as [string, string],
+          ]
+        : []),
     ];
     const line = h(
       'div',
       { class: 'cap info', 'data-test': 'rewards' },
       h('b', {}, 'You got: '),
-      `+${r.coins} Fitile${r.daily ? ` (incl. +${r.daily} daily)` : ''} · +${r.xp} XP ${ch.name}${r.firstToday ? ' (×2, first match today)' : ''} · Lv ${lv.level}`,
+      `+${r.coins} Fitile${r.daily ? ` (incl. +${r.daily} daily)` : ''} · +${r.xp} XP ${ch.name}${r.firstToday ? ' (×2, first match today)' : ''} · Lv ${lv.level} · +${r.pass.xp} pass XP`,
     );
     return { line, ups };
   }

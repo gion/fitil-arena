@@ -469,3 +469,24 @@ Raportat: jocul merge mai greu și se blochează uneori când se întâmplă mul
 - Un deploy repornește serverul: meciurile în curs se pierd (un singur proces, camere în memorie).
 - Testul cu oameni reali (`docs/multiplayer-test.md`) după deploy.
 - În containerul de lucru build-ul Docker a avut nevoie de CA-ul proxy-ului local (override doar pentru test, nu e în repo).
+
+## Faza 9 — Monetizare (2026-10-19)
+
+**Mini-plan:** (1) `content`: Gemuri, battle pass sezonier, magazin zilnic, produsele plătite — funcții pure cu teste; (2) `server`: tabelul `purchases`, rutele pass/oferte/schimb, webhook RevenueCat + sincronizare + plăți simulate, teste cu Postgres; (3) `client`: ecranele PASS și GEMS, categoria „Deals” în magazin, modulul de plăți (RevenueCat nativ / simulat / indisponibil), e2e. Reclamele: întrebare (Q-018), nu cod.
+
+**Făcut:**
+
+- **content** (D-082): `pass.ts` (sezoane de 8 săptămâni, 30 de trepte, pistă gratuită + premium, `claimTier`, `claimAll`, `buyPremium`), `offers.ts` (`PRODUCTS`, `grantProduct` cu starter pack o singură dată, `COIN_PACKS`, `dailyOffers` deterministe după dată, `buyOffer`); `Profile` primește `gems`, `pass`, `purchases`; 10 obiecte exclusive (`exclusive` în `shop.ts`, nu se cumpără); XP-ul meciului intră și în pass.
+- **server** (D-083): `purchases.ts` (acordare idempotentă pe tranzacție, rambursări, webhook cu secret în timp constant, sincronizare REST, mutarea produsului unic pe contul nou la restaurare, plăți simulate), rutele `/pass/claim`, `/pass/claim-all`, `/pass/premium`, `/offers/buy`, `/gems/coins`, `/purchases/config|sync|fake`, `/webhooks/revenuecat`; migrația `0002_purchases`; importul profilului local nu mai aduce Gemuri, premium sau exclusive.
+- **client**: tile-ul **PASS** (cu numărul de recompense gata) și chip-ul **Gems** în meniul principal; ecranul **SEASON PASS** (bară de progres, două piste derulabile, CLAIM / CLAIM ALL, GET PREMIUM); ecranul **GEMS** (pachete cu preț localizat, starter pack, schimb în Fitile, RESTORE PURCHASES, mesaj pentru părinți); categoria **Deals** în magazin (6 oferte cu reducere, contor până la ofertele noi); rândul de recompense arată XP-ul de pass; `online/purchases.ts` (D-084).
+- **Docs**: `docs/payments.md` (pașii pentru store-uri și RevenueCat), Q-017 (prețuri), Q-018 (reclame, categoria Kids), store-checklist.
+
+**Verificat:** content 55 de teste (16 noi), server 26 (8 noi, cu Postgres), e2e `monetization.spec.ts` (fără cont: Deals/Pass/Gems; cu cont și plăți simulate: starter pack o dată, 550 Gemuri, premium, profilul rămâne după reîncărcare), capturi în `docs/screens/faza9/`; lint, typecheck, format.
+
+**Rămas / cunoscut:**
+
+- Checkpoint uman: produsele în store, RevenueCat, prețurile (Q-017), reclamele și categoria Kids (Q-018), test cu cumpărături sandbox pe telefon.
+- Cumpărarea nativă (RevenueCat) nu se poate încerca în containerul de lucru: fără store, fără telefon. Formatul webhook-ului se confirmă cu evenimentul de test RevenueCat.
+- Doar sezonul 1 are obiecte exclusive; sezoanele următoare dau Fitile/Gemuri pe treptele de obiect până se adaugă conținut (`exclusive: 's2'`…).
+- Progresul de pass al unui sezon încheiat se pierde (recompensele neluate nu se mută): de anunțat în joc înainte de final, eventual.
+- Fără misiuni zilnice/săptămânale pentru pass (GAME_DESIGN le menționează; nu sunt în PLAN Faza 9).
