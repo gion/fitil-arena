@@ -30,6 +30,3 @@ __pycache__
 store-shots
 tools/voice/ref/*.wav
 tools/voice/ref/*.mp3
-# voci clonate din referințe ElevenLabs: rămân locale până se clarifică licența (docs/voice-casting.md)
-apps/client/public/voice/*/
-apps/client/public/voice/manifest.json

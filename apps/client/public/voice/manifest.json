@@ -1,0 +1,227 @@
+{
+ "characters": {
+  "gugu": {
+   "Ho ho ho!": [
+    "voice/gugu/win_1.mp3"
+   ],
+   "Ho ho, who’s the boss?": [
+    "voice/gugu/win_2.mp3"
+   ],
+   "Ho ho… ouch!": [
+    "voice/gugu/quip_1.mp3"
+   ],
+   "Hmpf!": [
+    "voice/gugu/quip_2.mp3"
+   ],
+   "I’ll get up…": [
+    "voice/gugu/quip_3.mp3"
+   ],
+   "Ho!": [
+    "voice/gugu/kill_1.mp3"
+   ],
+   "Down you go.": [
+    "voice/gugu/kill_2.mp3"
+   ],
+   "Bye bye!": [
+    "voice/gugu/bye_1.mp3"
+   ],
+   "I feel dangerous today.": [
+    "voice/gugu/menu_fight_1.mp3"
+   ],
+   "Let’s blow stuff up!": [
+    "voice/gugu/menu_fight_2.mp3"
+   ],
+   "Light the fuse!": [
+    "voice/gugu/menu_fight_3.mp3"
+   ],
+   "Bombs away!": [
+    "voice/gugu/menu_fight_4.mp3"
+   ],
+   "Stand back!": [
+    "voice/gugu/menu_fight_5.mp3"
+   ],
+   "Go on, press something.": [
+    "voice/gugu/menu_idle_1.mp3"
+   ],
+   "Ready when you are.": [
+    "voice/gugu/menu_idle_2.mp3"
+   ],
+   "Nice day for a blast.": [
+    "voice/gugu/menu_idle_3.mp3"
+   ],
+   "Psst. Over here.": [
+    "voice/gugu/menu_idle_4.mp3"
+   ],
+   "I’m lightning!": [
+    "voice/gugu/hero_speed_1.mp3"
+   ],
+   "Catch me if you can!": [
+    "voice/gugu/hero_speed_2.mp3"
+   ],
+   "Zoooom!": [
+    "voice/gugu/hero_speed_3.mp3"
+   ],
+   "Brakes are optional.": [
+    "voice/gugu/hero_speed_4.mp3"
+   ],
+   "Bombs for days!": [
+    "voice/gugu/hero_bombs_1.mp3"
+   ],
+   "Who wants fireworks?": [
+    "voice/gugu/hero_bombs_2.mp3"
+   ],
+   "Bomb shop: open!": [
+    "voice/gugu/hero_bombs_3.mp3"
+   ],
+   "My blast covers everything!": [
+    "voice/gugu/hero_fire_1.mp3"
+   ],
+   "All the way to the horizon!": [
+    "voice/gugu/hero_fire_2.mp3"
+   ],
+   "Maximum heat!": [
+    "voice/gugu/hero_fire_3.mp3"
+   ],
+   "Too easy!": [
+    "voice/gugu/hero_win_1.mp3"
+   ],
+   "I’m a legend!": [
+    "voice/gugu/hero_win_2.mp3"
+   ],
+   "Who’s next?": [
+    "voice/gugu/hero_win_3.mp3"
+   ]
+  },
+  "zuzu": {
+   "Yee-haw!": [
+    "voice/zuzu/win_1.mp3",
+    "voice/zuzu/kill_2.mp3"
+   ],
+   "You didn’t even see me!": [
+    "voice/zuzu/win_2.mp3"
+   ],
+   "Too fast!": [
+    "voice/zuzu/quip_1.mp3"
+   ],
+   "Eeek!": [
+    "voice/zuzu/quip_2.mp3"
+   ],
+   "I slipped!": [
+    "voice/zuzu/quip_3.mp3"
+   ],
+   "Zoom!": [
+    "voice/zuzu/kill_1.mp3"
+   ],
+   "Bye bye!": [
+    "voice/zuzu/bye_1.mp3"
+   ]
+  },
+  "bubu": {
+   "Hee hee hee, I won!": [
+    "voice/bubu/win_1.mp3"
+   ],
+   "Hee hee, too easy!": [
+    "voice/bubu/win_2.mp3"
+   ],
+   "Hee hee… ouch!": [
+    "voice/bubu/quip_1.mp3"
+   ],
+   "Oopsie!": [
+    "voice/bubu/quip_2.mp3"
+   ],
+   "Not fair!": [
+    "voice/bubu/quip_3.mp3"
+   ],
+   "Hee hee!": [
+    "voice/bubu/kill_1.mp3"
+   ],
+   "Boop!": [
+    "voice/bubu/kill_2.mp3"
+   ],
+   "Bye bye!": [
+    "voice/bubu/bye_1.mp3"
+   ],
+   "I feel dangerous today.": [
+    "voice/bubu/menu_fight_1.mp3"
+   ],
+   "Let’s blow stuff up!": [
+    "voice/bubu/menu_fight_2.mp3"
+   ],
+   "Light the fuse!": [
+    "voice/bubu/menu_fight_3.mp3"
+   ],
+   "Bombs away!": [
+    "voice/bubu/menu_fight_4.mp3"
+   ],
+   "Stand back!": [
+    "voice/bubu/menu_fight_5.mp3"
+   ],
+   "Go on, press something.": [
+    "voice/bubu/menu_idle_1.mp3"
+   ],
+   "Ready when you are.": [
+    "voice/bubu/menu_idle_2.mp3"
+   ],
+   "Nice day for a blast.": [
+    "voice/bubu/menu_idle_3.mp3"
+   ],
+   "Psst. Over here.": [
+    "voice/bubu/menu_idle_4.mp3"
+   ],
+   "Not yet!": [
+    "voice/bubu/menu_locked_1.mp3"
+   ],
+   "I’m lightning!": [
+    "voice/bubu/hero_speed_1.mp3"
+   ],
+   "Catch me if you can!": [
+    "voice/bubu/hero_speed_2.mp3"
+   ],
+   "Zoooom!": [
+    "voice/bubu/hero_speed_3.mp3"
+   ],
+   "Brakes are optional.": [
+    "voice/bubu/hero_speed_4.mp3"
+   ],
+   "Bombs for days!": [
+    "voice/bubu/hero_bombs_1.mp3"
+   ],
+   "Who wants fireworks?": [
+    "voice/bubu/hero_bombs_2.mp3"
+   ],
+   "Bomb shop: open!": [
+    "voice/bubu/hero_bombs_3.mp3"
+   ],
+   "My blast covers everything!": [
+    "voice/bubu/hero_fire_1.mp3"
+   ],
+   "All the way to the horizon!": [
+    "voice/bubu/hero_fire_2.mp3"
+   ],
+   "Maximum heat!": [
+    "voice/bubu/hero_fire_3.mp3"
+   ],
+   "Too easy!": [
+    "voice/bubu/hero_win_1.mp3"
+   ],
+   "I’m a legend!": [
+    "voice/bubu/hero_win_2.mp3"
+   ],
+   "Who’s next?": [
+    "voice/bubu/hero_win_3.mp3"
+   ],
+   "Applause, please!": [
+    "voice/bubu/hero_win_4.mp3"
+   ],
+   "Unstoppable team!": [
+    "voice/bubu/hero_team_1.mp3"
+   ],
+   "Teamwork!": [
+    "voice/bubu/hero_team_2.mp3"
+   ],
+   "Champions, baby!": [
+    "voice/bubu/hero_team_3.mp3"
+   ]
+  }
+ }
+}
