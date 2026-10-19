@@ -10,6 +10,11 @@ import {
   buyCharFor,
   buyItemFor,
   buyThemeFor,
+  buyCoinsFor,
+  buyOfferFor,
+  buyPremiumFor,
+  claimAllFor,
+  claimTierFor,
   claimOffline,
   deleteAccount,
   createAccount,
@@ -24,6 +29,8 @@ import {
 import type { Outcome } from './accounts.ts';
 import type { Db } from './db/index.ts';
 import { accounts, dailyScores } from './db/schema.ts';
+import { fakePurchase, handleWebhook, syncPurchases } from './purchases.ts';
+import type { PaymentsOpts } from './purchases.ts';
 
 const bearer = (req: FastifyRequest): string | undefined => {
   const h = req.headers.authorization;
@@ -40,7 +47,7 @@ export function cleanAccountName(v: unknown): string | null {
 }
 
 /** Rutele conturilor, profilului, magazinului și provocării zilei. Rezultatele meciurilor NU trec pe aici (le scrie camera). */
-export function registerApi(app: FastifyInstance, db: Db): void {
+export function registerApi(app: FastifyInstance, db: Db, payments: PaymentsOpts = {}): void {
   const auth = async (req: FastifyRequest): Promise<string | null> => authenticate(db, bearer(req));
   const refuse = (r: Extract<Outcome, { ok: false }>) => ({ ok: false, why: r.why });
 
@@ -101,6 +108,80 @@ export function registerApi(app: FastifyInstance, db: Db): void {
     if (typeof t !== 'string') return reply.code(400).send({ error: 'id' });
     return answer(reply, await buyThemeFor(db, id, t));
   });
+
+  /* ---------- Faza 9: battle pass, magazinul zilnic, Gemuri, plăți ---------- */
+
+  const idBody = (req: FastifyRequest): string | null => {
+    const v = (req.body as { id?: unknown } | null)?.id;
+    return typeof v === 'string' ? v : null;
+  };
+
+  app.post('/pass/claim', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    const b = (req.body ?? {}) as { track?: unknown; tier?: unknown };
+    if ((b.track !== 'free' && b.track !== 'premium') || typeof b.tier !== 'number')
+      return reply.code(400).send({ error: 'body' });
+    return answer(reply, await claimTierFor(db, id, b.track, b.tier));
+  });
+
+  app.post('/pass/claim-all', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    return answer(reply, await claimAllFor(db, id));
+  });
+
+  app.post('/pass/premium', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    return answer(reply, await buyPremiumFor(db, id));
+  });
+
+  app.post('/offers/buy', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    const item = idBody(req);
+    if (!item) return reply.code(400).send({ error: 'id' });
+    return answer(reply, await buyOfferFor(db, id, item));
+  });
+
+  app.post('/gems/coins', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    const pack = idBody(req);
+    if (!pack) return reply.code(400).send({ error: 'id' });
+    return answer(reply, await buyCoinsFor(db, id, pack));
+  });
+
+  /** Ce poate face clientul cu plățile pe serverul ăsta. */
+  app.get('/purchases/config', async () => ({ fake: !!payments.fake, sync: !!payments.rcSecret }));
+
+  /** După o cumpărare sau la „Restore purchases”: acordă ce a validat RevenueCat și încă lipsește. */
+  app.post('/purchases/sync', async (req, reply) => {
+    const id = await auth(req);
+    if (!id) return reply.code(401).send({ error: 'auth' });
+    if (!payments.rcSecret) return reply.code(503).send({ error: 'payments' });
+    const granted = await syncPurchases(db, payments, id).catch(() => null);
+    if (granted === null) return reply.code(502).send({ error: 'store' });
+    return { ok: true, granted, profile: await getProfile(db, id) };
+  });
+
+  app.post('/webhooks/revenuecat', async (req, reply) => {
+    const r = await handleWebhook(db, payments, req.headers.authorization, req.body);
+    return reply.code(r.code).send({ result: r.result });
+  });
+
+  if (payments.fake)
+    app.post('/purchases/fake', async (req, reply) => {
+      const id = await auth(req);
+      if (!id) return reply.code(401).send({ error: 'auth' });
+      const product = idBody(req);
+      if (!product) return reply.code(400).send({ error: 'id' });
+      const r = await fakePurchase(db, id, product);
+      return r.status === 'granted'
+        ? { ok: true, profile: r.profile }
+        : reply.code(409).send({ ok: false, why: r.status });
+    });
 
   /** Recompensa unui meci offline (cu boți), cu plafon zilnic; meciurile online le scrie camera. */
   app.post('/rewards/offline', async (req, reply) => {

@@ -24,6 +24,8 @@ services:
     environment:
       DATABASE_URL: postgres://fitil:${POSTGRES_PASSWORD}@db:5432/fitil
       TRUST_PROXY: '1'
+      REVENUECAT_WEBHOOK_AUTH: ${REVENUECAT_WEBHOOK_AUTH:-}
+      REVENUECAT_SECRET_KEY: ${REVENUECAT_SECRET_KEY:-}
     depends_on:
       db: { condition: service_healthy }
 

@@ -15,6 +15,13 @@
       "when": 1791303527193,
       "tag": "0001_flippant_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792382184702,
+      "tag": "0002_purchases",
+      "breakpoints": true
     }
   ]
 }

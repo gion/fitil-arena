@@ -3,6 +3,12 @@ import { eq, inArray, sql } from 'drizzle-orm';
 import {
   accessOf,
   buyChar,
+  buyCoins,
+  buyOffer,
+  buyPremium,
+  claimAll,
+  claimTier,
+  NO_PASS,
   buyTheme,
   reward,
   buyItem,
@@ -11,9 +17,11 @@ import {
   loadProfile,
   playerLevel,
   selectChar,
+  shopItem,
+  SHOP_CATS,
   totalXp,
 } from '@fitil/content';
-import type { MatchSummary, Profile, Refusal, Rewards, ShopCat } from '@fitil/content';
+import type { MatchSummary, Profile, Refusal, Rewards, ShopCat, Track } from '@fitil/content';
 import type { Db } from './db/index.ts';
 import { accounts, offlineClaims, profiles, trophies } from './db/schema.ts';
 
@@ -113,6 +121,17 @@ export const buyThemeFor = (db: Db, id: string, theme: string) =>
 export const selectCharFor = (db: Db, id: string, ch: string) =>
   apply(db, id, (p) => selectChar(p, ch, access(p)));
 
+/* ---------- Faza 9: battle pass, magazinul zilnic, Gemuri → Fitile ---------- */
+
+export const claimTierFor = (db: Db, id: string, track: Track, tier: number) =>
+  apply(db, id, (p) => claimTier(p, track, tier, today()));
+export const claimAllFor = (db: Db, id: string) =>
+  apply(db, id, (p) => ({ ok: true, profile: claimAll(p, today()) }));
+export const buyPremiumFor = (db: Db, id: string) => apply(db, id, (p) => buyPremium(p, today()));
+export const buyOfferFor = (db: Db, id: string, item: string) =>
+  apply(db, id, (p) => buyOffer(p, item, today()));
+export const buyCoinsFor = (db: Db, id: string, pack: string) => apply(db, id, (p) => buyCoins(p, pack));
+
 /**
  * Preia profilul local (offline) la prima conectare. Se acceptă o singură dată, cu monedele plafonate;
  * serverul rămâne sursa de adevăr după aceea.
@@ -121,7 +140,17 @@ export async function importProfile(db: Db, id: string, raw: unknown): Promise<O
   const local = loadProfile(raw);
   const r = await updateProfile(db, id, (cur, imported) => {
     if (imported) return null;
-    const p = { ...local, coins: Math.min(local.coins, IMPORT_MAX_COINS) };
+    // Gemurile, pass-ul premium și produsele plătite vin doar de la server: din profilul local nu se preiau
+    const p = {
+      ...local,
+      coins: Math.min(local.coins, IMPORT_MAX_COINS),
+      gems: 0,
+      pass: { ...NO_PASS },
+      purchases: [],
+      owned: local.owned.filter((i) => !shopItem(i)?.exclusive),
+    };
+    for (const cat of SHOP_CATS)
+      if (p.eq[cat] && !p.owned.includes(p.eq[cat]!)) p.eq = { ...p.eq, [cat]: null };
     // un cont care a jucat deja online nu mai preia: ar suprascrie recompensele
     if (totalXp(cur) > 0) return null;
     return { profile: p, imported: true, out: p };

@@ -11,7 +11,16 @@ if (database) {
   await runMigrations(database);
   console.log('Postgres conectat, migrații aplicate');
 } else console.log('DATABASE_URL lipsește: fără conturi (doar vizitatori)');
-const app = buildApp(database?.db, { trustProxy: process.env.TRUST_PROXY === '1' });
+const fake = process.env.FAKE_PURCHASES === '1';
+if (fake && process.env.NODE_ENV === 'production') throw new Error('FAKE_PURCHASES nu e permis în producție');
+const app = buildApp(database?.db, {
+  trustProxy: process.env.TRUST_PROXY === '1',
+  payments: {
+    fake,
+    webhookAuth: process.env.REVENUECAT_WEBHOOK_AUTH || undefined,
+    rcSecret: process.env.REVENUECAT_SECRET_KEY || undefined,
+  },
+});
 await app.listen({ port, host: '0.0.0.0' });
 console.log(`API pe http://localhost:${port}`);
 await buildGameServer(database?.db ?? null).listen(gamePort);

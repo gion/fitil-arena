@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import { TICK_HZ } from '@fitil/sim';
 import { registerApi } from './api.ts';
 import type { Db } from './db/index.ts';
+import type { PaymentsOpts } from './purchases.ts';
 
 /** API-ul HTTP. Fără bază de date (`db` lipsă) răspunde doar la `/health`. */
 export interface AppOpts {
@@ -9,6 +10,8 @@ export interface AppOpts {
   rate?: number;
   /** În spatele unui proxy (Caddy): IP-ul clientului din `X-Forwarded-For`, pentru limitarea pe IP. */
   trustProxy?: boolean;
+  /** Plățile (RevenueCat, plăți simulate); fără ele rutele de plată răspund 404/503. */
+  payments?: PaymentsOpts;
 }
 
 /** Limitare simplă în memorie (fereastră fixă de un minut). Cu mai multe procese s-ar muta în Redis. */
@@ -47,6 +50,6 @@ export function buildApp(db?: Db, opts: AppOpts = {}) {
     });
   }
   app.get('/health', async () => ({ ok: true, tickHz: TICK_HZ, accounts: !!db }));
-  if (db) registerApi(app, db);
+  if (db) registerApi(app, db, opts.payments ?? {});
   return app;
 }

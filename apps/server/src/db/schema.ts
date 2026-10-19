@@ -97,3 +97,24 @@ export const dailyScores = pgTable(
   },
   (t) => [primaryKey({ columns: [t.day, t.accountId] }), index('daily_day_ticks').on(t.day, t.ticks)],
 );
+
+/**
+ * Plățile validate (RevenueCat sau, în dezvoltare, cele simulate): id-ul tranzacției din store e cheia,
+ * deci aceeași plată nu se acordă de două ori (webhook repetat + sincronizare).
+ */
+export const purchases = pgTable(
+  'purchases',
+  {
+    txId: text('tx_id').primaryKey(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    product: text('product').notNull(),
+    /** `app_store`, `play_store`, `fake`… */
+    store: text('store').notNull(),
+    sandbox: boolean('sandbox').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    refundedAt: timestamp('refunded_at', { withTimezone: true }),
+  },
+  (t) => [index('purchases_account').on(t.accountId)],
+);
