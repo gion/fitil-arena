@@ -43,9 +43,7 @@
         "accounts_token_hash_unique": {
           "name": "accounts_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
+          "columns": ["token_hash"]
         }
       },
       "policies": {},
@@ -110,12 +108,8 @@
           "name": "daily_scores_account_id_accounts_id_fk",
           "tableFrom": "daily_scores",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -123,10 +117,7 @@
       "compositePrimaryKeys": {
         "daily_scores_day_account_id_pk": {
           "name": "daily_scores_day_account_id_pk",
-          "columns": [
-            "day",
-            "account_id"
-          ]
+          "columns": ["day", "account_id"]
         }
       },
       "uniqueConstraints": {},
@@ -221,12 +212,8 @@
           "name": "match_players_match_id_matches_id_fk",
           "tableFrom": "match_players",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -234,12 +221,8 @@
           "name": "match_players_account_id_accounts_id_fk",
           "tableFrom": "match_players",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -247,10 +230,7 @@
       "compositePrimaryKeys": {
         "match_players_match_id_account_id_pk": {
           "name": "match_players_match_id_account_id_pk",
-          "columns": [
-            "match_id",
-            "account_id"
-          ]
+          "columns": ["match_id", "account_id"]
         }
       },
       "uniqueConstraints": {},
@@ -333,12 +313,8 @@
           "name": "offline_claims_account_id_accounts_id_fk",
           "tableFrom": "offline_claims",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -346,10 +322,7 @@
       "compositePrimaryKeys": {
         "offline_claims_day_account_id_pk": {
           "name": "offline_claims_day_account_id_pk",
-          "columns": [
-            "day",
-            "account_id"
-          ]
+          "columns": ["day", "account_id"]
         }
       },
       "uniqueConstraints": {},
@@ -394,12 +367,8 @@
           "name": "profiles_account_id_accounts_id_fk",
           "tableFrom": "profiles",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -481,12 +450,8 @@
           "name": "purchases_account_id_accounts_id_fk",
           "tableFrom": "purchases",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -527,12 +492,8 @@
           "name": "trophies_account_id_accounts_id_fk",
           "tableFrom": "trophies",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -540,10 +501,7 @@
       "compositePrimaryKeys": {
         "trophies_account_id_ch_pk": {
           "name": "trophies_account_id_ch_pk",
-          "columns": [
-            "account_id",
-            "ch"
-          ]
+          "columns": ["account_id", "ch"]
         }
       },
       "uniqueConstraints": {},
